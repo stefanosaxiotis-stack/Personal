@@ -5,107 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Personal Finance</title>
   
-  <!-- 
-    ========================================================
-    Personal Finance App - Single File HTML Version
-    ========================================================
-    Φτιαγμένο σε ένα αρχείο για απλότητα.
-    Συνδέεται στο ίδιο Supabase project με το Next.js app.
-    
-    Δομή αρχείου:
-    1. CSS Styles (παρακάτω)
-    2. HTML Markup (sections για κάθε "σελίδα")
-    3. JavaScript (η λογική του app)
-  -->
-  
-  <!-- Tailwind CSS από CDN - για styling -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Supabase JS Client από CDN - για βάση και auth -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     .hidden-section { display: none !important; }
-    
-    /* Toast notifications */
-    #toast-container {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .toast {
-      padding: 12px 20px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      animation: slideIn 0.3s ease-out;
-      min-width: 250px;
-    }
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
+    .toast { padding: 12px 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; min-width: 250px; }
     .toast.success { border-left: 4px solid #10b981; }
     .toast.error { border-left: 4px solid #ef4444; }
-    @keyframes slideIn {
-      from { transform: translateX(120%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    
-    /* Spinner για loading */
-    .spinner {
-      border: 3px solid #e5e7eb;
-      border-top-color: #000;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .spinner { border: 3px solid #e5e7eb; border-top-color: #000; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-  <!-- ============================================== -->
-  <!-- LOGIN SCREEN                                   -->
-  <!-- ============================================== -->
   <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-xl shadow-sm border border-gray-200 p-8">
       <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
         </div>
         <h1 class="text-2xl font-bold">Personal Finance</h1>
       </div>
-      
       <h2 id="auth-title" class="text-xl font-semibold mb-2">Σύνδεση</h2>
       <p id="auth-subtitle" class="text-gray-500 mb-6 text-sm">Βάλε τα στοιχεία σου για να συνεχίσεις</p>
-      
       <form id="auth-form" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input type="email" id="auth-email" required 
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+          <input type="email" id="auth-email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Κωδικός</label>
-          <input type="password" id="auth-password" required minlength="6"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
+          <input type="password" id="auth-password" required minlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent">
         </div>
         <div id="auth-error" class="text-red-600 text-sm hidden"></div>
-        <button type="submit" id="auth-submit"
-          class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center min-h-[48px]">
-          Σύνδεση
-        </button>
+        <button type="submit" id="auth-submit" class="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition flex items-center justify-center min-h-[48px]">Σύνδεση</button>
       </form>
-      
       <div class="mt-6 text-center text-sm text-gray-500">
         <span id="auth-toggle-text">Δεν έχεις λογαριασμό;</span>
         <button id="auth-toggle-btn" class="text-black font-medium underline ml-1">Εγγραφή</button>
@@ -113,40 +51,26 @@
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- MAIN APP (φαίνεται μετά το login)              -->
-  <!-- ============================================== -->
   <div id="app" class="hidden-section min-h-screen">
-    
-    <!-- Mobile Header (μόνο σε κινητό) -->
     <header class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
       <div class="flex items-center gap-3">
         <button id="mobile-menu-btn" class="p-2 -ml-2" aria-label="Μενού">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
         <span class="font-bold">Personal Finance</span>
       </div>
     </header>
 
     <div class="flex">
-      
-      <!-- Desktop Sidebar (κρυφό σε κινητό) -->
       <aside class="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 min-h-screen sticky top-0 max-h-screen">
         <div class="p-4 border-b border-gray-200">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/>
-              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
             </div>
             <span class="font-bold">Personal Finance</span>
           </div>
         </div>
-        
         <nav class="flex-1 p-4 overflow-y-auto">
           <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Κύρια</div>
           <ul class="space-y-1 mb-6">
@@ -164,19 +88,13 @@
             </button></li>
           </ul>
         </nav>
-        
         <div class="p-4 border-t border-gray-200">
           <div id="user-email" class="text-xs text-gray-500 mb-2 truncate"></div>
-          <button id="logout-btn" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition min-h-[40px]">
-            Αποσύνδεση
-          </button>
+          <button id="logout-btn" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition min-h-[40px]">Αποσύνδεση</button>
         </div>
       </aside>
 
-      <!-- Main Content -->
       <main class="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full">
-        
-        <!-- ============= ΣΕΛΙΔΑ: ΛΟΓΑΡΙΑΣΜΟΙ ============= -->
         <section id="accounts-section">
           <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
             <div>
@@ -188,9 +106,7 @@
               <div id="total-balance" class="text-2xl font-bold">—</div>
             </div>
           </div>
-          
           <div id="accounts-container" class="space-y-6">
-            <!-- Γεμίζει με JavaScript -->
             <div class="text-center py-12 text-gray-400">
               <div class="spinner mx-auto mb-4"></div>
               Φόρτωση λογαριασμών...
@@ -198,21 +114,17 @@
           </div>
         </section>
 
-        <!-- ============= ΣΕΛΙΔΑ: ΚΙΝΗΣΕΙΣ ============= -->
         <section id="transactions-section" class="hidden-section">
           <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
             <div>
               <h1 class="text-3xl font-bold">Κινήσεις</h1>
               <p id="transactions-subtitle" class="text-gray-500 mt-1">Φόρτωση...</p>
             </div>
-            <button onclick="showSection('new-transaction')" 
-              class="bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition flex items-center gap-2 min-h-[44px]">
+            <button onclick="showSection('new-transaction')" class="bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition flex items-center gap-2 min-h-[44px]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Νέα Κίνηση
             </button>
           </div>
-          
-          <!-- Stats cards -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
             <div class="bg-white rounded-xl border border-gray-200 p-4">
               <div class="text-xs uppercase tracking-wider text-gray-400 mb-1">Έσοδα</div>
@@ -227,8 +139,6 @@
               <div id="stat-net" class="text-2xl font-bold">—</div>
             </div>
           </div>
-          
-          <!-- Filters -->
           <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-3">
             <select id="filter-type" class="px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[44px]">
               <option value="">Όλοι οι τύποι</option>
@@ -243,106 +153,73 @@
               🏠 Σπίτι
             </label>
           </div>
-          
-          <!-- Transactions list -->
           <div id="transactions-container" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div class="text-center py-12 text-gray-400">Φόρτωση...</div>
           </div>
         </section>
 
-        <!-- ============= ΣΕΛΙΔΑ: ΝΕΑ ΚΙΝΗΣΗ ============= -->
         <section id="new-transaction-section" class="hidden-section">
           <div class="mb-6">
             <h1 class="text-3xl font-bold">Νέα Κίνηση</h1>
             <p class="text-gray-500 mt-1">Χειροκίνητη καταχώρηση συναλλαγής</p>
           </div>
-          
           <form id="transaction-form" class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl space-y-5">
-            
-            <!-- Τύπος (Έσοδο/Έξοδο) -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Τύπος κίνησης</label>
               <div class="flex gap-2">
-                <button type="button" data-type="expense" 
-                  class="type-btn flex-1 py-3 px-4 rounded-lg border-2 border-red-500 bg-red-500 text-white font-medium min-h-[48px]">
-                  Έξοδο
-                </button>
-                <button type="button" data-type="income" 
-                  class="type-btn flex-1 py-3 px-4 rounded-lg border-2 border-gray-300 bg-white text-gray-700 font-medium min-h-[48px]">
-                  Έσοδο
-                </button>
+                <button type="button" data-type="expense" class="type-btn flex-1 py-3 px-4 rounded-lg border-2 border-red-500 bg-red-500 text-white font-medium min-h-[48px]">Έξοδο</button>
+                <button type="button" data-type="income" class="type-btn flex-1 py-3 px-4 rounded-lg border-2 border-gray-300 bg-white text-gray-700 font-medium min-h-[48px]">Έσοδο</button>
               </div>
             </div>
-            
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Ημερομηνία</label>
-                <input type="date" id="tx-date" required 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
+                <input type="date" id="tx-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Ποσό (€)</label>
-                <input type="number" id="tx-amount" step="0.01" min="0" required 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
+                <input type="number" id="tx-amount" step="0.01" min="0" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
               </div>
             </div>
-            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Λογαριασμός</label>
               <select id="tx-account" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
                 <option value="">Επίλεξε...</option>
               </select>
             </div>
-            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Κατηγορία</label>
               <select id="tx-category" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
                 <option value="">Επίλεξε...</option>
               </select>
             </div>
-            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Υποκατηγορία</label>
               <select id="tx-subcategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]">
                 <option value="">— (προαιρετικό)</option>
               </select>
             </div>
-            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Περιγραφή <span class="text-gray-400 text-xs">(προαιρετικό)</span></label>
-              <input type="text" id="tx-description" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]"
-                placeholder="π.χ. Σκλαβενίτης">
+              <input type="text" id="tx-description" class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px]" placeholder="π.χ. Σκλαβενίτης">
             </div>
-            
             <label class="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" id="tx-spiti" class="w-5 h-5">
               <span class="text-sm">🏠 Καταχώρηση ως "Σπίτι"</span>
             </label>
-            
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Σημειώσεις <span class="text-gray-400 text-xs">(προαιρετικό)</span></label>
-              <textarea id="tx-notes" rows="2" 
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
+              <textarea id="tx-notes" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg"></textarea>
             </div>
-            
             <div class="flex flex-col sm:flex-row gap-3 pt-2">
-              <button type="submit" id="tx-submit"
-                class="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 min-h-[48px]">
-                Καταχώρηση
-              </button>
-              <button type="button" onclick="showSection('transactions')"
-                class="flex-1 bg-white border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-50 min-h-[48px]">
-                Ακύρωση
-              </button>
+              <button type="submit" id="tx-submit" class="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 min-h-[48px]">Καταχώρηση</button>
+              <button type="button" onclick="showSection('transactions')" class="flex-1 bg-white border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-50 min-h-[48px]">Ακύρωση</button>
             </div>
           </form>
         </section>
-        
       </main>
     </div>
 
-    <!-- Mobile Drawer (slides από αριστερά σε κινητό) -->
     <div id="mobile-overlay" class="hidden-section fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
     <div id="mobile-drawer" class="hidden-section fixed left-0 top-0 bottom-0 w-72 bg-white z-40 lg:hidden flex flex-col">
       <div class="p-4 border-b border-gray-200 flex items-center justify-between">
@@ -361,65 +238,45 @@
       </nav>
       <div class="p-4 border-t border-gray-200">
         <div id="user-email-mobile" class="text-xs text-gray-500 mb-2 truncate"></div>
-        <button onclick="signOut()" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium min-h-[40px]">
-          Αποσύνδεση
-        </button>
+        <button onclick="signOut()" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium min-h-[40px]">Αποσύνδεση</button>
       </div>
     </div>
   </div>
 
-  <!-- Container για τα toast μηνύματα -->
   <div id="toast-container"></div>
 
-  <!-- ============================================== -->
-  <!-- JAVASCRIPT - ΟΛΗ Η ΛΟΓΙΚΗ ΤΟΥ APP             -->
-  <!-- ============================================== -->
   <script>
     // ============================================
     // ΡΥΘΜΙΣΕΙΣ SUPABASE
     // ============================================
-    // Αυτά τα δύο είναι "δημόσια" - η publishable key είναι σχεδιασμένη
-    // να εμφανίζεται σε browser. Η ασφάλεια έρχεται από το RLS της βάσης.
     const SUPABASE_URL = 'https://qxgthcxjrlryloyrvknq.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_f-S_-l--qxnqprwhkiSuTA_szLarzIZ';
     
-    // Δημιουργία του Supabase client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // ΣΗΜΑΝΤΙΚΟ: χρησιμοποιούμε "sb" αντί για "supabase" στη μεταβλητή
+    // γιατί το CDN έχει ήδη ορίσει global "supabase" - θα γινόταν σύγκρουση
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
-    // ============================================
-    // GLOBAL STATE - τα δεδομένα του app
-    // ============================================
+    // GLOBAL STATE
     let currentUser = null;
     let allAccounts = [];
     let allCategories = [];
     let allSubcategories = [];
     let allTransactions = [];
-    let selectedTxType = 'expense'; // για τη φόρμα
+    let selectedTxType = 'expense';
     
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
-    
-    // Format ποσό σε € (1234.5 → "1.234,50 €")
+    // HELPERS
     function formatMoney(amount, currency = 'EUR') {
-      return new Intl.NumberFormat('el-GR', {
-        style: 'currency',
-        currency: currency
-      }).format(amount || 0);
+      return new Intl.NumberFormat('el-GR', { style: 'currency', currency }).format(amount || 0);
     }
     
-    // Format ημερομηνία (2026-05-31 → "31 Μαΐου 2026")
     function formatDate(dateStr) {
       const today = new Date().toISOString().split('T')[0];
       const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
       if (dateStr === today) return 'Σήμερα';
       if (dateStr === yesterday) return 'Χθες';
-      return new Date(dateStr).toLocaleDateString('el-GR', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      });
+      return new Date(dateStr).toLocaleDateString('el-GR', { day: 'numeric', month: 'long', year: 'numeric' });
     }
     
-    // Εμφάνιση toast notification
     function showToast(message, type = 'success') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -432,15 +289,12 @@
       }, 3000);
     }
     
-    // ============================================
-    // ROUTING - εμφάνιση/απόκρυψη sections
-    // ============================================
+    // ROUTING
     function showSection(name) {
       document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden-section'));
       const target = document.getElementById(`${name}-section`);
       if (target) target.classList.remove('hidden-section');
       
-      // Highlight active nav link
       document.querySelectorAll('.nav-link, .nav-link-mobile').forEach(b => {
         if (b.dataset.section === name) {
           b.classList.add('bg-gray-100', 'font-medium');
@@ -449,30 +303,22 @@
         }
       });
       
-      // Κλείσιμο mobile drawer αν είναι ανοιχτό
       closeMobileDrawer();
       
-      // Φόρτωση δεδομένων για τη σελίδα
       if (name === 'accounts') renderAccounts();
       if (name === 'transactions') renderTransactions();
       if (name === 'new-transaction') resetTransactionForm();
     }
     
-    // ============================================
-    // AUTH - Σύνδεση, Εγγραφή, Αποσύνδεση
-    // ============================================
+    // AUTH
     let isSignupMode = false;
     
     document.getElementById('auth-toggle-btn').addEventListener('click', () => {
       isSignupMode = !isSignupMode;
       document.getElementById('auth-title').textContent = isSignupMode ? 'Εγγραφή' : 'Σύνδεση';
-      document.getElementById('auth-subtitle').textContent = isSignupMode 
-        ? 'Δημιούργησε νέο λογαριασμό'
-        : 'Βάλε τα στοιχεία σου για να συνεχίσεις';
+      document.getElementById('auth-subtitle').textContent = isSignupMode ? 'Δημιούργησε νέο λογαριασμό' : 'Βάλε τα στοιχεία σου για να συνεχίσεις';
       document.getElementById('auth-submit').textContent = isSignupMode ? 'Εγγραφή' : 'Σύνδεση';
-      document.getElementById('auth-toggle-text').textContent = isSignupMode 
-        ? 'Έχεις ήδη λογαριασμό;' 
-        : 'Δεν έχεις λογαριασμό;';
+      document.getElementById('auth-toggle-text').textContent = isSignupMode ? 'Έχεις ήδη λογαριασμό;' : 'Δεν έχεις λογαριασμό;';
       document.getElementById('auth-toggle-btn').textContent = isSignupMode ? 'Σύνδεση' : 'Εγγραφή';
       document.getElementById('auth-error').classList.add('hidden');
     });
@@ -485,8 +331,8 @@
       errorEl.classList.add('hidden');
       
       const fn = isSignupMode 
-        ? supabase.auth.signUp({ email, password })
-        : supabase.auth.signInWithPassword({ email, password });
+        ? sb.auth.signUp({ email, password })
+        : sb.auth.signInWithPassword({ email, password });
       
       const { data, error } = await fn;
       
@@ -496,17 +342,14 @@
         return;
       }
       
-      if (isSignupMode) {
-        showToast('Λογαριασμός δημιουργήθηκε! Συνδέεσαι...', 'success');
-      }
+      if (isSignupMode) showToast('Λογαριασμός δημιουργήθηκε! Συνδέεσαι...', 'success');
       
-      // Σύνδεση επιτυχημένη - φόρτωση app
       currentUser = data.user;
       await initApp();
     });
     
     async function signOut() {
-      await supabase.auth.signOut();
+      await sb.auth.signOut();
       currentUser = null;
       document.getElementById('app').classList.add('hidden-section');
       document.getElementById('login-screen').classList.remove('hidden-section');
@@ -514,16 +357,13 @@
     
     document.getElementById('logout-btn').addEventListener('click', signOut);
     
-    // ============================================
-    // ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ
-    // ============================================
+    // LOAD DATA
     async function loadAllData() {
-      // Παράλληλες κλήσεις για ταχύτητα
       const [accountsRes, categoriesRes, subcategoriesRes, transactionsRes] = await Promise.all([
-        supabase.from('accounts').select('*').eq('is_active', true).order('sort_order'),
-        supabase.from('categories').select('*').eq('is_archived', false).order('sort_order'),
-        supabase.from('subcategories').select('*').eq('is_archived', false).order('sort_order'),
-        supabase.from('transactions').select('*, accounts(name, currency), categories(name), subcategories(name)').order('date', { ascending: false })
+        sb.from('accounts').select('*').eq('is_active', true).order('sort_order'),
+        sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
+        sb.from('subcategories').select('*').eq('is_archived', false).order('sort_order'),
+        sb.from('transactions').select('*, accounts(name, currency), categories(name), subcategories(name)').order('date', { ascending: false })
       ]);
       
       allAccounts = accountsRes.data || [];
@@ -532,9 +372,7 @@
       allTransactions = transactionsRes.data || [];
     }
     
-    // ============================================
-    // ΣΕΛΙΔΑ: ΛΟΓΑΡΙΑΣΜΟΙ
-    // ============================================
+    // ACCOUNTS PAGE
     function renderAccounts() {
       const container = document.getElementById('accounts-container');
       const subtitle = document.getElementById('accounts-subtitle');
@@ -545,7 +383,6 @@
         return;
       }
       
-      // Υπολογισμός balance ανά λογαριασμό από τις κινήσεις
       const balances = {};
       allAccounts.forEach(a => balances[a.id] = 0);
       allTransactions.forEach(t => {
@@ -554,17 +391,11 @@
         else balances[t.account_id] -= parseFloat(t.amount);
       });
       
-      // Συνολικό υπόλοιπο (μόνο EUR για απλότητα)
-      const totalEUR = allAccounts
-        .filter(a => a.currency === 'EUR')
-        .reduce((sum, a) => sum + balances[a.id], 0);
-      
+      const totalEUR = allAccounts.filter(a => a.currency === 'EUR').reduce((sum, a) => sum + balances[a.id], 0);
       totalEl.textContent = formatMoney(totalEUR);
       totalEl.className = `text-2xl font-bold ${totalEUR < 0 ? 'text-red-600' : ''}`;
-      
       subtitle.textContent = `${allAccounts.length} ενεργοί λογαριασμοί`;
       
-      // Group by provider
       const groups = {};
       allAccounts.forEach(a => {
         const key = a.provider || (a.type === 'cash' ? 'Μετρητά' : 'Άλλο');
@@ -574,44 +405,24 @@
       
       let html = '';
       Object.entries(groups).forEach(([provider, accounts]) => {
-        html += `<div>
-          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">${provider}</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-        
+        html += `<div><h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">${provider}</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
         accounts.forEach(a => {
           const bal = balances[a.id] || 0;
           const balColor = bal < 0 ? 'text-red-600' : 'text-gray-900';
           const typeLabel = a.type === 'bank' ? 'Τράπεζα' : a.type === 'cash' ? 'Μετρητά' : 'Επένδυση';
           const typeColor = a.type === 'bank' ? 'bg-blue-100 text-blue-700' : a.type === 'cash' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700';
-          
-          html += `
-            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div class="h-1 bg-indigo-500"></div>
-              <div class="p-4">
-                <div class="flex items-start justify-between mb-3">
-                  <h4 class="font-semibold">${a.name}</h4>
-                  <span class="text-xs px-2 py-1 rounded-full ${typeColor}">${typeLabel}</span>
-                </div>
-                <div class="text-2xl font-bold ${balColor}">${formatMoney(bal, a.currency)}</div>
-                <div class="text-xs text-gray-400 mt-1">${a.currency}</div>
-              </div>
-            </div>`;
+          html += `<div class="bg-white rounded-xl border border-gray-200 overflow-hidden"><div class="h-1 bg-indigo-500"></div><div class="p-4"><div class="flex items-start justify-between mb-3"><h4 class="font-semibold">${a.name}</h4><span class="text-xs px-2 py-1 rounded-full ${typeColor}">${typeLabel}</span></div><div class="text-2xl font-bold ${balColor}">${formatMoney(bal, a.currency)}</div><div class="text-xs text-gray-400 mt-1">${a.currency}</div></div></div>`;
         });
-        
         html += '</div></div>';
       });
-      
       container.innerHTML = html;
     }
     
-    // ============================================
-    // ΣΕΛΙΔΑ: ΚΙΝΗΣΕΙΣ
-    // ============================================
+    // TRANSACTIONS PAGE
     function renderTransactions() {
       const container = document.getElementById('transactions-container');
       const subtitle = document.getElementById('transactions-subtitle');
       
-      // Filters
       const filterType = document.getElementById('filter-type').value;
       const filterAccount = document.getElementById('filter-account').value;
       const filterSpiti = document.getElementById('filter-spiti').checked;
@@ -621,7 +432,6 @@
       if (filterAccount) filtered = filtered.filter(t => t.account_id === filterAccount);
       if (filterSpiti) filtered = filtered.filter(t => t.is_spiti);
       
-      // Update filter dropdown με λογαριασμούς
       const accountFilter = document.getElementById('filter-account');
       if (accountFilter.options.length === 1) {
         allAccounts.forEach(a => {
@@ -632,7 +442,6 @@
         });
       }
       
-      // Stats
       const income = filtered.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
       const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
       const net = income - expense;
@@ -650,7 +459,6 @@
         return;
       }
       
-      // Group by date
       const grouped = {};
       filtered.forEach(t => {
         if (!grouped[t.date]) grouped[t.date] = [];
@@ -660,67 +468,33 @@
       let html = '';
       Object.entries(grouped).forEach(([date, txs]) => {
         const dayTotal = txs.reduce((s, t) => s + (t.type === 'income' ? +t.amount : -t.amount), 0);
-        html += `<div class="border-b border-gray-200 last:border-0">
-          <div class="px-4 py-2 bg-gray-50 flex items-center justify-between text-sm">
-            <span class="font-medium">${formatDate(date)}</span>
-            <span class="${dayTotal < 0 ? 'text-red-600' : 'text-green-600'} font-medium">${formatMoney(dayTotal)}</span>
-          </div>`;
-        
+        html += `<div class="border-b border-gray-200 last:border-0"><div class="px-4 py-2 bg-gray-50 flex items-center justify-between text-sm"><span class="font-medium">${formatDate(date)}</span><span class="${dayTotal < 0 ? 'text-red-600' : 'text-green-600'} font-medium">${formatMoney(dayTotal)}</span></div>`;
         txs.forEach(t => {
           const sign = t.type === 'income' ? '+' : '−';
           const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
-          
-          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100">
-            <div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
-            <div class="flex-1 min-w-0">
-              <div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div>
-              <div class="text-xs text-gray-500 truncate">
-                ${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}
-              </div>
-            </div>
-            <div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">
-              ${t.accounts?.name || ''}
-            </div>
-            ${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}
-            <div class="${color} font-semibold whitespace-nowrap">${sign}${formatMoney(t.amount)}</div>
-            <button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-          </div>`;
+          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100"><div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div><div class="flex-1 min-w-0"><div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div><div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div></div><div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}<div class="${color} font-semibold whitespace-nowrap">${sign}${formatMoney(t.amount)}</div><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
         });
-        
         html += '</div>';
       });
-      
       container.innerHTML = html;
     }
     
-    // Reload transactions όταν αλλάζουν τα filters
     ['filter-type', 'filter-account', 'filter-spiti'].forEach(id => {
       document.getElementById(id).addEventListener('change', renderTransactions);
     });
     
-    // ============================================
-    // ΔΙΑΓΡΑΦΗ ΚΙΝΗΣΗΣ
-    // ============================================
+    // DELETE TRANSACTION
     async function deleteTransaction(id) {
       if (!confirm('Σίγουρα θες να διαγράψεις αυτή την κίνηση;')) return;
-      
-      const { error } = await supabase.from('transactions').delete().eq('id', id);
-      if (error) {
-        showToast('Σφάλμα: ' + error.message, 'error');
-        return;
-      }
-      
+      const { error } = await sb.from('transactions').delete().eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
       allTransactions = allTransactions.filter(t => t.id !== id);
       renderTransactions();
-      renderAccounts(); // για να ενημερωθούν τα balances
+      renderAccounts();
       showToast('Η κίνηση διαγράφηκε', 'success');
     }
     
-    // ============================================
-    // ΦΟΡΜΑ: ΝΕΑ ΚΙΝΗΣΗ
-    // ============================================
+    // NEW TRANSACTION FORM
     function resetTransactionForm() {
       document.getElementById('transaction-form').reset();
       document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
@@ -728,7 +502,6 @@
       updateTypeButtons();
       updateCategoryDropdown();
       
-      // Γέμισμα accounts dropdown
       const accountSelect = document.getElementById('tx-account');
       accountSelect.innerHTML = '<option value="">Επίλεξε...</option>';
       allAccounts.forEach(a => {
@@ -805,7 +578,7 @@
         source: 'manual'
       };
       
-      const { data: inserted, error } = await supabase
+      const { data: inserted, error } = await sb
         .from('transactions')
         .insert(data)
         .select('*, accounts(name, currency), categories(name), subcategories(name)')
@@ -814,19 +587,14 @@
       submitBtn.disabled = false;
       submitBtn.textContent = 'Καταχώρηση';
       
-      if (error) {
-        showToast('Σφάλμα: ' + error.message, 'error');
-        return;
-      }
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
       
       allTransactions.unshift(inserted);
       showToast('Καταχωρήθηκε επιτυχώς', 'success');
       showSection('transactions');
     });
     
-    // ============================================
     // MOBILE DRAWER
-    // ============================================
     function openMobileDrawer() {
       document.getElementById('mobile-overlay').classList.remove('hidden-section');
       document.getElementById('mobile-drawer').classList.remove('hidden-section');
@@ -840,37 +608,24 @@
     document.getElementById('mobile-close-btn').addEventListener('click', closeMobileDrawer);
     document.getElementById('mobile-overlay').addEventListener('click', closeMobileDrawer);
     
-    // ============================================
     // NAV LINKS
-    // ============================================
     document.querySelectorAll('.nav-link, .nav-link-mobile').forEach(btn => {
       btn.addEventListener('click', () => showSection(btn.dataset.section));
     });
     
-    // ============================================
-    // ΑΡΧΙΚΟΠΟΙΗΣΗ APP
-    // ============================================
+    // INIT
     async function initApp() {
-      // Σχπε login screen, εμφάνισε app
       document.getElementById('login-screen').classList.add('hidden-section');
       document.getElementById('app').classList.remove('hidden-section');
-      
-      // Email στο sidebar
       document.getElementById('user-email').textContent = currentUser.email;
       document.getElementById('user-email-mobile').textContent = currentUser.email;
-      
-      // Φόρτωσε τα δεδομένα
       await loadAllData();
-      
-      // Δείξε την αρχική σελίδα (Λογαριασμοί)
       showSection('accounts');
     }
     
-    // ============================================
-    // ΕΚΚΙΝΗΣΗ - Έλεγχος αν υπάρχει ήδη session
-    // ============================================
+    // STARTUP - check existing session
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (session) {
         currentUser = session.user;
         await initApp();
