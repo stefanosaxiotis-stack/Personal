@@ -7,6 +7,7 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -74,6 +75,10 @@
         <nav class="flex-1 p-4 overflow-y-auto">
           <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Κύρια</div>
           <ul class="space-y-1 mb-6">
+            <li><button data-section="dashboard" class="nav-link w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center gap-3 min-h-[44px]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              Dashboard
+            </button></li>
             <li><button data-section="accounts" class="nav-link w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center gap-3 min-h-[44px]">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               Λογαριασμοί
@@ -95,6 +100,150 @@
       </aside>
 
       <main class="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full">
+
+        <!-- DASHBOARD SECTION -->
+        <section id="dashboard-section" class="hidden-section">
+          <div class="mb-6">
+            <h1 class="text-3xl font-bold">Dashboard</h1>
+            <p class="text-gray-500 mt-1" id="dashboard-subtitle">Φόρτωση...</p>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" id="dashboard-kpis">
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="text-xs uppercase tracking-wider text-gray-400 mb-1">Σύνολο εσόδων</div>
+              <div id="kpi-income" class="text-2xl font-bold">—</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="text-xs uppercase tracking-wider text-gray-400 mb-1">Σύνολο εξόδων</div>
+              <div id="kpi-expense" class="text-2xl font-bold">—</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="text-xs uppercase tracking-wider text-gray-400 mb-1">Καθαρό αποτέλεσμα</div>
+              <div id="kpi-net" class="text-2xl font-bold">—</div>
+            </div>
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="text-xs uppercase tracking-wider text-gray-400 mb-1">Μέσο μηνιαίο σπίτι</div>
+              <div id="kpi-spiti" class="text-2xl font-bold">—</div>
+            </div>
+          </div>
+
+          <!-- Section 1: Μισθοδοσίας -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold">1 · Eurobank Μισθοδοσίας</h2>
+              <button onclick="toggleDashboard('s1')" id="s1-btn" class="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <svg id="s1-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span id="s1-lbl">Πίνακας</span>
+              </button>
+            </div>
+            <div id="s1-legend" class="flex gap-4 mb-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span>Έσοδα</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>Έξοδα</span>
+              <span class="flex items-center gap-1"><span class="w-8 h-0.5 bg-gray-400 inline-block"></span>Left inside</span>
+            </div>
+            <div id="s1-chart-wrap" style="position:relative;height:260px;">
+              <canvas id="chart-mis" role="img" aria-label="Μισθοδοσίας έσοδα εξόδα ανά μήνα">Μηνιαία έσοδα και έξοδα Μισθοδοσίας.</canvas>
+            </div>
+            <div id="s1-table-wrap" class="hidden overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                  <th class="text-left py-2 px-3">Μήνας</th>
+                  <th class="text-right py-2 px-3">Χρέωση (έσοδα)</th>
+                  <th class="text-right py-2 px-3">Πληρωμή (έξοδα)</th>
+                  <th class="text-right py-2 px-3">Left inside</th>
+                </tr></thead>
+                <tbody id="s1-tbody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 2: Overall -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold">2 · Όλοι οι λογαριασμοί (χωρίς Revolut)</h2>
+              <button onclick="toggleDashboard('s2')" id="s2-btn" class="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <svg id="s2-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span id="s2-lbl">Πίνακας</span>
+              </button>
+            </div>
+            <div id="s2-legend" class="flex gap-4 mb-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-emerald-500 inline-block"></span>Έσοδα</span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-red-500 inline-block"></span>Έξοδα</span>
+              <span class="flex items-center gap-1"><span class="w-8 h-0.5 bg-gray-400 inline-block"></span>Left inside</span>
+            </div>
+            <div id="s2-chart-wrap" style="position:relative;height:260px;">
+              <canvas id="chart-ov" role="img" aria-label="Συνολικά έσοδα εξόδα ανά μήνα">Συνολικά έσοδα και έξοδα όλων λογαριασμών.</canvas>
+            </div>
+            <div id="s2-table-wrap" class="hidden overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                  <th class="text-left py-2 px-3">Μήνας</th>
+                  <th class="text-right py-2 px-3">Χρέωση (έσοδα)</th>
+                  <th class="text-right py-2 px-3">Πληρωμή (έξοδα)</th>
+                  <th class="text-right py-2 px-3">Left inside</th>
+                </tr></thead>
+                <tbody id="s2-tbody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 3: Σπίτι -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold">3 · Έξοδα σπιτιού ανά μήνα</h2>
+              <button onclick="toggleDashboard('s3')" id="s3-btn" class="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <svg id="s3-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span id="s3-lbl">Πίνακας</span>
+              </button>
+            </div>
+            <div id="s3-legend" class="flex gap-4 mb-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-blue-500 inline-block"></span>Έξοδα σπιτιού</span>
+              <span class="flex items-center gap-1"><span class="w-8 h-0.5 bg-red-400 inline-block"></span>Μέσος όρος</span>
+            </div>
+            <div id="s3-chart-wrap" style="position:relative;height:240px;">
+              <canvas id="chart-spiti" role="img" aria-label="Έξοδα σπιτιού ανά μήνα">Μηνιαία έξοδα σπιτιού.</canvas>
+            </div>
+            <div id="s3-table-wrap" class="hidden overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                  <th class="text-left py-2 px-3">Μήνας</th>
+                  <th class="text-right py-2 px-3">Έξοδα σπιτιού</th>
+                  <th class="text-right py-2 px-3">vs μέσος όρος</th>
+                </tr></thead>
+                <tbody id="s3-tbody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 4: Κατανομή -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-base font-semibold">4 · Κατανομή εξόδων ανά κατηγορία</h2>
+              <button onclick="toggleDashboard('s4')" id="s4-btn" class="flex items-center gap-1.5 text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600">
+                <svg id="s4-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span id="s4-lbl">Πίνακας</span>
+              </button>
+            </div>
+            <div id="s4-legend" class="flex flex-wrap gap-3 mb-3 text-xs text-gray-500"></div>
+            <div id="s4-chart-wrap" style="position:relative;height:280px;">
+              <canvas id="chart-cat" role="img" aria-label="Κατανομή εξόδων ανά κατηγορία">Κατανομή εξόδων ανά κατηγορία.</canvas>
+            </div>
+            <div id="s4-table-wrap" class="hidden overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                  <th class="text-left py-2 px-3">Κατηγορία</th>
+                  <th class="text-right py-2 px-3">Σύνολο</th>
+                  <th class="text-right py-2 px-3">% εξόδων</th>
+                </tr></thead>
+                <tbody id="s4-tbody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+        <!-- END DASHBOARD -->
+
         <section id="accounts-section">
           <div class="flex items-start justify-between mb-6 flex-wrap gap-4">
             <div>
@@ -231,6 +380,7 @@
       <nav class="flex-1 p-4 overflow-y-auto">
         <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Κύρια</div>
         <ul class="space-y-1">
+          <li><button data-section="dashboard" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Dashboard</button></li>
           <li><button data-section="accounts" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Λογαριασμοί</button></li>
           <li><button data-section="transactions" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Κινήσεις</button></li>
           <li><button data-section="new-transaction" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Νέα κίνηση</button></li>
@@ -308,6 +458,7 @@
       if (name === 'accounts') renderAccounts();
       if (name === 'transactions') renderTransactions();
       if (name === 'new-transaction') resetTransactionForm();
+      if (name === 'dashboard') renderDashboard();
     }
     
     // AUTH
@@ -620,7 +771,7 @@
       document.getElementById('user-email').textContent = currentUser.email;
       document.getElementById('user-email-mobile').textContent = currentUser.email;
       await loadAllData();
-      showSection('accounts');
+      showSection('dashboard');
     }
     
     // STARTUP - check existing session
@@ -631,6 +782,275 @@
         await initApp();
       }
     })();
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    const dashboardState = { s1: false, s2: false, s3: false, s4: false };
+    let dashboardCharts = {};
+    let dashboardRendered = false;
+
+    function toggleDashboard(id) {
+      dashboardState[id] = !dashboardState[id];
+      const showTable = dashboardState[id];
+      document.getElementById(id + '-chart-wrap').classList.toggle('hidden', showTable);
+      document.getElementById(id + '-table-wrap').classList.toggle('hidden', !showTable);
+      const lbl = document.getElementById(id + '-lbl');
+      const leg = document.getElementById(id + '-legend');
+      if (showTable) {
+        lbl.textContent = 'Γράφημα';
+        if (leg) leg.classList.add('hidden');
+      } else {
+        lbl.textContent = 'Πίνακας';
+        if (leg) leg.classList.remove('hidden');
+        // resize chart after showing
+        if (dashboardCharts[id]) dashboardCharts[id].resize();
+      }
+    }
+
+    async function renderDashboard() {
+      if (dashboardRendered) return;
+      dashboardRendered = true;
+
+      document.getElementById('dashboard-subtitle').textContent = 'Φόρτωση δεδομένων...';
+
+      // Fetch data from Supabase
+      const { data: txData } = await sb
+        .from('transactions')
+        .select('date, amount, type, is_spiti, account_id, subcategory_id, subcategories(category_id, categories(name))')
+        .order('date', { ascending: true });
+
+      const { data: accs } = await sb.from('accounts').select('id, name, type');
+
+      if (!txData || !accs) return;
+
+      // Account maps
+      const accMap = {};
+      accs.forEach(a => accMap[a.id] = a);
+
+      // IDs for Μισθοδοσίας
+      const misId = accs.find(a => a.name === 'Eurobank Μισθοδοσίας')?.id;
+
+      // Helper: get YYYY-MM label
+      const monthLabel = d => {
+        const dt = new Date(d);
+        const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
+        return months[dt.getMonth()] + ' ' + String(dt.getFullYear()).slice(2);
+      };
+      const monthKey = d => d.slice(0, 7); // YYYY-MM
+
+      // Collect monthly data
+      const misMonths = {}, ovMonths = {}, spitiMonths = {}, catTotals = {};
+
+      txData.forEach(t => {
+        const acc = accMap[t.account_id];
+        if (!acc) return;
+        const key = monthKey(t.date);
+        const amt = parseFloat(t.amount);
+
+        // Μισθοδοσίας
+        if (t.account_id === misId) {
+          if (!misMonths[key]) misMonths[key] = { esoda: 0, exoda: 0 };
+          if (t.type === 'income') misMonths[key].esoda += amt;
+          else misMonths[key].exoda += amt;
+        }
+
+        // Overall (no investment accounts)
+        if (acc.type !== 'investment') {
+          if (!ovMonths[key]) ovMonths[key] = { esoda: 0, exoda: 0 };
+          if (t.type === 'income') ovMonths[key].esoda += amt;
+          else ovMonths[key].exoda += amt;
+        }
+
+        // Σπίτι
+        if (t.is_spiti && t.type === 'expense') {
+          if (!spitiMonths[key]) spitiMonths[key] = 0;
+          spitiMonths[key] += amt;
+        }
+
+        // Categories
+        if (t.type === 'expense' && acc.type !== 'investment') {
+          const catName = t.subcategories?.categories?.name || 'Λοιπά';
+          if (!catTotals[catName]) catTotals[catName] = 0;
+          catTotals[catName] += amt;
+        }
+      });
+
+      // Sort months
+      const allKeys = [...new Set([
+        ...Object.keys(misMonths),
+        ...Object.keys(ovMonths),
+        ...Object.keys(spitiMonths)
+      ])].sort();
+
+      const labels = allKeys.map(k => {
+        const [y, m] = k.split('-');
+        const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
+        return months[parseInt(m) - 1] + ' ' + y.slice(2);
+      });
+
+      const misEsoda = allKeys.map(k => Math.round((misMonths[k]?.esoda || 0) * 100) / 100);
+      const misExoda = allKeys.map(k => Math.round((misMonths[k]?.exoda || 0) * 100) / 100);
+      const misLeft  = misEsoda.map((e, i) => Math.round((e - misExoda[i]) * 100) / 100);
+
+      const ovEsoda  = allKeys.map(k => Math.round((ovMonths[k]?.esoda || 0) * 100) / 100);
+      const ovExoda  = allKeys.map(k => Math.round((ovMonths[k]?.exoda || 0) * 100) / 100);
+      const ovLeft   = ovEsoda.map((e, i) => Math.round((e - ovExoda[i]) * 100) / 100);
+
+      const spitiArr = allKeys.map(k => Math.round((spitiMonths[k] || 0) * 100) / 100);
+      const avgSpiti = spitiArr.length ? Math.round(spitiArr.reduce((a, b) => a + b, 0) / spitiArr.filter(v => v > 0).length) : 0;
+
+      // KPIs
+      const totIncome  = ovEsoda.reduce((a, b) => a + b, 0);
+      const totExpense = ovExoda.reduce((a, b) => a + b, 0);
+      document.getElementById('kpi-income').textContent  = formatMoney(totIncome);
+      document.getElementById('kpi-income').className    = 'text-2xl font-bold text-green-600';
+      document.getElementById('kpi-expense').textContent = formatMoney(totExpense);
+      document.getElementById('kpi-expense').className   = 'text-2xl font-bold text-red-600';
+      const net = totIncome - totExpense;
+      const netEl = document.getElementById('kpi-net');
+      netEl.textContent = formatMoney(net);
+      netEl.className   = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
+      document.getElementById('kpi-spiti').textContent = formatMoney(avgSpiti);
+      document.getElementById('dashboard-subtitle').textContent = `${labels[0]} – ${labels[labels.length - 1]}`;
+
+      // Chart options helper
+      const gridColor = 'rgba(0,0,0,0.06)';
+      const tickColor = '#9ca3af';
+      const baseOpts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+          label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y)
+        }}},
+        scales: {
+          x: { ticks: { color: tickColor, font: { size: 11 }, autoSkip: false, maxRotation: 45 }, grid: { color: gridColor } },
+          y: { ticks: { color: tickColor, font: { size: 11 }, callback: v => formatMoney(v) }, grid: { color: gridColor } }
+        }
+      };
+
+      // Chart 1 - Μισθοδοσίας
+      dashboardCharts.s1 = new Chart(document.getElementById('chart-mis'), {
+        type: 'bar',
+        data: { labels, datasets: [
+          { label: 'Έσοδα', data: misEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
+          { label: 'Έξοδα', data: misExoda, backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 3 },
+          { label: 'Left inside', data: misLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4, 3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
+        ]},
+        options: { ...baseOpts }
+      });
+
+      // Chart 2 - Overall
+      dashboardCharts.s2 = new Chart(document.getElementById('chart-ov'), {
+        type: 'bar',
+        data: { labels, datasets: [
+          { label: 'Έσοδα', data: ovEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
+          { label: 'Έξοδα', data: ovExoda, backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 3 },
+          { label: 'Left inside', data: ovLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4, 3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
+        ]},
+        options: { ...baseOpts }
+      });
+
+      // Chart 3 - Σπίτι
+      dashboardCharts.s3 = new Chart(document.getElementById('chart-spiti'), {
+        type: 'bar',
+        data: { labels, datasets: [
+          { label: 'Σπίτι', data: spitiArr, backgroundColor: 'rgba(59,130,246,0.75)', borderRadius: 3 },
+          { label: 'Μέσος όρος', data: Array(labels.length).fill(avgSpiti), type: 'line', borderColor: '#f87171', borderWidth: 2, borderDash: [5, 4], pointRadius: 0, tension: 0 }
+        ]},
+        options: { ...baseOpts, plugins: { ...baseOpts.plugins, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y) } } } }
+      });
+
+      // Chart 4 - Κατηγορίες
+      const catColors = ['#6d5fe6','#10b981','#f97316','#3b82f6','#ec4899','#f59e0b','#84cc16','#ef4444','#8b5cf6','#06b6d4'];
+      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      const catLabels2 = sortedCats.map(c => c[0]);
+      const catData2   = sortedCats.map(c => Math.round(c[1] * 100) / 100);
+      const catTotal   = catData2.reduce((a, b) => a + b, 0);
+
+      // Legend
+      const leg4 = document.getElementById('s4-legend');
+      leg4.innerHTML = '';
+      catLabels2.forEach((l, i) => {
+        const span = document.createElement('span');
+        span.className = 'flex items-center gap-1';
+        span.innerHTML = `<span class="w-3 h-3 rounded-sm inline-block" style="background:${catColors[i % catColors.length]}"></span>${l}`;
+        leg4.appendChild(span);
+      });
+
+      dashboardCharts.s4 = new Chart(document.getElementById('chart-cat'), {
+        type: 'doughnut',
+        data: { labels: catLabels2, datasets: [{ data: catData2, backgroundColor: catColors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '58%',
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatMoney(ctx.parsed) + ' (' + ((ctx.parsed / catTotal) * 100).toFixed(1) + '%)' } } }
+        }
+      });
+
+      // Build tables helper
+      const fmt = v => formatMoney(v);
+      const colorClass = v => v >= 0 ? 'text-green-600' : 'text-red-600';
+
+      // Table 1
+      const tb1 = document.getElementById('s1-tbody');
+      allKeys.forEach((k, i) => {
+        const left = misLeft[i];
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
+          <td class="text-right py-2 px-3 text-green-600">${fmt(misEsoda[i])}</td>
+          <td class="text-right py-2 px-3 text-red-600">${fmt(misExoda[i])}</td>
+          <td class="text-right py-2 px-3 font-medium ${colorClass(left)}">${left >= 0 ? '+' : ''}${fmt(left)}</td>`;
+        tb1.appendChild(tr);
+      });
+      const tot1 = misEsoda.reduce((a,b)=>a+b,0), toe1 = misExoda.reduce((a,b)=>a+b,0), totl1 = tot1 - toe1;
+      tb1.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${fmt(tot1)}</td><td class="text-right py-2 px-3 text-red-600">${fmt(toe1)}</td><td class="text-right py-2 px-3 ${colorClass(totl1)}">${totl1>=0?'+':''}${fmt(totl1)}</td></tr>`;
+
+      // Table 2
+      const tb2 = document.getElementById('s2-tbody');
+      allKeys.forEach((k, i) => {
+        const left = ovLeft[i];
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
+          <td class="text-right py-2 px-3 text-green-600">${fmt(ovEsoda[i])}</td>
+          <td class="text-right py-2 px-3 text-red-600">${fmt(ovExoda[i])}</td>
+          <td class="text-right py-2 px-3 font-medium ${colorClass(left)}">${left >= 0 ? '+' : ''}${fmt(left)}</td>`;
+        tb2.appendChild(tr);
+      });
+      const tot2 = ovEsoda.reduce((a,b)=>a+b,0), toe2 = ovExoda.reduce((a,b)=>a+b,0), totl2 = tot2 - toe2;
+      tb2.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${fmt(tot2)}</td><td class="text-right py-2 px-3 text-red-600">${fmt(toe2)}</td><td class="text-right py-2 px-3 ${colorClass(totl2)}">${totl2>=0?'+':''}${fmt(totl2)}</td></tr>`;
+
+      // Table 3
+      const tb3 = document.getElementById('s3-tbody');
+      allKeys.forEach((k, i) => {
+        const v = spitiArr[i];
+        const diff = Math.round((v - avgSpiti) * 100) / 100;
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
+          <td class="text-right py-2 px-3">${fmt(v)}</td>
+          <td class="text-right py-2 px-3 ${diff <= 0 ? 'text-green-600' : 'text-red-600'}">${diff >= 0 ? '+' : ''}${fmt(diff)}</td>`;
+        tb3.appendChild(tr);
+      });
+      const totS = spitiArr.reduce((a,b)=>a+b,0);
+      tb3.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${fmt(totS)}</td><td class="py-2 px-3"></td></tr>`;
+
+      // Table 4
+      const tb4 = document.getElementById('s4-tbody');
+      sortedCats.forEach(([cat, val], i) => {
+        const pct = ((val / catTotal) * 100).toFixed(1);
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `<td class="py-2 px-3 flex items-center gap-2"><span class="w-3 h-3 rounded-sm inline-block flex-shrink-0" style="background:${catColors[i % catColors.length]}"></span>${cat}</td>
+          <td class="text-right py-2 px-3">${fmt(val)}</td>
+          <td class="text-right py-2 px-3 text-gray-500">${pct}%</td>`;
+        tb4.appendChild(tr);
+      });
+      tb4.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${fmt(catTotal)}</td><td class="text-right py-2 px-3">100%</td></tr>`;
+    }
+
+    // ============================================
+    // END DASHBOARD
+    // ============================================
+
   </script>
 </body>
 </html>
