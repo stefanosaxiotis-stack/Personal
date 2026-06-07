@@ -1778,9 +1778,7 @@
     }
 
     function pinForgot() {
-      if (confirm('Θέλεις να συνδεθείς με email και κωδικό;
-
-Το PIN δεν θα διαγραφεί.')) {
+      if (confirm('Θέλεις να συνδεθείς με email και κωδικό;\nΤο PIN δεν θα διαγραφεί.')) {
         document.getElementById('pin-screen').classList.add('hidden-section');
         document.getElementById('login-screen').classList.remove('hidden-section');
       }
@@ -1863,8 +1861,7 @@
     }
 
     function clearPin() {
-      if (!confirm('Να απενεργοποιηθεί το PIN;
-Η εφαρμογή θα ανοίγει χωρίς PIN.')) return;
+      if (!confirm('Να απενεργοποιηθεί το PIN;\nΗ εφαρμογή θα ανοίγει χωρίς PIN.')) return;
       localStorage.removeItem('pf_pin_hash');
       showToast('PIN απενεργοποιήθηκε', 'success');
       updatePinSettingsUI();
