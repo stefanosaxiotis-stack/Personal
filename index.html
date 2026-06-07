@@ -62,7 +62,15 @@
     .bottom-nav-add-circle { width: 46px; height: 46px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-top: -20px; box-shadow: 0 4px 14px rgba(0,122,255,0.45); }
     .bottom-nav-add-circle svg { stroke: #fff; width: 22px; height: 22px; }
     .bottom-nav-add span { font-size: 10px; font-weight: 500; color: var(--accent); }
-    @media (min-width: 1024px) { .bottom-nav { display: none; } }
+    @media (min-width: 1024px) { 
+      .bottom-nav { display: none !important; }
+      #mobile-header { display: none !important; }
+      #drawer-overlay { display: none !important; }
+      #mobile-drawer { display: none !important; }
+    }
+    @media (max-width: 1023px) {
+      .apple-sidebar { display: none !important; }
+    }
 
     /* ---- TOASTS ---- */
     #toast-container { position: fixed; bottom: 100px; right: 20px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
@@ -208,7 +216,7 @@
   <div id="app" class="hidden-section" style="min-height:100vh;">
 
     <!-- MOBILE HEADER -->
-    <header class="apple-header lg:hidden" style="position:sticky;top:0;z-index:30;padding:10px 16px 10px;display:flex;align-items:center;justify-content:space-between;">
+    <header class="apple-header" id="mobile-header" style="position:sticky;top:0;z-index:30;padding:10px 16px 10px;display:flex;align-items:center;justify-content:space-between;">
       <button id="mobile-menu-btn" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(120,120,128,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
@@ -273,7 +281,7 @@
 
     <div style="display:flex;">
       <!-- DESKTOP SIDEBAR -->
-      <aside class="apple-sidebar hidden lg:flex lg:flex-col" style="width:240px;min-height:100vh;position:sticky;top:0;max-height:100vh;">
+      <aside class="apple-sidebar" style="display:flex;flex-direction:column;" style="width:240px;min-height:100vh;position:sticky;top:0;max-height:100vh;">
         <div style="padding:16px;border-bottom:0.5px solid var(--border-color);">
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -941,6 +949,33 @@
         <button onclick="signOut()" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium min-h-[40px]">Αποσύνδεση</button>
       </div>
     </div>
+
+    <!-- BOTTOM NAV (mobile only) -->
+    <nav class="bottom-nav" id="bottom-nav-bar" style="display:flex;">
+      <button class="bottom-nav-item active" id="bn-dashboard" data-section="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="bottom-nav-item" id="bn-accounts" data-section="accounts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>Λογαριασμοί</span>
+      </button>
+      <button class="bottom-nav-add" id="bn-new" data-section="new-transaction">
+        <div class="bottom-nav-add-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span>Νέα κίνηση</span>
+      </button>
+      <button class="bottom-nav-item" id="bn-transactions" data-section="transactions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        <span>Κινήσεις</span>
+      </button>
+      <button class="bottom-nav-item" id="bn-settings" data-section="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Ρυθμίσεις</span>
+      </button>
+    </nav>
+
   </div>
 
   <!-- PIN CHANGE MODAL -->
@@ -1090,6 +1125,7 @@
     
     async function signOut() {
       await sb.auth.signOut();
+      localStorage.removeItem('pf_unlock_ts');
       currentUser = null;
       document.getElementById('app').classList.add('hidden-section');
       document.getElementById('login-screen').classList.remove('hidden-section');
@@ -1462,7 +1498,11 @@
       if (session) {
         currentUser = session.user;
         const hasPin = localStorage.getItem('pf_pin_hash');
-        if (hasPin) {
+        // Ελέγχω αν έχει ξεκλειδωθεί πρόσφατα (μέσα στις τελευταίες 8 ώρες)
+        const unlockTs = localStorage.getItem('pf_unlock_ts');
+        const unlockAge = unlockTs ? (Date.now() - parseInt(unlockTs)) : Infinity;
+        const recentlyUnlocked = unlockAge < 8 * 60 * 60 * 1000; // 8 ώρες
+        if (hasPin && !recentlyUnlocked) {
           showPinScreen('unlock');
         } else {
           await initApp();
@@ -1941,6 +1981,7 @@
       const stored = localStorage.getItem('pf_pin_hash');
       const hash = await hashPin(pinBuffer);
       if (hash === stored) {
+        localStorage.setItem('pf_unlock_ts', Date.now().toString());
         await initApp();
       } else {
         const dots = document.getElementById('pin-dots');
