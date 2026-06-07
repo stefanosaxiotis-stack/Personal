@@ -100,6 +100,10 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Νέα κίνηση
             </button></li>
+            <li><button data-section="new-transfer" class="nav-link w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center gap-3 min-h-[44px]">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M15 6l6 6-6 6"/><path d="M19 6H5"/><path d="M9 18l-6-6 6-6"/></svg>
+              Μεταφορά
+            </button></li>
           </ul>
         </nav>
         <div class="p-4 border-t border-gray-200 space-y-2">
@@ -116,9 +120,19 @@
 
         <!-- DASHBOARD SECTION -->
         <section id="dashboard-section" class="hidden-section">
-          <div class="mb-6">
+          <div class="mb-4">
             <h1 class="text-3xl font-bold">Dashboard</h1>
-            <p class="text-gray-500 mt-1" id="dashboard-subtitle">Φόρτωση...</p>
+          </div>
+
+          <!-- Φίλτρα -->
+          <div class="flex flex-wrap items-center gap-2 mb-6">
+            <button onclick="setDashboardFilter('current')" id="df-current" class="px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[38px]">Τρέχων μήνας</button>
+            <button onclick="setDashboardFilter('prev')" id="df-prev" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]">Προηγούμενος</button>
+            <button onclick="setDashboardFilter('all')" id="df-all" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]">Όλα</button>
+            <select id="df-year" onchange="setDashboardFilter('year')" class="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-600 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-black">
+              <option value="">Επιλογή έτους...</option>
+            </select>
+            <span id="dashboard-subtitle" class="text-sm text-gray-400 ml-1"></span>
           </div>
 
           <!-- KPI Cards -->
@@ -379,6 +393,75 @@
             </div>
           </form>
         </section>
+        <!-- TRANSFER SECTION -->
+        <section id="new-transfer-section" class="hidden-section">
+          <div class="mb-6">
+            <h1 class="text-3xl font-bold">Μεταφορά</h1>
+            <p class="text-gray-500 mt-1">Μεταφορά χρημάτων μεταξύ λογαριασμών</p>
+          </div>
+          <form id="transfer-form" class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl space-y-5">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ημερομηνία</label>
+              <input type="date" id="tr-date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px] focus:outline-none focus:ring-2 focus:ring-black">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ποσό (€)</label>
+              <input type="number" id="tr-amount" step="0.01" min="0.01" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px] focus:outline-none focus:ring-2 focus:ring-black" placeholder="0.00">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Από λογαριασμό</label>
+                <select id="tr-from" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px] focus:outline-none focus:ring-2 focus:ring-black">
+                  <option value="">Επίλεξε...</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Προς λογαριασμό</label>
+                <select id="tr-to" required class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px] focus:outline-none focus:ring-2 focus:ring-black">
+                  <option value="">Επίλεξε...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <div id="tr-preview" class="hidden bg-gray-50 rounded-lg px-4 py-3 flex items-center gap-3 text-sm">
+              <span id="tr-preview-from" class="font-medium text-gray-700"></span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400 flex-shrink-0"><path d="M5 12h14"/><path d="M15 6l6 6-6 6"/></svg>
+              <span id="tr-preview-to" class="font-medium text-gray-700"></span>
+              <span class="ml-auto font-bold text-gray-900" id="tr-preview-amount"></span>
+            </div>
+
+            <div id="tr-same-error" class="hidden text-red-600 text-sm bg-red-50 px-4 py-2 rounded-lg">
+              ⚠️ Οι λογαριασμοί αποστολής και παραλαβής δεν μπορούν να είναι ίδιοι.
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Σημειώσεις <span class="text-gray-400 text-xs">(προαιρετικό)</span></label>
+              <input type="text" id="tr-notes" class="w-full px-4 py-3 border border-gray-300 rounded-lg min-h-[48px] focus:outline-none focus:ring-2 focus:ring-black" placeholder="π.χ. Αποταμίευση Ιουλίου">
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+              <button type="submit" id="tr-submit" class="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 min-h-[48px] flex items-center justify-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M15 6l6 6-6 6"/></svg>
+                Εκτέλεση μεταφοράς
+              </button>
+              <button type="button" onclick="showSection('accounts')" class="flex-1 bg-white border border-gray-300 py-3 rounded-lg font-medium hover:bg-gray-50 min-h-[48px]">Ακύρωση</button>
+            </div>
+          </form>
+
+          <!-- Ιστορικό μεταφορών -->
+          <div class="mt-8 max-w-2xl">
+            <h2 class="text-lg font-semibold mb-4">Ιστορικό μεταφορών</h2>
+            <div id="transfers-list" class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div class="text-center py-8 text-gray-400 text-sm">Φόρτωση...</div>
+            </div>
+          </div>
+        </section>
+        <!-- END TRANSFER -->
+
         <!-- SETTINGS SECTION -->
         <section id="settings-section" class="hidden-section">
           <div class="mb-6">
@@ -419,6 +502,7 @@
           <li><button data-section="accounts" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Λογαριασμοί</button></li>
           <li><button data-section="transactions" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Κινήσεις</button></li>
           <li><button data-section="new-transaction" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Νέα κίνηση</button></li>
+          <li><button data-section="new-transfer" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Μεταφορά</button></li>
           <li><button data-section="settings" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px] text-gray-600">Ρυθμίσεις</button></li>
         </ul>
       </nav>
@@ -448,6 +532,7 @@
     let allCategories = [];
     let allSubcategories = [];
     let allTransactions = [];
+    let allTransfers = [];
     let selectedTxType = 'expense';
     
     // HELPERS
@@ -494,6 +579,7 @@
       if (name === 'accounts') renderAccounts();
       if (name === 'transactions') renderTransactions();
       if (name === 'new-transaction') resetTransactionForm();
+      if (name === 'new-transfer') resetTransferForm();
       if (name === 'dashboard') renderDashboard();
       if (name === 'settings') renderSettings();
     }
@@ -547,17 +633,19 @@
     
     // LOAD DATA
     async function loadAllData() {
-      const [accountsRes, categoriesRes, subcategoriesRes, transactionsRes] = await Promise.all([
+      const [accountsRes, categoriesRes, subcategoriesRes, transactionsRes, transfersRes] = await Promise.all([
         sb.from('accounts').select('*').eq('is_active', true).order('sort_order'),
         sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
         sb.from('subcategories').select('*').eq('is_archived', false).order('sort_order'),
-        sb.from('transactions').select('*, accounts(name, currency), categories(name), subcategories(name)').order('date', { ascending: false })
+        sb.from('transactions').select('*, accounts(name, currency), categories(name), subcategories(name)').order('date', { ascending: false }),
+        sb.from('transfers').select('*, from_account:accounts!transfers_from_account_id_fkey(name), to_account:accounts!transfers_to_account_id_fkey(name)').order('date', { ascending: false })
       ]);
       
       allAccounts = accountsRes.data || [];
       allCategories = categoriesRes.data || [];
       allSubcategories = subcategoriesRes.data || [];
       allTransactions = transactionsRes.data || [];
+      allTransfers = transfersRes.data || [];
     }
     
     // ACCOUNTS PAGE
@@ -577,6 +665,11 @@
         if (balances[t.account_id] === undefined) return;
         if (t.type === 'income') balances[t.account_id] += parseFloat(t.amount);
         else balances[t.account_id] -= parseFloat(t.amount);
+      });
+      // Συμπεριλαμβάνω τις μεταφορές στο balance
+      allTransfers.forEach(tr => {
+        if (balances[tr.from_account_id] !== undefined) balances[tr.from_account_id] -= parseFloat(tr.amount);
+        if (balances[tr.to_account_id] !== undefined) balances[tr.to_account_id] += parseFloat(tr.amount);
       });
       
       const totalEUR = allAccounts.filter(a => a.currency === 'EUR').reduce((sum, a) => sum + balances[a.id], 0);
@@ -825,6 +918,10 @@
     const dashboardState = { s1: false, s2: false, s3: false, s4: false };
     let dashboardCharts = {};
     let dashboardRendered = false;
+    let dashboardFilter = 'current';
+    let dashboardYear = null;
+    let dashboardTxData = null;
+    let dashboardAccData = null;
 
     function toggleDashboard(id) {
       dashboardState[id] = !dashboardState[id];
@@ -839,72 +936,124 @@
       } else {
         lbl.textContent = 'Πίνακας';
         if (leg) leg.classList.remove('hidden');
-        // resize chart after showing
         if (dashboardCharts[id]) dashboardCharts[id].resize();
       }
     }
 
+    function setDashboardFilter(filter) {
+      if (filter === 'year') {
+        const sel = document.getElementById('df-year');
+        if (!sel.value) return;
+        dashboardYear = parseInt(sel.value);
+        dashboardFilter = 'year';
+      } else {
+        dashboardFilter = filter;
+        dashboardYear = null;
+        document.getElementById('df-year').value = '';
+      }
+      ['current','prev','all'].forEach(f => {
+        const btn = document.getElementById('df-' + f);
+        if (!btn) return;
+        btn.className = (f === dashboardFilter)
+          ? 'px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[38px]'
+          : 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]';
+      });
+      if (filter === 'year') {
+        ['current','prev','all'].forEach(f => {
+          const btn = document.getElementById('df-' + f);
+          if (btn) btn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]';
+        });
+      }
+      drawDashboard();
+    }
+
+    function getFilteredTxData() {
+      if (!dashboardTxData) return [];
+      const now = new Date();
+      const curYear = now.getFullYear(), curMonth = now.getMonth();
+      return dashboardTxData.filter(t => {
+        const d = new Date(t.date);
+        if (dashboardFilter === 'current') return d.getFullYear() === curYear && d.getMonth() === curMonth;
+        if (dashboardFilter === 'prev') {
+          const p = new Date(curYear, curMonth - 1, 1);
+          return d.getFullYear() === p.getFullYear() && d.getMonth() === p.getMonth();
+        }
+        if (dashboardFilter === 'year') return d.getFullYear() === dashboardYear;
+        return true;
+      });
+    }
+
+    function getFilterLabel() {
+      const now = new Date();
+      const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
+      if (dashboardFilter === 'current') return months[now.getMonth()] + ' ' + now.getFullYear();
+      if (dashboardFilter === 'prev') {
+        const p = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        return months[p.getMonth()] + ' ' + p.getFullYear();
+      }
+      if (dashboardFilter === 'year') return 'Έτος ' + dashboardYear;
+      return 'Σύνολο περιόδου';
+    }
+
     async function renderDashboard() {
-      if (dashboardRendered) return;
+      if (dashboardRendered) { drawDashboard(); return; }
       dashboardRendered = true;
+      document.getElementById('dashboard-subtitle').textContent = 'Φόρτωση...';
 
-      document.getElementById('dashboard-subtitle').textContent = 'Φόρτωση δεδομένων...';
-
-      // Fetch data from Supabase
       const { data: txData } = await sb
         .from('transactions')
         .select('date, amount, type, is_spiti, account_id, subcategory_id, subcategories(category_id, categories(name))')
         .order('date', { ascending: true });
 
       const { data: accs } = await sb.from('accounts').select('id, name, type');
+      dashboardTxData = txData || [];
+      dashboardAccData = accs || [];
 
-      if (!txData || !accs) return;
+      // Populate year dropdown
+      const years = [...new Set(dashboardTxData.map(t => new Date(t.date).getFullYear()))].sort((a,b) => b-a);
+      const sel = document.getElementById('df-year');
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      });
 
-      // Account maps
+      drawDashboard();
+    }
+
+    function drawDashboard() {
+      const txData = getFilteredTxData();
+      const accs = dashboardAccData || [];
       const accMap = {};
       accs.forEach(a => accMap[a.id] = a);
-
-      // IDs for Μισθοδοσίας
       const misId = accs.find(a => a.name === 'Eurobank Μισθοδοσίας')?.id;
 
-      // Helper: get YYYY-MM label
-      const monthLabel = d => {
-        const dt = new Date(d);
+      const monthKey = d => d.slice(0, 7);
+      const monthLabel = k => {
+        const [y, m] = k.split('-');
         const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
-        return months[dt.getMonth()] + ' ' + String(dt.getFullYear()).slice(2);
+        return months[parseInt(m) - 1] + ' ' + y.slice(2);
       };
-      const monthKey = d => d.slice(0, 7); // YYYY-MM
 
-      // Collect monthly data
       const misMonths = {}, ovMonths = {}, spitiMonths = {}, catTotals = {};
-
       txData.forEach(t => {
         const acc = accMap[t.account_id];
         if (!acc) return;
         const key = monthKey(t.date);
         const amt = parseFloat(t.amount);
 
-        // Μισθοδοσίας
         if (t.account_id === misId) {
           if (!misMonths[key]) misMonths[key] = { esoda: 0, exoda: 0 };
-          if (t.type === 'income') misMonths[key].esoda += amt;
-          else misMonths[key].exoda += amt;
+          t.type === 'income' ? misMonths[key].esoda += amt : misMonths[key].exoda += amt;
         }
-
-        // Overall (no investment accounts)
         if (acc.type !== 'investment') {
           if (!ovMonths[key]) ovMonths[key] = { esoda: 0, exoda: 0 };
-          if (t.type === 'income') ovMonths[key].esoda += amt;
-          else ovMonths[key].exoda += amt;
+          t.type === 'income' ? ovMonths[key].esoda += amt : ovMonths[key].exoda += amt;
         }
-
-        // Σπίτι
         if (t.is_spiti && t.type === 'expense') {
           if (!spitiMonths[key]) spitiMonths[key] = 0;
           spitiMonths[key] += amt;
         }
-
-        // Categories
         if (t.type === 'expense' && acc.type !== 'investment') {
           const catName = t.subcategories?.categories?.name || 'Λοιπά';
           if (!catTotals[catName]) catTotals[catName] = 0;
@@ -912,181 +1061,270 @@
         }
       });
 
-      // Sort months
-      const allKeys = [...new Set([
-        ...Object.keys(misMonths),
-        ...Object.keys(ovMonths),
-        ...Object.keys(spitiMonths)
-      ])].sort();
+      const allKeys = [...new Set([...Object.keys(misMonths), ...Object.keys(ovMonths), ...Object.keys(spitiMonths)])].sort();
+      const labels = allKeys.map(monthLabel);
+      const r = v => Math.round(v * 100) / 100;
 
-      const labels = allKeys.map(k => {
-        const [y, m] = k.split('-');
-        const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
-        return months[parseInt(m) - 1] + ' ' + y.slice(2);
-      });
+      const misEsoda = allKeys.map(k => r(misMonths[k]?.esoda || 0));
+      const misExoda = allKeys.map(k => r(misMonths[k]?.exoda || 0));
+      const misLeft  = misEsoda.map((e, i) => r(e - misExoda[i]));
+      const ovEsoda  = allKeys.map(k => r(ovMonths[k]?.esoda || 0));
+      const ovExoda  = allKeys.map(k => r(ovMonths[k]?.exoda || 0));
+      const ovLeft   = ovEsoda.map((e, i) => r(e - ovExoda[i]));
+      const spitiArr = allKeys.map(k => r(spitiMonths[k] || 0));
+      const avgSpiti = spitiArr.filter(v => v > 0).length
+        ? Math.round(spitiArr.reduce((a,b)=>a+b,0) / spitiArr.filter(v=>v>0).length) : 0;
 
-      const misEsoda = allKeys.map(k => Math.round((misMonths[k]?.esoda || 0) * 100) / 100);
-      const misExoda = allKeys.map(k => Math.round((misMonths[k]?.exoda || 0) * 100) / 100);
-      const misLeft  = misEsoda.map((e, i) => Math.round((e - misExoda[i]) * 100) / 100);
-
-      const ovEsoda  = allKeys.map(k => Math.round((ovMonths[k]?.esoda || 0) * 100) / 100);
-      const ovExoda  = allKeys.map(k => Math.round((ovMonths[k]?.exoda || 0) * 100) / 100);
-      const ovLeft   = ovEsoda.map((e, i) => Math.round((e - ovExoda[i]) * 100) / 100);
-
-      const spitiArr = allKeys.map(k => Math.round((spitiMonths[k] || 0) * 100) / 100);
-      const avgSpiti = spitiArr.length ? Math.round(spitiArr.reduce((a, b) => a + b, 0) / spitiArr.filter(v => v > 0).length) : 0;
-
-      // KPIs
-      const totIncome  = ovEsoda.reduce((a, b) => a + b, 0);
-      const totExpense = ovExoda.reduce((a, b) => a + b, 0);
-      document.getElementById('kpi-income').textContent  = formatMoney(totIncome);
-      document.getElementById('kpi-income').className    = 'text-2xl font-bold text-green-600';
-      document.getElementById('kpi-expense').textContent = formatMoney(totExpense);
-      document.getElementById('kpi-expense').className   = 'text-2xl font-bold text-red-600';
+      const totIncome = ovEsoda.reduce((a,b)=>a+b,0);
+      const totExpense = ovExoda.reduce((a,b)=>a+b,0);
       const net = totIncome - totExpense;
+
+      document.getElementById('kpi-income').textContent = formatMoney(totIncome);
+      document.getElementById('kpi-income').className = 'text-2xl font-bold text-green-600';
+      document.getElementById('kpi-expense').textContent = formatMoney(totExpense);
+      document.getElementById('kpi-expense').className = 'text-2xl font-bold text-red-600';
       const netEl = document.getElementById('kpi-net');
       netEl.textContent = formatMoney(net);
-      netEl.className   = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
+      netEl.className = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
       document.getElementById('kpi-spiti').textContent = formatMoney(avgSpiti);
-      document.getElementById('dashboard-subtitle').textContent = `${labels[0]} – ${labels[labels.length - 1]}`;
+      document.getElementById('dashboard-subtitle').textContent = getFilterLabel();
 
-      // Chart options helper
-      const gridColor = 'rgba(0,0,0,0.06)';
-      const tickColor = '#9ca3af';
+      // Destroy old charts
+      Object.values(dashboardCharts).forEach(c => c?.destroy());
+      dashboardCharts = {};
+      ['s1-tbody','s2-tbody','s3-tbody','s4-tbody'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.innerHTML = '';
+      });
+
+      const gridColor = 'rgba(0,0,0,0.06)', tickColor = '#9ca3af';
       const baseOpts = {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: {
-          label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y)
-        }}},
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y) }}},
         scales: {
-          x: { ticks: { color: tickColor, font: { size: 11 }, autoSkip: false, maxRotation: 45 }, grid: { color: gridColor } },
-          y: { ticks: { color: tickColor, font: { size: 11 }, callback: v => formatMoney(v) }, grid: { color: gridColor } }
+          x: { ticks: { color: tickColor, font: { size: 11 }, autoSkip: labels.length > 8, maxRotation: 45 }, grid: { color: gridColor }},
+          y: { ticks: { color: tickColor, font: { size: 11 }, callback: v => formatMoney(v) }, grid: { color: gridColor }}
         }
       };
 
-      // Chart 1 - Μισθοδοσίας
-      dashboardCharts.s1 = new Chart(document.getElementById('chart-mis'), {
-        type: 'bar',
-        data: { labels, datasets: [
-          { label: 'Έσοδα', data: misEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
-          { label: 'Έξοδα', data: misExoda, backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 3 },
-          { label: 'Left inside', data: misLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4, 3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
-        ]},
-        options: { ...baseOpts }
-      });
+      dashboardCharts.s1 = new Chart(document.getElementById('chart-mis'), { type: 'bar', data: { labels, datasets: [
+        { label: 'Έσοδα', data: misEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
+        { label: 'Έξοδα', data: misExoda, backgroundColor: 'rgba(239,68,68,0.75)',  borderRadius: 3 },
+        { label: 'Left inside', data: misLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4,3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
+      ]}, options: { ...baseOpts }});
 
-      // Chart 2 - Overall
-      dashboardCharts.s2 = new Chart(document.getElementById('chart-ov'), {
-        type: 'bar',
-        data: { labels, datasets: [
-          { label: 'Έσοδα', data: ovEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
-          { label: 'Έξοδα', data: ovExoda, backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 3 },
-          { label: 'Left inside', data: ovLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4, 3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
-        ]},
-        options: { ...baseOpts }
-      });
+      dashboardCharts.s2 = new Chart(document.getElementById('chart-ov'), { type: 'bar', data: { labels, datasets: [
+        { label: 'Έσοδα', data: ovEsoda, backgroundColor: 'rgba(16,185,129,0.75)', borderRadius: 3 },
+        { label: 'Έξοδα', data: ovExoda, backgroundColor: 'rgba(239,68,68,0.75)',  borderRadius: 3 },
+        { label: 'Left inside', data: ovLeft, type: 'line', borderColor: '#9ca3af', borderWidth: 2, borderDash: [4,3], pointRadius: 3, pointBackgroundColor: '#9ca3af', tension: 0.3 }
+      ]}, options: { ...baseOpts }});
 
-      // Chart 3 - Σπίτι
-      dashboardCharts.s3 = new Chart(document.getElementById('chart-spiti'), {
-        type: 'bar',
-        data: { labels, datasets: [
-          { label: 'Σπίτι', data: spitiArr, backgroundColor: 'rgba(59,130,246,0.75)', borderRadius: 3 },
-          { label: 'Μέσος όρος', data: Array(labels.length).fill(avgSpiti), type: 'line', borderColor: '#f87171', borderWidth: 2, borderDash: [5, 4], pointRadius: 0, tension: 0 }
-        ]},
-        options: { ...baseOpts, plugins: { ...baseOpts.plugins, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y) } } } }
-      });
+      dashboardCharts.s3 = new Chart(document.getElementById('chart-spiti'), { type: 'bar', data: { labels, datasets: [
+        { label: 'Σπίτι', data: spitiArr, backgroundColor: 'rgba(59,130,246,0.75)', borderRadius: 3 },
+        { label: 'Μέσος όρος', data: Array(labels.length).fill(avgSpiti), type: 'line', borderColor: '#f87171', borderWidth: 2, borderDash: [5,4], pointRadius: 0 }
+      ]}, options: { ...baseOpts }});
 
-      // Chart 4 - Κατηγορίες
       const catColors = ['#6d5fe6','#10b981','#f97316','#3b82f6','#ec4899','#f59e0b','#84cc16','#ef4444','#8b5cf6','#06b6d4'];
-      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+      const sortedCats = Object.entries(catTotals).sort((a,b) => b[1]-a[1]);
       const catLabels2 = sortedCats.map(c => c[0]);
-      const catData2   = sortedCats.map(c => Math.round(c[1] * 100) / 100);
-      const catTotal   = catData2.reduce((a, b) => a + b, 0);
+      const catData2   = sortedCats.map(c => r(c[1]));
+      const catTotal   = catData2.reduce((a,b)=>a+b,0);
 
-      // Legend
       const leg4 = document.getElementById('s4-legend');
-      leg4.innerHTML = '';
-      catLabels2.forEach((l, i) => {
-        const span = document.createElement('span');
-        span.className = 'flex items-center gap-1';
-        span.innerHTML = `<span class="w-3 h-3 rounded-sm inline-block" style="background:${catColors[i % catColors.length]}"></span>${l}`;
-        leg4.appendChild(span);
-      });
+      if (leg4) {
+        leg4.innerHTML = '';
+        catLabels2.forEach((l, i) => {
+          const span = document.createElement('span');
+          span.className = 'flex items-center gap-1';
+          span.innerHTML = `<span class="w-3 h-3 rounded-sm inline-block" style="background:${catColors[i % catColors.length]}"></span>${l}`;
+          leg4.appendChild(span);
+        });
+      }
 
       dashboardCharts.s4 = new Chart(document.getElementById('chart-cat'), {
         type: 'doughnut',
         data: { labels: catLabels2, datasets: [{ data: catData2, backgroundColor: catColors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, cutout: '58%',
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatMoney(ctx.parsed) + ' (' + ((ctx.parsed / catTotal) * 100).toFixed(1) + '%)' } } }
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatMoney(ctx.parsed) + ' (' + (catTotal > 0 ? (ctx.parsed/catTotal*100).toFixed(1) : 0) + '%)' }}}
         }
       });
 
-      // Build tables helper
-      const fmt = v => formatMoney(v);
-      const colorClass = v => v >= 0 ? 'text-green-600' : 'text-red-600';
-
-      // Table 1
+      // Tables
       const tb1 = document.getElementById('s1-tbody');
       allKeys.forEach((k, i) => {
-        const left = misLeft[i];
-        const tr = document.createElement('tr');
+        const left = misLeft[i]; const tr = document.createElement('tr');
         tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
-          <td class="text-right py-2 px-3 text-green-600">${fmt(misEsoda[i])}</td>
-          <td class="text-right py-2 px-3 text-red-600">${fmt(misExoda[i])}</td>
-          <td class="text-right py-2 px-3 font-medium ${colorClass(left)}">${left >= 0 ? '+' : ''}${fmt(left)}</td>`;
+        tr.innerHTML = `<td class="py-2 px-3 text-sm">${monthLabel(k)}</td><td class="text-right py-2 px-3 text-sm text-green-600">${formatMoney(misEsoda[i])}</td><td class="text-right py-2 px-3 text-sm text-red-600">${formatMoney(misExoda[i])}</td><td class="text-right py-2 px-3 text-sm font-medium ${left>=0?'text-green-600':'text-red-600'}">${left>=0?'+':''}${formatMoney(left)}</td>`;
         tb1.appendChild(tr);
       });
-      const tot1 = misEsoda.reduce((a,b)=>a+b,0), toe1 = misExoda.reduce((a,b)=>a+b,0), totl1 = tot1 - toe1;
-      tb1.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${fmt(tot1)}</td><td class="text-right py-2 px-3 text-red-600">${fmt(toe1)}</td><td class="text-right py-2 px-3 ${colorClass(totl1)}">${totl1>=0?'+':''}${fmt(totl1)}</td></tr>`;
+      const tot1=misEsoda.reduce((a,b)=>a+b,0), toe1=misExoda.reduce((a,b)=>a+b,0), tl1=r(tot1-toe1);
+      tb1.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(tot1)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(toe1)}</td><td class="text-right py-2 px-3 ${tl1>=0?'text-green-600':'text-red-600'}">${tl1>=0?'+':''}${formatMoney(tl1)}</td></tr>`;
 
-      // Table 2
       const tb2 = document.getElementById('s2-tbody');
       allKeys.forEach((k, i) => {
-        const left = ovLeft[i];
-        const tr = document.createElement('tr');
+        const left = ovLeft[i]; const tr = document.createElement('tr');
         tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
-          <td class="text-right py-2 px-3 text-green-600">${fmt(ovEsoda[i])}</td>
-          <td class="text-right py-2 px-3 text-red-600">${fmt(ovExoda[i])}</td>
-          <td class="text-right py-2 px-3 font-medium ${colorClass(left)}">${left >= 0 ? '+' : ''}${fmt(left)}</td>`;
+        tr.innerHTML = `<td class="py-2 px-3 text-sm">${monthLabel(k)}</td><td class="text-right py-2 px-3 text-sm text-green-600">${formatMoney(ovEsoda[i])}</td><td class="text-right py-2 px-3 text-sm text-red-600">${formatMoney(ovExoda[i])}</td><td class="text-right py-2 px-3 text-sm font-medium ${left>=0?'text-green-600':'text-red-600'}">${left>=0?'+':''}${formatMoney(left)}</td>`;
         tb2.appendChild(tr);
       });
-      const tot2 = ovEsoda.reduce((a,b)=>a+b,0), toe2 = ovExoda.reduce((a,b)=>a+b,0), totl2 = tot2 - toe2;
-      tb2.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${fmt(tot2)}</td><td class="text-right py-2 px-3 text-red-600">${fmt(toe2)}</td><td class="text-right py-2 px-3 ${colorClass(totl2)}">${totl2>=0?'+':''}${fmt(totl2)}</td></tr>`;
+      const tot2=ovEsoda.reduce((a,b)=>a+b,0), toe2=ovExoda.reduce((a,b)=>a+b,0), tl2=r(tot2-toe2);
+      tb2.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Γενικό άθροισμα</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(tot2)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(toe2)}</td><td class="text-right py-2 px-3 ${tl2>=0?'text-green-600':'text-red-600'}">${tl2>=0?'+':''}${formatMoney(tl2)}</td></tr>`;
 
-      // Table 3
       const tb3 = document.getElementById('s3-tbody');
       allKeys.forEach((k, i) => {
-        const v = spitiArr[i];
-        const diff = Math.round((v - avgSpiti) * 100) / 100;
-        const tr = document.createElement('tr');
+        const v = spitiArr[i], diff = r(v - avgSpiti); const tr = document.createElement('tr');
         tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3">${labels[i]}</td>
-          <td class="text-right py-2 px-3">${fmt(v)}</td>
-          <td class="text-right py-2 px-3 ${diff <= 0 ? 'text-green-600' : 'text-red-600'}">${diff >= 0 ? '+' : ''}${fmt(diff)}</td>`;
+        tr.innerHTML = `<td class="py-2 px-3 text-sm">${monthLabel(k)}</td><td class="text-right py-2 px-3 text-sm">${formatMoney(v)}</td><td class="text-right py-2 px-3 text-sm ${diff<=0?'text-green-600':'text-red-600'}">${diff>=0?'+':''}${formatMoney(diff)}</td>`;
         tb3.appendChild(tr);
       });
       const totS = spitiArr.reduce((a,b)=>a+b,0);
-      tb3.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${fmt(totS)}</td><td class="py-2 px-3"></td></tr>`;
+      tb3.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${formatMoney(totS)}</td><td></td></tr>`;
 
-      // Table 4
       const tb4 = document.getElementById('s4-tbody');
       sortedCats.forEach(([cat, val], i) => {
-        const pct = ((val / catTotal) * 100).toFixed(1);
-        const tr = document.createElement('tr');
+        const pct = catTotal > 0 ? (val/catTotal*100).toFixed(1) : '0.0'; const tr = document.createElement('tr');
         tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3 flex items-center gap-2"><span class="w-3 h-3 rounded-sm inline-block flex-shrink-0" style="background:${catColors[i % catColors.length]}"></span>${cat}</td>
-          <td class="text-right py-2 px-3">${fmt(val)}</td>
-          <td class="text-right py-2 px-3 text-gray-500">${pct}%</td>`;
+        tr.innerHTML = `<td class="py-2 px-3 text-sm flex items-center gap-2"><span class="w-3 h-3 rounded-sm inline-block flex-shrink-0" style="background:${catColors[i%catColors.length]}"></span>${cat}</td><td class="text-right py-2 px-3 text-sm">${formatMoney(val)}</td><td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
         tb4.appendChild(tr);
       });
-      tb4.innerHTML += `<tr class="font-semibold bg-gray-50"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${fmt(catTotal)}</td><td class="text-right py-2 px-3">100%</td></tr>`;
+      if (catTotal > 0) tb4.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${formatMoney(catTotal)}</td><td class="text-right py-2 px-3">100%</td></tr>`;
     }
 
     // ============================================
     // END DASHBOARD
     // ============================================
+
+    // ============================================
+    // TRANSFERS
+    // ============================================
+    function resetTransferForm() {
+      document.getElementById('transfer-form').reset();
+      document.getElementById('tr-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('tr-preview').classList.add('hidden');
+      document.getElementById('tr-same-error').classList.add('hidden');
+
+      const fromSel = document.getElementById('tr-from');
+      const toSel   = document.getElementById('tr-to');
+      fromSel.innerHTML = '<option value="">Επίλεξε...</option>';
+      toSel.innerHTML   = '<option value="">Επίλεξε...</option>';
+      allAccounts.forEach(a => {
+        const o1 = document.createElement('option');
+        o1.value = a.id; o1.textContent = a.name;
+        fromSel.appendChild(o1);
+        const o2 = document.createElement('option');
+        o2.value = a.id; o2.textContent = a.name;
+        toSel.appendChild(o2);
+      });
+
+      renderTransfersList();
+    }
+
+    function updateTransferPreview() {
+      const fromId = document.getElementById('tr-from').value;
+      const toId   = document.getElementById('tr-to').value;
+      const amount = parseFloat(document.getElementById('tr-amount').value);
+      const sameError = document.getElementById('tr-same-error');
+      const preview   = document.getElementById('tr-preview');
+
+      if (fromId && toId && fromId === toId) {
+        sameError.classList.remove('hidden');
+        preview.classList.add('hidden');
+        return;
+      }
+      sameError.classList.add('hidden');
+
+      if (fromId && toId && amount > 0) {
+        const fromAcc = allAccounts.find(a => a.id === fromId);
+        const toAcc   = allAccounts.find(a => a.id === toId);
+        document.getElementById('tr-preview-from').textContent   = fromAcc?.name || '';
+        document.getElementById('tr-preview-to').textContent     = toAcc?.name || '';
+        document.getElementById('tr-preview-amount').textContent = formatMoney(amount);
+        preview.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+      }
+    }
+
+    ['tr-from', 'tr-to', 'tr-amount'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', updateTransferPreview);
+      document.getElementById(id)?.addEventListener('input', updateTransferPreview);
+    });
+
+    document.getElementById('transfer-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fromId  = document.getElementById('tr-from').value;
+      const toId    = document.getElementById('tr-to').value;
+      const amount  = parseFloat(document.getElementById('tr-amount').value);
+      const date    = document.getElementById('tr-date').value;
+      const notes   = document.getElementById('tr-notes').value || null;
+
+      if (fromId === toId) {
+        showToast('Οι λογαριασμοί δεν μπορούν να είναι ίδιοι', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('tr-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></div>';
+
+      const { data, error } = await sb.from('transfers')
+        .insert({ from_account_id: fromId, to_account_id: toId, amount, date, notes })
+        .select('*, from_account:accounts!transfers_from_account_id_fkey(name), to_account:accounts!transfers_to_account_id_fkey(name)')
+        .single();
+
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M15 6l6 6-6 6"/></svg> Εκτέλεση μεταφοράς';
+
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+
+      allTransfers.unshift(data);
+      showToast('Μεταφορά καταχωρήθηκε επιτυχώς ✓', 'success');
+      document.getElementById('transfer-form').reset();
+      document.getElementById('tr-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('tr-preview').classList.add('hidden');
+      renderTransfersList();
+      renderAccounts();
+    });
+
+    function renderTransfersList() {
+      const container = document.getElementById('transfers-list');
+      if (!allTransfers.length) {
+        container.innerHTML = '<div class="text-center py-8 text-gray-400 text-sm">Δεν υπάρχουν μεταφορές ακόμα</div>';
+        return;
+      }
+
+      let html = '';
+      allTransfers.forEach(tr => {
+        const fromName = tr.from_account?.name || '—';
+        const toName   = tr.to_account?.name   || '—';
+        const dateStr  = formatDate(tr.date);
+        html += `
+          <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 font-medium text-sm">
+                <span class="truncate text-gray-700">${fromName}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="flex-shrink-0 text-gray-400"><path d="M5 12h14"/><path d="M15 6l6 6-6 6"/></svg>
+                <span class="truncate text-gray-700">${toName}</span>
+              </div>
+              <div class="text-xs text-gray-400 mt-0.5">${dateStr}${tr.notes ? ' · ' + tr.notes : ''}</div>
+            </div>
+            <div class="font-semibold text-gray-800 whitespace-nowrap">${formatMoney(tr.amount)}</div>
+            <button onclick="deleteTransfer('${tr.id}')" class="text-gray-300 hover:text-red-500 p-1 transition" title="Διαγραφή">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    async function deleteTransfer(id) {
+      if (!confirm('Διαγραφή αυτής της μεταφοράς;')) return;
+      const { error } = await sb.from('transfers').delete().eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      allTransfers = allTransfers.filter(t => t.id !== id);
+      renderTransfersList();
+      renderAccounts();
+      showToast('Μεταφορά διαγράφηκε', 'success');
+    }
 
     // ============================================
     // PRIVACY MODE (μάτι)
