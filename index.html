@@ -12,6 +12,7 @@
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     .hidden-section { display: none !important; }
+    .privacy-blur { filter: blur(8px); user-select: none; transition: filter 0.2s; }
     #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
     .toast { padding: 12px 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation: slideIn 0.3s ease-out; min-width: 250px; }
     .toast.success { border-left: 4px solid #10b981; }
@@ -60,16 +61,24 @@
         </button>
         <span class="font-bold">Personal Finance</span>
       </div>
+      <button id="privacy-btn-mobile" onclick="togglePrivacy()" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Απόκρυψη υπολοίπων" title="Απόκρυψη υπολοίπων">
+        <svg id="eye-icon-mobile" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
     </header>
 
     <div class="flex">
       <aside class="hidden lg:flex lg:flex-col w-64 bg-white border-r border-gray-200 min-h-screen sticky top-0 max-h-screen">
         <div class="p-4 border-b border-gray-200">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-black rounded-lg flex items-center justify-center text-white">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+              </div>
+              <span class="font-bold">Personal Finance</span>
             </div>
-            <span class="font-bold">Personal Finance</span>
+            <button id="privacy-btn" onclick="togglePrivacy()" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500" aria-label="Απόκρυψη υπολοίπων" title="Απόκρυψη υπολοίπων">
+              <svg id="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
           </div>
         </div>
         <nav class="flex-1 p-4 overflow-y-auto">
@@ -93,8 +102,12 @@
             </button></li>
           </ul>
         </nav>
-        <div class="p-4 border-t border-gray-200">
-          <div id="user-email" class="text-xs text-gray-500 mb-2 truncate"></div>
+        <div class="p-4 border-t border-gray-200 space-y-2">
+          <button data-section="settings" class="nav-link w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 flex items-center gap-3 min-h-[40px] text-sm text-gray-600">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Ρυθμίσεις
+          </button>
+          <div id="user-email" class="text-xs text-gray-500 truncate"></div>
           <button id="logout-btn" class="w-full bg-black text-white py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition min-h-[40px]">Αποσύνδεση</button>
         </div>
       </aside>
@@ -366,6 +379,28 @@
             </div>
           </form>
         </section>
+        <!-- SETTINGS SECTION -->
+        <section id="settings-section" class="hidden-section">
+          <div class="mb-6">
+            <h1 class="text-3xl font-bold">Ρυθμίσεις</h1>
+            <p class="text-gray-500 mt-1">Διαχείριση κατηγοριών και υποκατηγοριών</p>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-2 mb-6">
+            <button onclick="switchSettingsTab('expense')" id="tab-expense" class="px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[40px]">Έξοδα</button>
+            <button onclick="switchSettingsTab('income')" id="tab-income" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[40px]">Έσοδα</button>
+          </div>
+
+          <div id="settings-container" class="space-y-4 max-w-2xl">
+            <div class="text-center py-12 text-gray-400">
+              <div class="spinner mx-auto mb-4"></div>
+              Φόρτωση...
+            </div>
+          </div>
+        </section>
+        <!-- END SETTINGS -->
+
       </main>
     </div>
 
@@ -384,6 +419,7 @@
           <li><button data-section="accounts" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Λογαριασμοί</button></li>
           <li><button data-section="transactions" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Κινήσεις</button></li>
           <li><button data-section="new-transaction" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px]">Νέα κίνηση</button></li>
+          <li><button data-section="settings" class="nav-link-mobile w-full text-left px-3 py-3 rounded-lg hover:bg-gray-100 min-h-[48px] text-gray-600">Ρυθμίσεις</button></li>
         </ul>
       </nav>
       <div class="p-4 border-t border-gray-200">
@@ -459,6 +495,7 @@
       if (name === 'transactions') renderTransactions();
       if (name === 'new-transaction') resetTransactionForm();
       if (name === 'dashboard') renderDashboard();
+      if (name === 'settings') renderSettings();
     }
     
     // AUTH
@@ -1050,6 +1087,233 @@
     // ============================================
     // END DASHBOARD
     // ============================================
+
+    // ============================================
+    // PRIVACY MODE (μάτι)
+    // ============================================
+    let privacyOn = false;
+
+    function togglePrivacy() {
+      privacyOn = !privacyOn;
+      const targets = [
+        document.getElementById('dashboard-kpis'),
+        document.getElementById('accounts-container'),
+        document.getElementById('total-balance'),
+        document.getElementById('s1-chart-wrap'),
+        document.getElementById('s1-table-wrap'),
+        document.getElementById('s2-chart-wrap'),
+        document.getElementById('s2-table-wrap'),
+        document.getElementById('s3-chart-wrap'),
+        document.getElementById('s3-table-wrap'),
+        document.getElementById('s4-chart-wrap'),
+        document.getElementById('s4-table-wrap'),
+      ];
+      targets.forEach(el => {
+        if (!el) return;
+        el.classList.toggle('privacy-blur', privacyOn);
+      });
+      const openEye = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      const closedEye = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      ['eye-icon', 'eye-icon-mobile'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = privacyOn ? closedEye : openEye;
+      });
+    }
+
+    // ============================================
+    // SETTINGS
+    // ============================================
+    let settingsTab = 'expense';
+
+    function switchSettingsTab(tab) {
+      settingsTab = tab;
+      document.getElementById('tab-expense').className = tab === 'expense'
+        ? 'px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[40px]'
+        : 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[40px]';
+      document.getElementById('tab-income').className = tab === 'income'
+        ? 'px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[40px]'
+        : 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[40px]';
+      renderSettingsContent();
+    }
+
+    async function renderSettings() {
+      const [catsRes, subcatsRes] = await Promise.all([
+        sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
+        sb.from('subcategories').select('*').eq('is_archived', false).order('sort_order')
+      ]);
+      allCategories = catsRes.data || [];
+      allSubcategories = subcatsRes.data || [];
+      renderSettingsContent();
+    }
+
+    function renderSettingsContent() {
+      const container = document.getElementById('settings-container');
+      const cats = allCategories.filter(c => c.type === settingsTab);
+      let html = '';
+
+      cats.forEach(cat => {
+        const subs = allSubcategories.filter(s => s.category_id === cat.id);
+        const subsHtml = subs.map(s => `
+          <div class="flex items-center gap-2 py-1.5 pl-5 pr-3 group">
+            <span class="w-1.5 h-1.5 rounded-full bg-gray-300 flex-shrink-0"></span>
+            <span id="sub-name-${s.id}" class="flex-1 text-sm text-gray-700">${s.name}</span>
+            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onclick="startEditSub('${s.id}')" class="p-1 text-gray-400 hover:text-black hover:bg-gray-100 rounded" title="Μετονομασία">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button onclick="archiveSub('${s.id}', '${s.name}')" class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded" title="Αρχειοθέτηση">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>`).join('');
+
+        html += `
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <span id="cat-name-${cat.id}" class="flex-1 font-semibold text-sm">${cat.name}</span>
+              <button onclick="startEditCat('${cat.id}')" class="text-xs px-2.5 py-1.5 text-gray-500 hover:text-black hover:bg-white border border-transparent hover:border-gray-200 rounded-lg flex items-center gap-1 transition">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Μετονομασία
+              </button>
+              <button onclick="archiveCat('${cat.id}', '${cat.name}')" class="text-xs px-2.5 py-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-200 rounded-lg flex items-center gap-1 transition">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Διαγραφή
+              </button>
+            </div>
+            <div class="py-1">
+              ${subsHtml || '<p class="text-xs text-gray-400 pl-5 py-2">Καμία υποκατηγορία</p>'}
+              <div class="pl-5 pr-3 py-2 border-t border-gray-50">
+                <button onclick="showAddSubForm('${cat.id}')" id="add-sub-btn-${cat.id}" class="text-xs text-gray-400 hover:text-black flex items-center gap-1 transition">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Νέα υποκατηγορία
+                </button>
+                <div id="add-sub-form-${cat.id}" class="hidden mt-2 flex gap-2">
+                  <input id="new-sub-input-${cat.id}" type="text" placeholder="Όνομα υποκατηγορίας" class="flex-1 text-sm px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black" onkeydown="if(event.key==='Enter')saveNewSub('${cat.id}');if(event.key==='Escape')cancelAddSub('${cat.id}')">
+                  <button onclick="saveNewSub('${cat.id}')" class="text-sm px-3 py-1.5 bg-black text-white rounded-lg hover:bg-gray-800">✓</button>
+                  <button onclick="cancelAddSub('${cat.id}')" class="text-sm px-3 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-50">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      html += `
+        <div class="bg-white rounded-xl border border-dashed border-gray-300 p-4">
+          <button onclick="showAddCatForm()" id="add-cat-btn" class="w-full text-sm text-gray-400 hover:text-black flex items-center justify-center gap-2 py-1 transition">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Νέα κατηγορία ${settingsTab === 'expense' ? 'εξόδων' : 'εσόδων'}
+          </button>
+          <div id="add-cat-form" class="hidden mt-3 space-y-2">
+            <input id="new-cat-input" type="text" placeholder="Όνομα κατηγορίας" class="w-full text-sm px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black" onkeydown="if(event.key==='Enter')saveNewCat();if(event.key==='Escape')cancelAddCat()">
+            <div class="flex gap-2">
+              <button onclick="saveNewCat()" class="flex-1 text-sm px-3 py-2 bg-black text-white rounded-lg hover:bg-gray-800">Αποθήκευση</button>
+              <button onclick="cancelAddCat()" class="flex-1 text-sm px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Ακύρωση</button>
+            </div>
+          </div>
+        </div>`;
+
+      container.innerHTML = html;
+    }
+
+    function startEditCat(id) {
+      const span = document.getElementById('cat-name-' + id);
+      if (!span) return;
+      const current = span.textContent;
+      span.outerHTML = `<input id="cat-edit-${id}" type="text" value="${current}" class="flex-1 text-sm font-semibold px-2 py-0.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black" onkeydown="if(event.key==='Enter')saveEditCat('${id}');if(event.key==='Escape')renderSettingsContent()">`;
+      setTimeout(() => document.getElementById('cat-edit-' + id)?.focus(), 0);
+    }
+
+    async function saveEditCat(id) {
+      const input = document.getElementById('cat-edit-' + id);
+      const newName = input?.value?.trim();
+      if (!newName) return;
+      const { error } = await sb.from('categories').update({ name: newName }).eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Κατηγορία ενημερώθηκε', 'success');
+      await renderSettings();
+    }
+
+    function startEditSub(id) {
+      const span = document.getElementById('sub-name-' + id);
+      if (!span) return;
+      const current = span.textContent;
+      span.outerHTML = `<input id="sub-edit-${id}" type="text" value="${current}" class="flex-1 text-sm px-2 py-0.5 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black" onkeydown="if(event.key==='Enter')saveEditSub('${id}');if(event.key==='Escape')renderSettingsContent()">`;
+      setTimeout(() => document.getElementById('sub-edit-' + id)?.focus(), 0);
+    }
+
+    async function saveEditSub(id) {
+      const input = document.getElementById('sub-edit-' + id);
+      const newName = input?.value?.trim();
+      if (!newName) return;
+      const { error } = await sb.from('subcategories').update({ name: newName }).eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Υποκατηγορία ενημερώθηκε', 'success');
+      await renderSettings();
+    }
+
+    async function archiveCat(id, name) {
+      if (!confirm(`Αρχειοθέτηση κατηγορίας "${name}";\n\nΔεν θα εμφανίζεται σε νέες κινήσεις. Οι παλιές κινήσεις δεν επηρεάζονται.`)) return;
+      const { error } = await sb.from('categories').update({ is_archived: true }).eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Κατηγορία αρχειοθετήθηκε', 'success');
+      await renderSettings();
+    }
+
+    async function archiveSub(id, name) {
+      if (!confirm(`Αρχειοθέτηση υποκατηγορίας "${name}";`)) return;
+      const { error } = await sb.from('subcategories').update({ is_archived: true }).eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Υποκατηγορία αρχειοθετήθηκε', 'success');
+      await renderSettings();
+    }
+
+    function showAddSubForm(catId) {
+      document.getElementById('add-sub-btn-' + catId)?.classList.add('hidden');
+      const f = document.getElementById('add-sub-form-' + catId);
+      f?.classList.remove('hidden');
+      f?.classList.add('flex');
+      setTimeout(() => document.getElementById('new-sub-input-' + catId)?.focus(), 0);
+    }
+
+    function cancelAddSub(catId) {
+      document.getElementById('add-sub-btn-' + catId)?.classList.remove('hidden');
+      const f = document.getElementById('add-sub-form-' + catId);
+      f?.classList.add('hidden');
+      f?.classList.remove('flex');
+    }
+
+    async function saveNewSub(catId) {
+      const input = document.getElementById('new-sub-input-' + catId);
+      const name = input?.value?.trim();
+      if (!name) return;
+      const maxSort = Math.max(0, ...allSubcategories.filter(s => s.category_id === catId).map(s => s.sort_order || 0));
+      const { error } = await sb.from('subcategories').insert({ category_id: catId, name, sort_order: maxSort + 1 });
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Υποκατηγορία προστέθηκε', 'success');
+      await renderSettings();
+    }
+
+    function showAddCatForm() {
+      document.getElementById('add-cat-btn')?.classList.add('hidden');
+      document.getElementById('add-cat-form')?.classList.remove('hidden');
+      setTimeout(() => document.getElementById('new-cat-input')?.focus(), 0);
+    }
+
+    function cancelAddCat() {
+      document.getElementById('add-cat-btn')?.classList.remove('hidden');
+      document.getElementById('add-cat-form')?.classList.add('hidden');
+    }
+
+    async function saveNewCat() {
+      const input = document.getElementById('new-cat-input');
+      const name = input?.value?.trim();
+      if (!name) return;
+      const maxSort = Math.max(0, ...allCategories.filter(c => c.type === settingsTab).map(c => c.sort_order || 0));
+      const { error } = await sb.from('categories').insert({ name, type: settingsTab, sort_order: maxSort + 1 });
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      showToast('Κατηγορία προστέθηκε', 'success');
+      await renderSettings();
+    }
 
   </script>
 </body>
