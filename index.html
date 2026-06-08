@@ -2,6 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
+  <meta name="app-version" content="1.0.0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Personal Finance</title>
   
@@ -2979,6 +2980,70 @@
       await renderSettings();
     }
 
+  </script>
+
+  <script>
+  // ============================================
+  // SERVICE WORKER REGISTRATION
+  // ============================================
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+
+        // Έλεγχος για update
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // Υπάρχει νέα έκδοση - δείχνω notification
+              showUpdateBanner();
+            }
+          });
+        });
+
+        // Έλεγχος για update κάθε φορά που η εφαρμογή έρχεται στο foreground
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) reg.update();
+        });
+
+      } catch (err) {
+        console.log('SW registration failed:', err);
+      }
+    });
+  }
+
+  function showUpdateBanner() {
+    // Αν υπάρχει ήδη banner, μην βάλεις άλλο
+    if (document.getElementById('update-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'update-banner';
+    banner.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+      background: #007aff; color: #fff;
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: -apple-system, sans-serif; font-size: 14px; font-weight: 500;
+      box-shadow: 0 2px 12px rgba(0,122,255,0.4);
+    `;
+    banner.innerHTML = `
+      <span>🆕 Νέα έκδοση διαθέσιμη</span>
+      <button onclick="applyUpdate()" style="
+        background: #fff; color: #007aff; border: none;
+        padding: 6px 16px; border-radius: 20px;
+        font-size: 13px; font-weight: 700; cursor: pointer;
+      ">Ανανέωση</button>
+    `;
+    document.body.prepend(banner);
+  }
+
+  async function applyUpdate() {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.waiting) {
+      reg.waiting.postMessage('skipWaiting');
+    }
+    window.location.reload();
+  }
   </script>
 </body>
 </html>
