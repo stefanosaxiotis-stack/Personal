@@ -137,6 +137,72 @@
     .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.8px; color: var(--text-primary); }
     .page-subtitle { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
 
+    /* ---- THEMES ---- */
+    [data-theme="dark"] {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b27;
+      --bg-tertiary: #21293a;
+      --sidebar-bg: rgba(22,27,39,0.95);
+      --sidebar-border: rgba(255,255,255,0.06);
+      --text-primary: #e2e8f0;
+      --text-secondary: #a0aec0;
+      --text-tertiary: #718096;
+      --border-color: rgba(255,255,255,0.08);
+      --card-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2);
+      --accent: #818cf8;
+      --accent-hover: #6366f1;
+      --income-color: #34d399;
+      --expense-color: #f87171;
+      --nav-active-bg: rgba(129,140,248,0.15);
+    }
+    [data-theme="dark"] .apple-card { background: var(--bg-secondary); }
+    [data-theme="dark"] body { background: var(--bg-primary); color: var(--text-primary); }
+    [data-theme="dark"] .apple-input, [data-theme="dark"] .apple-select { background: var(--bg-tertiary); color: var(--text-primary); border-color: rgba(255,255,255,0.1); }
+    [data-theme="dark"] .apple-header { background: rgba(13,17,23,0.92); }
+    [data-theme="dark"] .bottom-nav { background: rgba(22,27,39,0.95); border-top-color: rgba(255,255,255,0.08); }
+    [data-theme="dark"] #more-drawer { background: rgba(22,27,39,0.98); }
+    [data-theme="dark"] .segment { background: var(--bg-tertiary); }
+    [data-theme="dark"] .segment-btn.active { background: var(--bg-secondary); color: var(--text-primary); }
+    [data-theme="dark"] .filter-pill { background: var(--bg-secondary); border-color: rgba(255,255,255,0.1); color: var(--text-secondary); }
+    [data-theme="dark"] .filter-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    [data-theme="dark"] .apple-table th { border-bottom-color: var(--border-color); color: var(--text-tertiary); }
+    [data-theme="dark"] .apple-table td { border-bottom-color: var(--border-color); }
+
+    [data-theme="navy"] {
+      --sidebar-bg: #1e3a5f;
+      --sidebar-border: rgba(255,255,255,0.08);
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --nav-active-bg: rgba(245,158,11,0.2);
+      --bg-primary: #eef2f7;
+    }
+    [data-theme="navy"] .apple-nav-link { color: rgba(255,255,255,0.7); }
+    [data-theme="navy"] .apple-nav-link.active { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    [data-theme="navy"] .apple-nav-link.active svg { stroke: #f59e0b; }
+    [data-theme="navy"] .apple-nav-link svg { stroke: rgba(255,255,255,0.5); }
+    [data-theme="navy"] .apple-nav-section { color: rgba(255,255,255,0.4); }
+    [data-theme="navy"] .apple-sidebar { border-right-color: rgba(255,255,255,0.1); }
+    [data-theme="navy"] #user-email { color: rgba(255,255,255,0.4); }
+
+    [data-theme="warm"] {
+      --bg-primary: #fdf6ee;
+      --bg-secondary: #fffaf4;
+      --bg-tertiary: #f3e8d4;
+      --sidebar-bg: rgba(255,250,244,0.95);
+      --sidebar-border: #e8d5b7;
+      --text-primary: #7c2d12;
+      --text-secondary: #92400e;
+      --text-tertiary: #b45309;
+      --border-color: #e8d5b7;
+      --accent: #c2410c;
+      --accent-hover: #9a3412;
+      --income-color: #16a34a;
+      --expense-color: #dc2626;
+      --nav-active-bg: rgba(194,65,12,0.1);
+    }
+    [data-theme="warm"] .apple-card { background: var(--bg-secondary); border: 0.5px solid var(--border-color); }
+    [data-theme="warm"] .apple-input, [data-theme="warm"] .apple-select { background: #fff; border-color: var(--border-color); }
+
     /* ---- MOBILE DRAWER ---- */
     .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; backdrop-filter: blur(2px); }
     .drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; background: rgba(242,242,247,0.97); backdrop-filter: blur(30px); z-index: 41; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; }
@@ -908,6 +974,78 @@
             <p class="page-subtitle">Διαχείριση κατηγοριών και υποκατηγοριών</p>
           </div>
 
+          <!-- Theme Section -->
+          <div class="apple-card" style="padding:20px;margin-bottom:16px;max-width:640px;">
+            <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">Εμφάνιση</h2>
+            <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">Επίλεξε παλέτα χρωμάτων</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="theme-grid">
+              <!-- Classic -->
+              <button onclick="applyTheme('classic')" id="theme-classic" style="border:2px solid var(--accent);border-radius:14px;overflow:hidden;cursor:pointer;padding:0;background:none;">
+                <div style="height:70px;display:flex;overflow:hidden;">
+                  <div style="width:35%;background:#fff;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;padding:6px;gap:3px;">
+                    <div style="width:20px;height:20px;background:#000;border-radius:5px;"></div>
+                    <div style="height:5px;background:#f3f4f6;border-radius:3px;"></div>
+                    <div style="height:5px;background:#000;border-radius:3px;"></div>
+                    <div style="height:5px;background:#f3f4f6;border-radius:3px;"></div>
+                  </div>
+                  <div style="flex:1;background:#f9fafb;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="height:16px;background:#34c759;border-radius:4px;width:70%;"></div>
+                    <div style="height:10px;background:#ff3b30;border-radius:4px;width:50%;"></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#fff;color:#000;">Classic ✓</div>
+              </button>
+              <!-- Dark -->
+              <button onclick="applyTheme('dark')" id="theme-dark" style="border:2px solid transparent;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;background:none;">
+                <div style="height:70px;display:flex;overflow:hidden;">
+                  <div style="width:35%;background:#161b27;border-right:1px solid #21293a;display:flex;flex-direction:column;padding:6px;gap:3px;">
+                    <div style="width:20px;height:20px;background:#818cf8;border-radius:5px;"></div>
+                    <div style="height:5px;background:#21293a;border-radius:3px;"></div>
+                    <div style="height:5px;background:#818cf8;border-radius:3px;"></div>
+                    <div style="height:5px;background:#21293a;border-radius:3px;"></div>
+                  </div>
+                  <div style="flex:1;background:#0d1117;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="height:16px;background:#34d399;border-radius:4px;width:70%;"></div>
+                    <div style="height:10px;background:#f87171;border-radius:4px;width:50%;"></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#161b27;color:#e2e8f0;">Dark</div>
+              </button>
+              <!-- Navy -->
+              <button onclick="applyTheme('navy')" id="theme-navy" style="border:2px solid transparent;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;background:none;">
+                <div style="height:70px;display:flex;overflow:hidden;">
+                  <div style="width:35%;background:#1e3a5f;display:flex;flex-direction:column;padding:6px;gap:3px;">
+                    <div style="width:20px;height:20px;background:#f59e0b;border-radius:5px;"></div>
+                    <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;"></div>
+                    <div style="height:5px;background:#f59e0b;border-radius:3px;"></div>
+                    <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;"></div>
+                  </div>
+                  <div style="flex:1;background:#eef2f7;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="height:16px;background:#10b981;border-radius:4px;width:70%;"></div>
+                    <div style="height:10px;background:#ef4444;border-radius:4px;width:50%;"></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#eef2f7;color:#1e3a5f;">Navy & Gold</div>
+              </button>
+              <!-- Warm -->
+              <button onclick="applyTheme('warm')" id="theme-warm" style="border:2px solid transparent;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;background:none;">
+                <div style="height:70px;display:flex;overflow:hidden;">
+                  <div style="width:35%;background:#fffaf4;border-right:1px solid #e8d5b7;display:flex;flex-direction:column;padding:6px;gap:3px;">
+                    <div style="width:20px;height:20px;background:#c2410c;border-radius:5px;"></div>
+                    <div style="height:5px;background:#f3e8d4;border-radius:3px;"></div>
+                    <div style="height:5px;background:#c2410c;border-radius:3px;"></div>
+                    <div style="height:5px;background:#f3e8d4;border-radius:3px;"></div>
+                  </div>
+                  <div style="flex:1;background:#fdf6ee;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="height:16px;background:#16a34a;border-radius:4px;width:70%;"></div>
+                    <div style="height:10px;background:#dc2626;border-radius:4px;width:50%;"></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#fffaf4;color:#7c2d12;">Warm</div>
+              </button>
+            </div>
+          </div>
+
           <!-- PIN Section -->
           <div class="bg-white rounded-xl border border-gray-200 p-5 mb-6 max-w-2xl">
             <h2 class="text-base font-semibold mb-1">PIN Ασφαλείας</h2>
@@ -1543,6 +1681,7 @@
       const emailMobile = document.getElementById('user-email-mobile');
       if (emailMobile) emailMobile.textContent = currentUser.email;
       sessionUnlockTime = Date.now();
+      loadSavedTheme();
       await loadAllData();
       showSection('dashboard');
 
@@ -2200,6 +2339,32 @@
     }
 
     // ============================================
+    // THEMES
+    // ============================================
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme === 'classic' ? '' : theme);
+      localStorage.setItem('pf_theme', theme);
+      // Update border on selected
+      ['classic','dark','navy','warm'].forEach(t => {
+        const btn = document.getElementById('theme-' + t);
+        if (!btn) return;
+        btn.style.border = t === theme ? '2px solid var(--accent)' : '2px solid transparent';
+        // Update label suffix
+        const label = btn.querySelector('div:last-child');
+        if (label) {
+          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[t];
+          label.textContent = t === theme ? base + ' ✓' : base;
+        }
+      });
+      showToast('Θέμα αλλάχτηκε σε ' + {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[theme], 'success');
+    }
+
+    function loadSavedTheme() {
+      const saved = localStorage.getItem('pf_theme') || 'classic';
+      applyTheme(saved);
+    }
+
+        // ============================================
     // MORE DRAWER
     // ============================================
     function toggleMoreDrawer() {
@@ -2264,18 +2429,17 @@
     // BUDGETING
     // ============================================
     let budgetTab = 'expense';
-    let budgetData = {};   // {catId_year_month: amount}
-    let budgetActual = {}; // {catId_year_month: actual}
+    let budgetData = {};
+    let budgetActual = {};
 
     function setBudgetTab(tab) {
-      budgetTab = tab;
       document.getElementById('bg-tab-expense').className = tab === 'expense' ? 'segment-btn active' : 'segment-btn';
       document.getElementById('bg-tab-income').className = tab === 'income' ? 'segment-btn active' : 'segment-btn';
+      budgetTab = tab;
       renderBudgetTable();
     }
 
     async function renderBudgeting() {
-      // Populate year selector
       const yearSel = document.getElementById('bg-year');
       if (yearSel.options.length === 0) {
         const now = new Date();
@@ -2288,23 +2452,22 @@
       }
       const year = parseInt(yearSel.value) || new Date().getFullYear();
 
-      // Φόρτωση budgets από βάση
       const { data: budgets } = await sb.from('budgets')
-        .select('category_id, month, amount')
+        .select('subcategory_id, month, amount')
         .eq('year', year);
 
       budgetData = {};
       (budgets || []).forEach(b => {
-        budgetData[`${b.category_id}_${year}_${b.month}`] = parseFloat(b.amount);
+        budgetData[`${b.subcategory_id}_${year}_${b.month}`] = parseFloat(b.amount);
       });
 
-      // Υπολογισμός πραγματικών από transactions (report_date)
       budgetActual = {};
       allTransactions.forEach(t => {
+        if (!t.subcategory_id) return;
         const d = new Date(t.report_date || t.date);
         if (d.getFullYear() !== year) return;
         const m = d.getMonth() + 1;
-        const key = `${t.category_id}_${year}_${m}`;
+        const key = `${t.subcategory_id}_${year}_${m}`;
         if (!budgetActual[key]) budgetActual[key] = 0;
         budgetActual[key] += parseFloat(t.amount);
       });
@@ -2318,128 +2481,129 @@
       const now = new Date();
       const curM = now.getFullYear() === year ? now.getMonth() + 1 : 0;
 
-      // Highlight τρέχοντα μήνα στα headers
       months.forEach((m, i) => {
         const th = document.getElementById(`bg-th-${i+1}`);
-        if (th) {
-          th.textContent = m;
-          th.className = (i+1 === curM)
-            ? 'text-center py-3 px-2 text-xs font-bold text-black bg-gray-100'
-            : 'text-center py-3 px-2 text-xs text-gray-500 font-medium';
-        }
+        if (!th) return;
+        th.textContent = m;
+        th.style.fontWeight = (i+1 === curM) ? '700' : '500';
+        th.style.background = (i+1 === curM) ? 'rgba(0,122,255,0.06)' : '';
       });
 
       const cats = allCategories.filter(c => c.type === budgetTab);
+      const rows = [];
+      cats.forEach(cat => {
+        const subs = allSubcategories.filter(s => s.category_id === cat.id);
+        subs.forEach(sub => rows.push({ cat, sub }));
+      });
+
       const tbody = document.getElementById('bg-tbody');
       const colTotals = Array(12).fill(0);
       let grandTotal = 0;
+      let prevCatId = null;
 
-      tbody.innerHTML = cats.map(cat => {
+      tbody.innerHTML = rows.map(({ cat, sub }) => {
         let rowTotal = 0;
         const cells = Array.from({length: 12}, (_, i) => {
           const m = i + 1;
-          const key = `${cat.id}_${year}_${m}`;
+          const key = `${sub.id}_${year}_${m}`;
           const val = budgetData[key] || 0;
           rowTotal += val;
           colTotals[i] += val;
-          const highlight = m === curM ? 'bg-gray-50' : '';
-          return `<td class="text-center py-1.5 px-2 ${highlight}">
-            <input type="number" data-cat="${cat.id}" data-month="${m}" data-year="${year}"
+          const bgStyle = m === curM ? 'background:rgba(0,122,255,0.04);' : '';
+          return `<td style="text-align:center;padding:4px 3px;${bgStyle}">
+            <input type="number" data-sub="${sub.id}" data-month="${m}" data-year="${year}"
               value="${val || ''}" min="0" step="1" placeholder="—"
-              class="w-16 text-center text-sm px-1 py-1 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-black focus:border-black bg-white"
+              style="width:60px;text-align:center;font-size:13px;padding:4px;border:0.5px solid rgba(0,0,0,0.12);border-radius:7px;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='var(--accent)'"
+              onblur="this.style.borderColor='rgba(0,0,0,0.12)'"
               onchange="onBudgetChange(this)">
           </td>`;
         }).join('');
         grandTotal += rowTotal;
-        return `<tr class="hover:bg-gray-50">
-          <td class="py-2 px-4 font-medium text-sm">${cat.name}</td>
+        const isNewCat = cat.id !== prevCatId;
+        prevCatId = cat.id;
+        const borderTop = isNewCat ? 'border-top:2px solid rgba(0,0,0,0.08);' : '';
+        return `<tr style="${borderTop}" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background=''">
+          <td style="padding:6px 14px;font-size:14px;font-weight:500;white-space:nowrap;">${sub.name}</td>
+          <td style="padding:6px 10px;font-size:12px;color:var(--text-tertiary);white-space:nowrap;">${isNewCat ? cat.name : ''}</td>
           ${cells}
-          <td class="text-right py-2 px-4 font-medium text-sm ${rowTotal > 0 ? '' : 'text-gray-300'}">${rowTotal > 0 ? formatMoney(rowTotal) : '—'}</td>
+          <td style="text-align:right;padding:6px 14px;font-size:13px;font-weight:600;color:${rowTotal>0?'var(--text-primary)':'var(--text-tertiary)'};">${rowTotal>0?formatMoney(rowTotal):'—'}</td>
         </tr>`;
       }).join('');
 
-      // Tfoot totals
       const tfoot = document.getElementById('bg-tfoot');
       const totalCells = colTotals.map((v, i) => {
-        const m = i + 1;
-        const highlight = m === curM ? 'bg-gray-100' : '';
-        return `<td class="text-center py-2.5 px-2 text-xs ${highlight}">${v > 0 ? formatMoney(v) : '—'}</td>`;
+        const bg = (i+1===curM) ? 'background:rgba(0,122,255,0.06);' : '';
+        return `<td style="text-align:center;padding:10px 3px;font-size:12px;${bg}">${v>0?formatMoney(v):'—'}</td>`;
       }).join('');
-      tfoot.innerHTML = `<tr><td class="py-2.5 px-4">Σύνολο</td>${totalCells}<td class="text-right py-2.5 px-4">${formatMoney(grandTotal)}</td></tr>`;
-
-      // Σύγκριση
-      renderBudgetComparison(year, cats, curM);
+      tfoot.innerHTML = `<tr style="background:var(--bg-primary);"><td style="padding:10px 14px;" colspan="2">Σύνολο</td>${totalCells}<td style="text-align:right;padding:10px 14px;">${formatMoney(grandTotal)}</td></tr>`;
+      renderBudgetComparison(year, rows, curM);
     }
 
     function onBudgetChange(input) {
-      const key = `${input.dataset.cat}_${input.dataset.year}_${input.dataset.month}`;
+      const key = `${input.dataset.sub}_${input.dataset.year}_${input.dataset.month}`;
       budgetData[key] = parseFloat(input.value) || 0;
-      // Ανανέωση row total
-      renderBudgetTable();
+      const row = input.closest('tr');
+      if (row) {
+        const inputs = row.querySelectorAll('input[type=number]');
+        let total = 0;
+        inputs.forEach(inp => total += parseFloat(inp.value)||0);
+        const lastTd = row.querySelector('td:last-child');
+        if (lastTd) lastTd.textContent = total>0 ? formatMoney(total) : '—';
+      }
     }
 
     async function saveBudgets() {
       const year = parseInt(document.getElementById('bg-year').value) || new Date().getFullYear();
       const cats = allCategories.filter(c => c.type === budgetTab);
       const upserts = [];
-
       cats.forEach(cat => {
-        for (let m = 1; m <= 12; m++) {
-          const key = `${cat.id}_${year}_${m}`;
-          const amount = budgetData[key] || 0;
-          if (amount > 0) {
-            upserts.push({ category_id: cat.id, year, month: m, amount });
+        const subs = allSubcategories.filter(s => s.category_id === cat.id);
+        subs.forEach(sub => {
+          for (let m=1; m<=12; m++) {
+            const amount = budgetData[`${sub.id}_${year}_${m}`] || 0;
+            if (amount > 0) upserts.push({ subcategory_id: sub.id, year, month: m, amount });
           }
-        }
+        });
       });
-
       if (!upserts.length) { showToast('Δεν υπάρχουν ποσά για αποθήκευση', 'error'); return; }
-
-      const { error } = await sb.from('budgets')
-        .upsert(upserts, { onConflict: 'owner_id,category_id,year,month' });
-
+      const { error } = await sb.from('budgets').upsert(upserts, { onConflict: 'owner_id,subcategory_id,year,month' });
       if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
-      showToast(`Αποθηκεύτηκαν ${upserts.length} ποσά budget ✓`, 'success');
+      showToast(`Αποθηκεύτηκαν ${upserts.length} ποσά ✓`, 'success');
     }
 
-    function renderBudgetComparison(year, cats, curM) {
+    function renderBudgetComparison(year, rows, curM) {
       const container = document.getElementById('bg-comparison');
-      if (!curM) { container.innerHTML = '<p class="text-gray-400 text-sm">Επίλεξε τρέχον έτος για σύγκριση.</p>'; return; }
-
-      const items = cats.map(cat => {
-        const key = `${cat.id}_${year}_${curM}`;
-        const budget = budgetData[key] || 0;
-        const actual = budgetActual[key] || 0;
-        return { cat, budget, actual };
-      }).filter(x => x.budget > 0 || x.actual > 0);
-
-      if (!items.length) { container.innerHTML = '<p class="text-gray-400 text-sm">Δεν υπάρχουν budget ή κινήσεις για τον τρέχοντα μήνα.</p>'; return; }
-
-      container.innerHTML = items.map(({ cat, budget, actual }) => {
-        const pct = budget > 0 ? Math.min(100, Math.round((actual / budget) * 100)) : 100;
-        const over = actual > budget && budget > 0;
-        const barColor = over ? 'bg-red-500' : pct > 80 ? 'bg-yellow-400' : 'bg-green-500';
-        const diff = actual - budget;
-        const diffStr = diff === 0 ? '=' : (diff > 0 ? `+${formatMoney(diff)}` : formatMoney(diff));
-        const diffColor = diff > 0 ? 'text-red-600' : diff < 0 ? 'text-green-600' : 'text-gray-500';
-        return `<div class="bg-white rounded-xl border border-gray-200 p-4">
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-medium text-sm">${cat.name}</span>
-            <div class="flex gap-3 text-sm">
-              <span class="text-gray-500">Budget: <strong>${formatMoney(budget)}</strong></span>
-              <span class="text-gray-500">Πραγματικό: <strong>${formatMoney(actual)}</strong></span>
-              <span class="font-semibold ${diffColor}">${diffStr}</span>
+      if (!curM) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Επίλεξε τρέχον έτος.</p>'; return; }
+      const items = rows.map(({cat,sub}) => ({
+        cat, sub,
+        budget: budgetData[`${sub.id}_${year}_${curM}`]||0,
+        actual: budgetActual[`${sub.id}_${year}_${curM}`]||0
+      })).filter(x => x.budget>0||x.actual>0);
+      if (!items.length) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Δεν υπάρχουν budget για τον τρέχοντα μήνα.</p>'; return; }
+      container.innerHTML = items.map(({cat,sub,budget,actual}) => {
+        const pct = budget>0 ? Math.min(100,Math.round((actual/budget)*100)) : 100;
+        const bar = actual>budget&&budget>0 ? 'var(--expense-color)' : pct>80 ? '#f59e0b' : 'var(--income-color)';
+        const diff = actual-budget;
+        const diffStr = diff===0?'=':(diff>0?`+${formatMoney(diff)}`:formatMoney(diff));
+        const diffColor = diff>0?'var(--expense-color)':diff<0?'var(--income-color)':'var(--text-tertiary)';
+        return `<div class="apple-card" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+            <div><span style="font-size:14px;font-weight:600;">${sub.name}</span><span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">${cat.name}</span></div>
+            <div style="display:flex;gap:14px;font-size:13px;flex-wrap:wrap;">
+              <span style="color:var(--text-tertiary);">Budget: <strong>${formatMoney(budget)}</strong></span>
+              <span style="color:var(--text-tertiary);">Πραγματικό: <strong>${formatMoney(actual)}</strong></span>
+              <span style="font-weight:700;color:${diffColor};">${diffStr}</span>
             </div>
           </div>
-          <div class="w-full bg-gray-100 rounded-full h-2">
-            <div class="${barColor} h-2 rounded-full transition-all" style="width:${pct}%"></div>
+          <div style="background:var(--bg-tertiary);border-radius:4px;height:6px;overflow:hidden;">
+            <div style="background:${bar};height:100%;width:${pct}%;border-radius:4px;transition:width 0.4s;"></div>
           </div>
-          <div class="text-xs text-gray-400 mt-1 text-right">${pct}% χρησιμοποιήθηκε</div>
+          <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px;text-align:right;">${pct}%</div>
         </div>`;
       }).join('');
     }
 
-    // ============================================
     // MY REPORT
     // ============================================
     let reportInitialized = false;
@@ -2618,6 +2782,18 @@
 
     async function renderSettings() {
       await updatePinSettingsUI();
+      // Ανανέωση theme UI
+      const saved = localStorage.getItem('pf_theme') || 'classic';
+      ['classic','dark','navy','warm'].forEach(t => {
+        const btn = document.getElementById('theme-' + t);
+        if (!btn) return;
+        btn.style.border = t === saved ? '2px solid var(--accent)' : '2px solid transparent';
+        const label = btn.querySelector('div:last-child');
+        if (label) {
+          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[t];
+          label.textContent = t === saved ? base + ' ✓' : base;
+        }
+      });
       const [catsRes, subcatsRes] = await Promise.all([
         sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
         sb.from('subcategories').select('*').eq('is_archived', false).order('sort_order')
