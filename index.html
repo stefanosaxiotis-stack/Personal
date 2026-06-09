@@ -2226,10 +2226,9 @@
     }
 
     async function handlePinComplete() {
-      const stored = localStorage.getItem('pf_pin_hash');
       const hash = await hashPin(pinBuffer);
-      if (hash === stored) {
-        localStorage.setItem('pf_unlock_ts', Date.now().toString());
+      if (hash === cachedPinHash) {
+        sessionUnlockTime = Date.now();
         await initApp();
       } else {
         const dots = document.getElementById('pin-dots');
@@ -2305,7 +2304,12 @@
       } else {
         if (pinModalBuffer === pinModalFirst) {
           const hash = await hashPin(pinModalBuffer);
-          localStorage.setItem('pf_pin_hash', hash);
+          const { error } = await sb.from('user_settings').upsert(
+            { owner_id: currentUser.id, pin_hash: hash },
+            { onConflict: 'owner_id' }
+          );
+          if (error) { showToast('Σφάλμα αποθήκευσης PIN: ' + error.message, 'error'); return; }
+          cachedPinHash = hash;
           closePinModal();
           showToast('PIN ορίστηκε επιτυχώς ✓', 'success');
           updatePinSettingsUI();
@@ -2324,15 +2328,20 @@
       }
     }
 
-    function clearPin() {
+    async function clearPin() {
       if (!confirm('Να απενεργοποιηθεί το PIN;\nΗ εφαρμογή θα ανοίγει χωρίς PIN.')) return;
-      localStorage.removeItem('pf_pin_hash');
+      const { error } = await sb.from('user_settings').upsert(
+        { owner_id: currentUser.id, pin_hash: null },
+        { onConflict: 'owner_id' }
+      );
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      cachedPinHash = null;
       showToast('PIN απενεργοποιήθηκε', 'success');
       updatePinSettingsUI();
     }
 
     function updatePinSettingsUI() {
-      const hasPin = !!localStorage.getItem('pf_pin_hash');
+      const hasPin = !!cachedPinHash;
       const clearBtn = document.getElementById('pin-clear-btn');
       const status = document.getElementById('pin-status');
       if (clearBtn) clearBtn.classList.toggle('hidden', !hasPin);
