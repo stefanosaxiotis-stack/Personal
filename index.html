@@ -1228,6 +1228,7 @@
     
     // GLOBAL STATE
     let currentUser = null;
+    let appInitialized = false;
     let allAccounts = [];
     let allCategories = [];
     let allSubcategories = [];
@@ -1840,6 +1841,7 @@
       sessionUnlockTime = Date.now();
       loadSavedTheme();
       await loadAllData();
+      appInitialized = true;
       showSection('dashboard');
 
       // Visibility API - ζητά PIN όταν η εφαρμογή έρχεται στο foreground
@@ -2441,13 +2443,13 @@
       const hash = await hashPin(pinBuffer);
       if (hash === cachedPinHash) {
         sessionUnlockTime = Date.now();
-        // Αν η app είναι ήδη φορτωμένη (επιστροφή από background), ανανέωσε δεδομένα
-        const appVisible = !document.getElementById('app').classList.contains('hidden-section');
-        if (appVisible) {
-          document.getElementById('pin-screen').classList.add('hidden-section');
+        document.getElementById('pin-screen').classList.add('hidden-section');
+        if (appInitialized) {
+          // Επιστροφή από background — απλώς εμφάνισε και ανανέωσε
           document.getElementById('app').classList.remove('hidden-section');
           await refreshData(true);
         } else {
+          // Πρώτη είσοδος — κανονική φόρτωση
           await initApp();
         }
       } else {
