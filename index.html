@@ -3264,24 +3264,17 @@
 
   async function registerSW() {
     if (!('serviceWorker' in navigator)) return;
-
+    // Απενεργοποίηση Service Worker — αφαιρεί cache issues
     try {
-      const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) await reg.unregister();
+    } catch (e) {}
 
-      // Έλεγχος για update κάθε φορά που η εφαρμογή έρχεται στο foreground
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
-          reg.update();
-          checkVersionChange();
-        }
-      });
-
-      // Πρώτος έλεγχος
-      checkVersionChange();
-
-    } catch (err) {
-      console.log('SW error:', err);
-    }
+    // Version check χωρίς SW
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkVersionChange();
+    });
+    checkVersionChange();
   }
 
   // Ελέγχει αν η έκδοση στο server είναι νεότερη και κάνει αυτόματο reload
