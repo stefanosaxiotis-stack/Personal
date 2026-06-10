@@ -412,13 +412,28 @@
 
           <!-- Φίλτρα Dashboard -->
           <div class="apple-card" style="padding:14px 16px;margin-bottom:16px;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;white-space:nowrap;">📅 Reporting μήνας</span>
-              <div id="dash-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-              <button onclick="clearDashReportFilter()" style="font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+            <!-- Γρήγορα φίλτρα περιόδου -->
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;">
+              <button onclick="setDashboardFilter('current')" id="df-current" class="filter-pill active">Τρέχων μήνας</button>
+              <button onclick="setDashboardFilter('prev')" id="df-prev" class="filter-pill">Προηγούμενος</button>
+              <button onclick="setDashboardFilter('all')" id="df-all" class="filter-pill">Όλα</button>
+              <select id="df-year" onchange="setDashboardFilter('year')" class="apple-select" style="width:auto;padding:6px 12px;min-height:32px;font-size:13px;">
+                <option value="">Επιλογή έτους...</option>
+              </select>
+              <span id="dashboard-subtitle" class="text-sm ml-auto" style="color:var(--text-tertiary);"></span>
             </div>
-            <div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border-color);display:flex;align-items:center;gap:8px;">
-              <span id="dashboard-subtitle" class="text-sm text-gray-400"></span>
+            <!-- Date range -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:0.5px solid var(--border-color);">
+              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Από</span>
+              <input type="date" id="dash-from" class="apple-input" style="width:auto;min-height:32px;font-size:13px;padding:5px 10px;" onchange="onDashDateRange()">
+              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Έως</span>
+              <input type="date" id="dash-to" class="apple-input" style="width:auto;min-height:32px;font-size:13px;padding:5px 10px;" onchange="onDashDateRange()">
+              <button onclick="clearDashDateRange()" style="font-size:12px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+            </div>
+            <!-- Reporting pills (auto-populated) -->
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
+              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;white-space:nowrap;">📅</span>
+              <div id="dash-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
             </div>
           </div>
 
@@ -865,10 +880,22 @@
                 </select>
               </div>
 
-              <!-- Reporting months (span 2 cols) -->
+              <!-- Από ημερομηνία (report) -->
+              <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Από (reporting)</label>
+                <input type="date" id="rp-from" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
+              </div>
+
+              <!-- Έως ημερομηνία (report) -->
+              <div>
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Έως (reporting)</label>
+                <input type="date" id="rp-to" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
+              </div>
+
+              <!-- Reporting pills (span 2 cols) -->
               <div class="col-span-2">
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Μήνας Reporting</label>
-                <div id="rp-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;min-height:40px;align-items:center;"></div>
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">📅 Μήνας Reporting <span style="font-weight:400;color:var(--text-tertiary);">(ή επιλέξτε παραπάνω Από/Έως)</span></label>
+                <div id="rp-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;min-height:36px;align-items:center;"></div>
               </div>
 
               <!-- Σπίτι -->
@@ -1507,14 +1534,20 @@
     // containerId: id του div που θα βάλουμε τα pills
     // selectedSet: Set με επιλεγμένα keys
     // onChangeFn: function name που καλείται όταν αλλάζει επιλογή
-    function renderReportFilterPills(containerId, selectedSet, onChangeFn) {
+    // allowedMonths: αν δοθεί, εμφανίζει μόνο αυτούς τους μήνες (για dashboard smart filter)
+    function renderReportFilterPills(containerId, selectedSet, onChangeFn, allowedMonths) {
       const container = document.getElementById(containerId);
       if (!container) return;
-      const months = getAvailableReportMonths();
-      const cur = currentMonthKey();
-      const allMonths = months.includes(cur) ? months : [cur, ...months];
+      let months;
+      if (allowedMonths) {
+        months = allowedMonths;
+      } else {
+        const available = getAvailableReportMonths();
+        const cur = currentMonthKey();
+        months = available.includes(cur) ? available : [cur, ...available];
+      }
       container.innerHTML = '';
-      allMonths.forEach(key => {
+      months.forEach(key => {
         const isSelected = selectedSet.has(key);
         const pill = document.createElement('button');
         pill.type = 'button';
@@ -1523,7 +1556,7 @@
         pill.onclick = () => {
           if (selectedSet.has(key)) selectedSet.delete(key);
           else selectedSet.add(key);
-          renderReportFilterPills(containerId, selectedSet, onChangeFn);
+          renderReportFilterPills(containerId, selectedSet, onChangeFn, allowedMonths);
           window[onChangeFn]();
         };
         container.appendChild(pill);
@@ -1535,9 +1568,20 @@
     const dashReportMonths = new Set();
     const rpReportMonths = new Set();
 
-    function clearTxReportFilter() { txReportMonths.clear(); renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions'); renderTransactions(); }
-    function clearDashReportFilter() { dashReportMonths.clear(); renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard'); drawDashboard(); }
-    function clearRpReportFilter() { rpReportMonths.clear(); renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport'); }
+    function clearTxReportFilter() {
+      txReportMonths.clear();
+      renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
+      renderTransactions();
+    }
+    function clearDashReportFilter() {
+      // Επιστροφή στο default (τρέχων μήνας)
+      dashboardFilter = 'current';
+      setDashboardFilter('current');
+    }
+    function clearRpReportFilter() {
+      rpReportMonths.clear();
+      renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport');
+    }
 
     function syncReportDate(force) {
       // Kept for backwards compat — no longer used
@@ -1744,9 +1788,99 @@
     const dashboardState = { s1: false, s2: false, s3: false, s4: false };
     let dashboardCharts = {};
     let dashboardRendered = false;
-    // Dashboard filter now handled by dashReportMonths Set
+    let dashboardFilter = 'current';
+    let dashboardYear = null;
     let dashboardTxData = null;
     let dashboardAccData = null;
+
+    // Υπολογίζει ποιοι μήνες ανήκουν στο επιλεγμένο φίλτρο
+    function getMonthsForFilter() {
+      if (!dashboardTxData) return [];
+      const now = new Date();
+      const allMonths = [...new Set(dashboardTxData.map(t => (t.report_date || t.date).slice(0, 7)))].sort((a,b) => b.localeCompare(a));
+      const curKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const fromD = document.getElementById('dash-from')?.value;
+      const toD   = document.getElementById('dash-to')?.value;
+
+      if (fromD || toD) {
+        // Date range mode: επιστρέφει μήνες που εμπίπτουν στο range
+        return allMonths.filter(k => {
+          const monthStart = k + '-01';
+          const [y, m] = k.split('-');
+          const monthEnd = new Date(parseInt(y), parseInt(m), 0).toISOString().slice(0, 10);
+          if (fromD && monthEnd < fromD) return false;
+          if (toD && monthStart > toD) return false;
+          return true;
+        });
+      }
+      if (dashboardFilter === 'current') {
+        return allMonths.filter(k => k === curKey);
+      }
+      if (dashboardFilter === 'prev') {
+        const p = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevKey = p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0');
+        return allMonths.filter(k => k === prevKey);
+      }
+      if (dashboardFilter === 'year') {
+        return allMonths.filter(k => k.startsWith(String(dashboardYear)));
+      }
+      // 'all'
+      return allMonths;
+    }
+
+    function setDashboardFilter(filter) {
+      // Καθαρισμός date range αν επιλεγεί γρήγορο φίλτρο
+      if (filter !== 'daterange') {
+        const fromEl = document.getElementById('dash-from');
+        const toEl = document.getElementById('dash-to');
+        if (fromEl) fromEl.value = '';
+        if (toEl) toEl.value = '';
+      }
+      if (filter === 'year') {
+        const sel = document.getElementById('df-year');
+        if (!sel || !sel.value) return;
+        dashboardYear = parseInt(sel.value);
+        dashboardFilter = 'year';
+      } else if (filter !== 'daterange') {
+        dashboardFilter = filter;
+        dashboardYear = null;
+        const sel = document.getElementById('df-year');
+        if (sel) sel.value = '';
+      }
+      // Ενημέρωση active state buttons
+      ['current','prev','all'].forEach(f => {
+        const btn = document.getElementById('df-' + f);
+        if (!btn) return;
+        const isActive = f === dashboardFilter && filter !== 'daterange' && filter !== 'year';
+        btn.className = isActive ? 'filter-pill active' : 'filter-pill';
+      });
+      // Αν είναι year, αφαίρεσε active από όλα
+      if (filter === 'year' || filter === 'daterange') {
+        ['current','prev','all'].forEach(f => {
+          const btn = document.getElementById('df-' + f);
+          if (btn) btn.className = 'filter-pill';
+        });
+      }
+      // Υπολογισμός allowed months και auto-populate pills
+      const allowed = getMonthsForFilter();
+      // Set dashReportMonths = allowed (όλοι pre-selected)
+      dashReportMonths.clear();
+      allowed.forEach(k => dashReportMonths.add(k));
+      renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard', allowed);
+      drawDashboard();
+    }
+
+    function onDashDateRange() {
+      dashboardFilter = 'daterange';
+      setDashboardFilter('daterange');
+    }
+
+    function clearDashDateRange() {
+      document.getElementById('dash-from').value = '';
+      document.getElementById('dash-to').value = '';
+      dashboardFilter = 'current';
+      setDashboardFilter('current');
+    }
 
     function toggleDashboard(id) {
       dashboardState[id] = !dashboardState[id];
@@ -1785,8 +1919,9 @@
 
     async function renderDashboard() {
       if (dashboardRendered) {
-        // Ανανεώνουμε τα pills με τα τρέχοντα δεδομένα
-        renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard');
+        // Αν τα pills είναι ήδη set, απλώς ξαναζωγραφίζουμε
+        const allowed = getMonthsForFilter();
+        renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard', allowed);
         drawDashboard();
         return;
       }
@@ -1802,10 +1937,19 @@
       dashboardTxData = txData || [];
       dashboardAccData = accs || [];
 
-      // Render reporting month pills
-      renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard');
+      // Populate year dropdown
+      const years = [...new Set(dashboardTxData.map(t => new Date(t.report_date || t.date).getFullYear()))].sort((a,b) => b-a);
+      const sel = document.getElementById('df-year');
+      if (sel) {
+        years.forEach(y => {
+          const opt = document.createElement('option');
+          opt.value = y; opt.textContent = y;
+          sel.appendChild(opt);
+        });
+      }
 
-      drawDashboard();
+      // Default: τρέχων μήνας — auto-populate pills
+      setDashboardFilter('current');
     }
 
     function drawDashboard() {
@@ -2588,11 +2732,52 @@
           });
         });
 
+        // Default dates: τρέχων μήνας
+        const now = new Date();
+        const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('rp-from').value = `${y}-${m}-01`;
+        const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+        document.getElementById('rp-to').value = `${y}-${m}-${lastDay}`;
+
+        // Listener για date range → ανανέωση pills
+        ['rp-from', 'rp-to'].forEach(id => {
+          document.getElementById(id).addEventListener('change', () => {
+            updateRpReportPills();
+          });
+        });
+
         // Init reporting month pills
-        renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport');
+        updateRpReportPills();
 
         reportInitialized = true;
+      } else {
+        // Κάθε φορά που ανοίγει η σελίδα, ανανεώνει τα pills
+        updateRpReportPills();
       }
+    }
+
+    // Ανανεώνει τα pills του My Report βάσει Από/Έως
+    function updateRpReportPills() {
+      const fromD = document.getElementById('rp-from')?.value;
+      const toD   = document.getElementById('rp-to')?.value;
+      const available = getAvailableReportMonths();
+      let allowed;
+      if (fromD || toD) {
+        allowed = available.filter(k => {
+          const monthStart = k + '-01';
+          const [yr, mo] = k.split('-');
+          const monthEnd = new Date(parseInt(yr), parseInt(mo), 0).toISOString().slice(0, 10);
+          if (fromD && monthEnd < fromD) return false;
+          if (toD && monthStart > toD) return false;
+          return true;
+        });
+        rpReportMonths.clear();
+        allowed.forEach(k => rpReportMonths.add(k));
+      } else {
+        allowed = available;
+        rpReportMonths.clear();
+      }
+      renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport', allowed);
     }
 
     function runReport() {
@@ -2676,8 +2861,13 @@
       document.getElementById('rp-category').value = '';
       document.getElementById('rp-subcategory').innerHTML = '<option value="">Όλες</option>';
       document.getElementById('rp-spiti').checked = false;
-      rpReportMonths.clear();
-      renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport');
+      // Reset dates στον τρέχοντα μήνα
+      const now = new Date();
+      const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+      document.getElementById('rp-from').value = `${y}-${m}-01`;
+      const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+      document.getElementById('rp-to').value = `${y}-${m}-${lastDay}`;
+      updateRpReportPills();
       document.getElementById('report-table-wrap').classList.add('hidden');
       document.getElementById('report-summary').classList.add('hidden');
       document.getElementById('report-empty').classList.add('hidden');
