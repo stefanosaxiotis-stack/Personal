@@ -1266,6 +1266,13 @@
           b.classList.remove('bg-gray-100', 'font-medium');
         }
       });
+
+      // Bottom nav active state
+      document.querySelectorAll('.bottom-nav-item').forEach(b => {
+        b.classList.remove('active');
+      });
+      const bnMap = { dashboard: 'bn-dashboard', accounts: 'bn-accounts', transactions: 'bn-transactions' };
+      if (bnMap[name]) document.getElementById(bnMap[name])?.classList.add('active');
       
       closeMobileDrawer();
       
@@ -1463,7 +1470,7 @@
         txs.forEach(t => {
           const sign = t.type === 'income' ? '+' : '−';
           const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
-          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100"><div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div><div class="flex-1 min-w-0"><div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div><div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div></div><div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}<div class="${color} font-semibold whitespace-nowrap">${sign}${formatMoney(t.amount)}</div><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
+          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100"><div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div><div class="flex-1 min-w-0"><div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div><div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div></div><div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}<div class="${color} font-semibold whitespace-nowrap">${sign}${formatMoney(t.amount)}</div><button onclick="editTransaction('${t.id}')" class="text-gray-400 hover:text-blue-600 p-1" title="Επεξεργασία"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
         });
         html += '</div>';
       });
@@ -1474,6 +1481,64 @@
       document.getElementById(id).addEventListener('change', renderTransactions);
     });
     
+    // EDIT TRANSACTION
+    let editingTransactionId = null;
+
+    function editTransaction(id) {
+      const t = allTransactions.find(tx => tx.id === id);
+      if (!t) return;
+      editingTransactionId = id;
+
+      // Πήγαινε στη φόρμα
+      showSection('new-transaction');
+
+      // Γέμισε τα πεδία
+      selectedTxType = t.type;
+      updateTypeButtons();
+
+      document.getElementById('tx-date').value = t.date;
+      document.getElementById('tx-amount').value = t.amount;
+      document.getElementById('tx-description').value = t.description || '';
+      document.getElementById('tx-spiti').checked = t.is_spiti || false;
+      document.getElementById('tx-notes').value = t.notes || '';
+
+      // Λογαριασμός
+      const accSel = document.getElementById('tx-account');
+      accSel.innerHTML = '<option value="">Επίλεξε...</option>';
+      allAccounts.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        accSel.appendChild(opt);
+      });
+      accSel.value = t.account_id;
+
+      // Κατηγορία
+      updateCategoryDropdown();
+      document.getElementById('tx-category').value = t.category_id || '';
+      updateSubcategoryDropdown();
+      document.getElementById('tx-subcategory').value = t.subcategory_id || '';
+
+      // Reporting month
+      populateReportMonthDropdown();
+      const rdKey = (t.report_date || t.date).slice(0, 7);
+      const sel = document.getElementById('tx-report-month');
+      if (sel) {
+        // Βεβαιώσου ότι υπάρχει η επιλογή
+        let found = false;
+        for (let opt of sel.options) { if (opt.value === rdKey) { found = true; break; } }
+        if (!found) {
+          const opt = document.createElement('option');
+          opt.value = rdKey; opt.textContent = reportMonthLabel(rdKey);
+          sel.insertBefore(opt, sel.firstChild);
+        }
+        sel.value = rdKey;
+      }
+
+      // Αλλαγή τίτλου και κουμπιού
+      document.querySelector('#new-transaction-section h1').textContent = 'Επεξεργασία Κίνησης';
+      document.getElementById('tx-submit').textContent = 'Αποθήκευση αλλαγών';
+    }
+
     // DELETE TRANSACTION
     async function deleteTransaction(id) {
       if (!confirm('Σίγουρα θες να διαγράψεις αυτή την κίνηση;')) return;
@@ -1588,6 +1653,7 @@
     }
 
     function resetTransactionForm() {
+      editingTransactionId = null;
       document.getElementById('transaction-form').reset();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tx-date').value = today;
@@ -1595,7 +1661,10 @@
       selectedTxType = 'expense';
       updateTypeButtons();
       updateCategoryDropdown();
-      
+      // Επαναφορά τίτλου και κουμπιού
+      document.querySelector('#new-transaction-section h1').textContent = 'Νέα Κίνηση';
+      document.getElementById('tx-submit').textContent = 'Καταχώρηση';
+
       const accountSelect = document.getElementById('tx-account');
       accountSelect.innerHTML = '<option value="">Επίλεξε...</option>';
       allAccounts.forEach(a => {
@@ -1657,9 +1726,8 @@
       e.preventDefault();
       const submitBtn = document.getElementById('tx-submit');
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Καταχώρηση...';
-      
-      const data = {
+
+      const txData = {
         date: document.getElementById('tx-date').value,
         report_date: reportMonthToDate(document.getElementById('tx-report-month').value) || document.getElementById('tx-date').value,
         amount: parseFloat(document.getElementById('tx-amount').value),
@@ -1670,22 +1738,46 @@
         description: document.getElementById('tx-description').value || null,
         is_spiti: document.getElementById('tx-spiti').checked,
         notes: document.getElementById('tx-notes').value || null,
-        source: 'manual'
       };
-      
-      const { data: inserted, error } = await sb
-        .from('transactions')
-        .insert(data)
-        .select('*, accounts(name, currency), categories(name), subcategories(name)')
-        .single();
-      
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Καταχώρηση';
-      
-      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
-      
-      allTransactions.unshift(inserted);
-      showToast('Καταχωρήθηκε επιτυχώς', 'success');
+
+      if (editingTransactionId) {
+        // EDIT MODE
+        submitBtn.textContent = 'Αποθήκευση...';
+        const { data: updated, error } = await sb
+          .from('transactions')
+          .update(txData)
+          .eq('id', editingTransactionId)
+          .select('*, accounts(name, currency), categories(name), subcategories(name)')
+          .single();
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Αποθήκευση αλλαγών';
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+
+        // Αντικατάσταση στο local array
+        const idx = allTransactions.findIndex(t => t.id === editingTransactionId);
+        if (idx !== -1) allTransactions[idx] = updated;
+        editingTransactionId = null;
+        showToast('Αλλαγές αποθηκεύτηκαν ✓', 'success');
+      } else {
+        // INSERT MODE
+        submitBtn.textContent = 'Καταχώρηση...';
+        txData.source = 'manual';
+        const { data: inserted, error } = await sb
+          .from('transactions')
+          .insert(txData)
+          .select('*, accounts(name, currency), categories(name), subcategories(name)')
+          .single();
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Καταχώρηση';
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+
+        allTransactions.unshift(inserted);
+        showToast('Καταχωρήθηκε επιτυχώς ✓', 'success');
+      }
+
+      renderAccounts();
       showSection('transactions');
     });
     
