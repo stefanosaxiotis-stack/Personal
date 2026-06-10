@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="app-version" content="1780908676">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Personal Finance</title>
+  <title>Personal Finance V2</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -410,24 +410,16 @@
             <h1 class="page-title">Dashboard</h1>
           </div>
 
-          <!-- Φίλτρα -->
-          <div class="flex flex-wrap items-center gap-2 mb-6">
-            <button onclick="setDashboardFilter('current')" id="df-current" class="filter-pill active">Τρέχων μήνας</button>
-            <button onclick="setDashboardFilter('prev')" id="df-prev" class="px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]">Προηγούμενος</button>
-            <button onclick="setDashboardFilter('all')" id="df-all" class="filter-pill">Όλα</button>
-            <select id="df-year" onchange="setDashboardFilter('year')" class="px-3 py-2 rounded-lg text-sm border border-gray-300 text-gray-600 min-h-[38px] focus:outline-none focus:ring-2 focus:ring-black">
-              <option value="">Επιλογή έτους...</option>
-            </select>
-            <span id="dashboard-subtitle" class="text-sm text-gray-400 ml-1"></span>
-          </div>
-
-          <!-- Date range -->
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-            <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Από</span>
-            <input type="date" id="dash-from" class="apple-input" style="width:auto;min-height:34px;font-size:13px;padding:6px 10px;" onchange="onDashDateRange()">
-            <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Έως</span>
-            <input type="date" id="dash-to" class="apple-input" style="width:auto;min-height:34px;font-size:13px;padding:6px 10px;" onchange="onDashDateRange()">
-            <button onclick="clearDashDateRange()" style="font-size:12px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+          <!-- Φίλτρα Dashboard -->
+          <div class="apple-card" style="padding:14px 16px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;white-space:nowrap;">📅 Reporting μήνας</span>
+              <div id="dash-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+              <button onclick="clearDashReportFilter()" style="font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+            </div>
+            <div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border-color);display:flex;align-items:center;gap:8px;">
+              <span id="dashboard-subtitle" class="text-sm text-gray-400"></span>
+            </div>
           </div>
 
           <!-- KPI Cards -->
@@ -610,15 +602,7 @@
               <div id="stat-net" class="text-2xl font-bold">—</div>
             </div>
           </div>
-          <!-- Φίλτρα περιόδου -->
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <button onclick="setTxPeriod('current')" id="tp-current" class="filter-pill active">Τρέχων μήνας</button>
-            <button onclick="setTxPeriod('prev')" id="tp-prev" class="filter-pill">Προηγούμενος</button>
-            <button onclick="setTxPeriod('all')" id="tp-all" class="filter-pill">Όλα</button>
-            <select id="tp-year" onchange="setTxPeriod('year')" class="apple-select" style="width:auto;padding:6px 12px;min-height:32px;font-size:13px;">
-              <option value="">Έτος...</option>
-            </select>
-          </div>
+
           <!-- Φίλτρα τύπου/λογαριασμού -->
           <div class="apple-card" style="padding:14px 16px;margin-bottom:16px;">
             <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
@@ -635,12 +619,13 @@
                 🏠 Σπίτι
               </label>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border-color);">
-              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Από</span>
-              <input type="date" id="tx-filter-from" class="apple-input" style="width:auto;min-height:34px;font-size:13px;padding:6px 10px;" onchange="renderTransactions()">
-              <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;">Έως</span>
-              <input type="date" id="tx-filter-to" class="apple-input" style="width:auto;min-height:34px;font-size:13px;padding:6px 10px;" onchange="renderTransactions()">
-              <button onclick="clearTxDateRange()" style="font-size:12px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+            <!-- Φίλτρο Reporting Month -->
+            <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border-color);">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;white-space:nowrap;">📅 Reporting μήνας</span>
+                <div id="tx-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+                <button onclick="clearTxReportFilter()" style="font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
+              </div>
             </div>
           </div>
           <div id="transactions-container" class="apple-card" style="overflow:hidden;">
@@ -672,15 +657,12 @@
               </div>
             </div>
             <div class="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div class="flex items-center justify-between">
-                <label class="block text-sm font-medium text-gray-700">
-                  Ημερομηνία reporting
-                  <span class="ml-1 text-xs font-normal text-gray-400">(για ποιο μήνα λογίζεται)</span>
-                </label>
-                <button type="button" onclick="syncReportDate(true)" class="text-xs text-gray-400 hover:text-black underline">= Ημ. συναλλαγής</button>
-              </div>
-              <input type="date" id="tx-report-date" required class="apple-input">
-              <p class="text-xs text-gray-400">Π.χ. μισθός Ιουνίου που μπαίνει 10/07 → reporting: 30/06</p>
+              <label class="block text-sm font-medium text-gray-700">
+                Μήνας Reporting
+                <span class="ml-1 text-xs font-normal text-gray-400">(για ποιο μήνα λογίζεται)</span>
+              </label>
+              <select id="tx-report-month" required class="apple-input"></select>
+              <p class="text-xs text-gray-400">Π.χ. μισθός Ιουνίου που μπαίνει 10/07 → Ιούν 2025</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Λογαριασμός</label>
@@ -883,16 +865,10 @@
                 </select>
               </div>
 
-              <!-- Από ημερομηνία (report) -->
-              <div>
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Από (reporting)</label>
-                <input type="date" id="rp-from" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
-              </div>
-
-              <!-- Έως ημερομηνία (report) -->
-              <div>
-                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Έως (reporting)</label>
-                <input type="date" id="rp-to" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
+              <!-- Reporting months (span 2 cols) -->
+              <div class="col-span-2">
+                <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Μήνας Reporting</label>
+                <div id="rp-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;min-height:40px;align-items:center;"></div>
               </div>
 
               <!-- Σπίτι -->
@@ -1267,7 +1243,10 @@
       closeMobileDrawer();
       
       if (name === 'accounts') renderAccounts();
-      if (name === 'transactions') renderTransactions();
+      if (name === 'transactions') {
+        renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
+        renderTransactions();
+      }
       if (name === 'new-transaction') resetTransactionForm();
       if (name === 'new-transfer') resetTransferForm();
       if (name === 'dashboard') renderDashboard();
@@ -1342,6 +1321,8 @@
       allSubcategories = subcategoriesRes.data || [];
       allTransactions = transactionsRes.data || [];
       allTransfers = transfersRes.data || [];
+      // Populate reporting month dropdown for new transaction form
+      populateReportMonthDropdown();
     }
     
     // ACCOUNTS PAGE
@@ -1396,41 +1377,6 @@
     }
     
     // TRANSACTIONS PAGE
-    let txPeriodFilter = 'all';
-    let txPeriodYear = null;
-
-    function setTxPeriod(filter) {
-      if (filter === 'year') {
-        const sel = document.getElementById('tp-year');
-        if (!sel.value) return;
-        txPeriodYear = parseInt(sel.value);
-        txPeriodFilter = 'year';
-      } else {
-        txPeriodFilter = filter;
-        txPeriodYear = null;
-        document.getElementById('tp-year').value = '';
-      }
-      ['current','prev','all'].forEach(f => {
-        const btn = document.getElementById('tp-' + f);
-        if (!btn) return;
-        btn.className = (f === txPeriodFilter) ? 'filter-pill active' : 'filter-pill';
-      });
-      if (filter === 'year') {
-        ['current','prev','all'].forEach(f => {
-          const btn = document.getElementById('tp-' + f);
-          if (btn) btn.className = 'filter-pill';
-        });
-      }
-      renderTransactions();
-    }
-
-    function clearTxDateRange() {
-      const f = document.getElementById('tx-filter-from');
-      const t = document.getElementById('tx-filter-to');
-      if (f) f.value = '';
-      if (t) t.value = '';
-      renderTransactions();
-    }
 
     function renderTransactions() {
       const container = document.getElementById('transactions-container');
@@ -1442,29 +1388,10 @@
       
       let filtered = [...allTransactions];
 
-      // Φίλτρο περιόδου βάσει report_date
-      const now = new Date();
-      const cy = now.getFullYear(), cm = now.getMonth();
-      if (txPeriodFilter === 'current') {
-        filtered = filtered.filter(t => {
-          const d = new Date(t.report_date || t.date);
-          return d.getFullYear() === cy && d.getMonth() === cm;
-        });
-      } else if (txPeriodFilter === 'prev') {
-        const p = new Date(cy, cm - 1, 1);
-        filtered = filtered.filter(t => {
-          const d = new Date(t.report_date || t.date);
-          return d.getFullYear() === p.getFullYear() && d.getMonth() === p.getMonth();
-        });
-      } else if (txPeriodFilter === 'year' && txPeriodYear) {
-        filtered = filtered.filter(t => new Date(t.report_date || t.date).getFullYear() === txPeriodYear);
+      // Φίλτρο Reporting Month (multiple select)
+      if (txReportMonths.size > 0) {
+        filtered = filtered.filter(t => txReportMonths.has((t.report_date || t.date).slice(0, 7)));
       }
-
-      // Date range filter (Από - Έως)
-      const fromDate = document.getElementById('tx-filter-from')?.value;
-      const toDate   = document.getElementById('tx-filter-to')?.value;
-      if (fromDate) filtered = filtered.filter(t => (t.report_date || t.date) >= fromDate);
-      if (toDate)   filtered = filtered.filter(t => (t.report_date || t.date) <= toDate);
 
       if (filterType) filtered = filtered.filter(t => t.type === filterType);
       if (filterAccount) filtered = filtered.filter(t => t.account_id === filterAccount);
@@ -1479,17 +1406,6 @@
           accountFilter.appendChild(opt);
         });
       }
-      // Populate year dropdown για transactions
-      const txYearSel = document.getElementById('tp-year');
-      if (txYearSel && txYearSel.options.length === 1) {
-        const years = [...new Set(allTransactions.map(t => new Date(t.report_date || t.date).getFullYear()))].sort((a,b)=>b-a);
-        years.forEach(y => {
-          const o = document.createElement('option');
-          o.value = y; o.textContent = y;
-          txYearSel.appendChild(o);
-        });
-      }
-      
       const income = filtered.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
       const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
       const net = income - expense;
@@ -1543,20 +1459,95 @@
     }
     
     // NEW TRANSACTION FORM
+    // ============================================
+    // REPORTING MONTH HELPERS
+    // ============================================
+    const MONTH_NAMES = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
+
+    // Παράγει YYYY-MM-01 από επιλεγμένο key π.χ. "2025-06"
+    function reportMonthToDate(key) { return key + '-01'; }
+
+    // Παράγει label π.χ. "Ιούν 2025" από key "2025-06"
+    function reportMonthLabel(key) {
+      const [y, m] = key.split('-');
+      return MONTH_NAMES[parseInt(m) - 1] + ' ' + y;
+    }
+
+    // Παράγει λίστα μηνών από τα allTransactions (μοναδικοί report_date μήνες, sorted desc)
+    function getAvailableReportMonths() {
+      const keys = new Set(allTransactions.map(t => (t.report_date || t.date).slice(0, 7)));
+      return [...keys].sort((a, b) => b.localeCompare(a));
+    }
+
+    // Τρέχων μήνας ως key π.χ. "2026-06"
+    function currentMonthKey() {
+      const now = new Date();
+      return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    }
+
+    // Populate τον tx-report-month dropdown
+    function populateReportMonthDropdown() {
+      const sel = document.getElementById('tx-report-month');
+      if (!sel) return;
+      const months = getAvailableReportMonths();
+      const cur = currentMonthKey();
+      // Αν ο τρέχων μήνας δεν υπάρχει στα δεδομένα, τον προσθέτουμε πρώτο
+      const allMonths = months.includes(cur) ? months : [cur, ...months];
+      sel.innerHTML = '';
+      allMonths.forEach(key => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = reportMonthLabel(key);
+        sel.appendChild(opt);
+      });
+      sel.value = cur;
+    }
+
+    // Render filter pills για multiple-select reporting month
+    // containerId: id του div που θα βάλουμε τα pills
+    // selectedSet: Set με επιλεγμένα keys
+    // onChangeFn: function name που καλείται όταν αλλάζει επιλογή
+    function renderReportFilterPills(containerId, selectedSet, onChangeFn) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const months = getAvailableReportMonths();
+      const cur = currentMonthKey();
+      const allMonths = months.includes(cur) ? months : [cur, ...months];
+      container.innerHTML = '';
+      allMonths.forEach(key => {
+        const isSelected = selectedSet.has(key);
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.textContent = reportMonthLabel(key);
+        pill.style.cssText = `padding:5px 12px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid ${isSelected ? 'var(--accent)' : 'rgba(0,0,0,0.12)'};background:${isSelected ? 'var(--accent)' : 'transparent'};color:${isSelected ? '#fff' : 'var(--text-secondary)'};transition:all 0.15s;`;
+        pill.onclick = () => {
+          if (selectedSet.has(key)) selectedSet.delete(key);
+          else selectedSet.add(key);
+          renderReportFilterPills(containerId, selectedSet, onChangeFn);
+          window[onChangeFn]();
+        };
+        container.appendChild(pill);
+      });
+    }
+
+    // Selected sets για κάθε σελίδα
+    const txReportMonths = new Set();
+    const dashReportMonths = new Set();
+    const rpReportMonths = new Set();
+
+    function clearTxReportFilter() { txReportMonths.clear(); renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions'); renderTransactions(); }
+    function clearDashReportFilter() { dashReportMonths.clear(); renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard'); drawDashboard(); }
+    function clearRpReportFilter() { rpReportMonths.clear(); renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport'); }
+
     function syncReportDate(force) {
-      const txDate = document.getElementById('tx-date').value;
-      const rdField = document.getElementById('tx-report-date');
-      if (force || !rdField.value || rdField.value === rdField.dataset.prev) {
-        rdField.value = txDate;
-      }
-      rdField.dataset.prev = rdField.value;
+      // Kept for backwards compat — no longer used
     }
 
     function resetTransactionForm() {
       document.getElementById('transaction-form').reset();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('tx-date').value = today;
-      document.getElementById('tx-report-date').value = today;
+      populateReportMonthDropdown();
       selectedTxType = 'expense';
       updateTypeButtons();
       updateCategoryDropdown();
@@ -1626,7 +1617,7 @@
       
       const data = {
         date: document.getElementById('tx-date').value,
-        report_date: document.getElementById('tx-report-date').value || document.getElementById('tx-date').value,
+        report_date: reportMonthToDate(document.getElementById('tx-report-month').value) || document.getElementById('tx-date').value,
         amount: parseFloat(document.getElementById('tx-amount').value),
         type: selectedTxType,
         account_id: document.getElementById('tx-account').value,
@@ -1753,8 +1744,7 @@
     const dashboardState = { s1: false, s2: false, s3: false, s4: false };
     let dashboardCharts = {};
     let dashboardRendered = false;
-    let dashboardFilter = 'current';
-    let dashboardYear = null;
+    // Dashboard filter now handled by dashReportMonths Set
     let dashboardTxData = null;
     let dashboardAccData = null;
 
@@ -1775,72 +1765,31 @@
       }
     }
 
-    function setDashboardFilter(filter) {
-      if (filter === 'year') {
-        const sel = document.getElementById('df-year');
-        if (!sel.value) return;
-        dashboardYear = parseInt(sel.value);
-        dashboardFilter = 'year';
-      } else {
-        dashboardFilter = filter;
-        dashboardYear = null;
-        document.getElementById('df-year').value = '';
-      }
-      ['current','prev','all'].forEach(f => {
-        const btn = document.getElementById('df-' + f);
-        if (!btn) return;
-        btn.className = (f === dashboardFilter)
-          ? 'px-4 py-2 rounded-lg text-sm font-medium bg-black text-white min-h-[38px]'
-          : 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]';
-      });
-      if (filter === 'year') {
-        ['current','prev','all'].forEach(f => {
-          const btn = document.getElementById('df-' + f);
-          if (btn) btn.className = 'px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-600 hover:bg-gray-50 min-h-[38px]';
-        });
-      }
-      drawDashboard();
-    }
+    // setDashboardFilter removed — replaced by reporting month pills
 
     function getFilteredTxData() {
       if (!dashboardTxData) return [];
-      const now = new Date();
-      const curYear = now.getFullYear(), curMonth = now.getMonth();
-      const fromD = document.getElementById('dash-from')?.value;
-      const toD   = document.getElementById('dash-to')?.value;
-      return dashboardTxData.filter(t => {
-        const d = new Date(t.report_date || t.date);
-        const rd = t.report_date || t.date;
-        // Date range override
-        if (fromD || toD) {
-          if (fromD && rd < fromD) return false;
-          if (toD   && rd > toD)   return false;
-          return true;
-        }
-        if (dashboardFilter === 'current') return d.getFullYear() === curYear && d.getMonth() === curMonth;
-        if (dashboardFilter === 'prev') {
-          const p = new Date(curYear, curMonth - 1, 1);
-          return d.getFullYear() === p.getFullYear() && d.getMonth() === p.getMonth();
-        }
-        if (dashboardFilter === 'year') return d.getFullYear() === dashboardYear;
-        return true;
-      });
+      // Αν έχουν επιλεγεί συγκεκριμένοι μήνες reporting, φιλτράρουμε βάσει αυτών
+      if (dashReportMonths.size > 0) {
+        return dashboardTxData.filter(t => dashReportMonths.has((t.report_date || t.date).slice(0, 7)));
+      }
+      // Αλλιώς επιστρέφουμε όλα
+      return dashboardTxData;
     }
 
     function getFilterLabel() {
-      const now = new Date();
-      const months = ['Ιαν','Φεβ','Μαρ','Απρ','Μάι','Ιούν','Ιούλ','Αύγ','Σεπ','Οκτ','Νοε','Δεκ'];
-      if (dashboardFilter === 'current') return months[now.getMonth()] + ' ' + now.getFullYear();
-      if (dashboardFilter === 'prev') {
-        const p = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        return months[p.getMonth()] + ' ' + p.getFullYear();
-      }
-      if (dashboardFilter === 'year') return 'Έτος ' + dashboardYear;
-      return 'Σύνολο περιόδου';
+      if (dashReportMonths.size === 0) return 'Σύνολο περιόδου';
+      if (dashReportMonths.size === 1) return reportMonthLabel([...dashReportMonths][0]);
+      return [...dashReportMonths].sort().map(reportMonthLabel).join(', ');
     }
 
     async function renderDashboard() {
-      if (dashboardRendered) { drawDashboard(); return; }
+      if (dashboardRendered) {
+        // Ανανεώνουμε τα pills με τα τρέχοντα δεδομένα
+        renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard');
+        drawDashboard();
+        return;
+      }
       dashboardRendered = true;
       document.getElementById('dashboard-subtitle').textContent = 'Φόρτωση...';
 
@@ -1853,14 +1802,8 @@
       dashboardTxData = txData || [];
       dashboardAccData = accs || [];
 
-      // Populate year dropdown
-      const years = [...new Set(dashboardTxData.map(t => new Date(t.report_date || t.date).getFullYear()))].sort((a,b) => b-a);
-      const sel = document.getElementById('df-year');
-      years.forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y; opt.textContent = y;
-        sel.appendChild(opt);
-      });
+      // Render reporting month pills
+      renderReportFilterPills('dash-report-filter-pills', dashReportMonths, 'drawDashboard');
 
       drawDashboard();
     }
@@ -2645,12 +2588,8 @@
           });
         });
 
-        // Default dates: τρέχων μήνας
-        const now = new Date();
-        const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
-        document.getElementById('rp-from').value = `${y}-${m}-01`;
-        const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
-        document.getElementById('rp-to').value = `${y}-${m}-${lastDay}`;
+        // Init reporting month pills
+        renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport');
 
         reportInitialized = true;
       }
@@ -2661,8 +2600,6 @@
       const accountId = document.getElementById('rp-account').value;
       const catId     = document.getElementById('rp-category').value;
       const subId     = document.getElementById('rp-subcategory').value;
-      const from      = document.getElementById('rp-from').value;
-      const to        = document.getElementById('rp-to').value;
       const spiti     = document.getElementById('rp-spiti').checked;
       const dateField = document.getElementById('rp-datefield').value;
 
@@ -2673,8 +2610,10 @@
       if (catId)     results = results.filter(t => t.category_id === catId);
       if (subId)     results = results.filter(t => t.subcategory_id === subId);
       if (spiti)     results = results.filter(t => t.is_spiti);
-      if (from)      results = results.filter(t => (t[dateField] || t.date) >= from);
-      if (to)        results = results.filter(t => (t[dateField] || t.date) <= to);
+      // Φίλτρο Reporting Month (multiple select)
+      if (rpReportMonths.size > 0) {
+        results = results.filter(t => rpReportMonths.has((t.report_date || t.date).slice(0, 7)));
+      }
 
       // Sort by chosen date field
       results.sort((a, b) => (a[dateField] || a.date).localeCompare(b[dateField] || b.date));
@@ -2737,11 +2676,8 @@
       document.getElementById('rp-category').value = '';
       document.getElementById('rp-subcategory').innerHTML = '<option value="">Όλες</option>';
       document.getElementById('rp-spiti').checked = false;
-      const now = new Date();
-      const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
-      document.getElementById('rp-from').value = `${y}-${m}-01`;
-      const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
-      document.getElementById('rp-to').value = `${y}-${m}-${lastDay}`;
+      rpReportMonths.clear();
+      renderReportFilterPills('rp-report-filter-pills', rpReportMonths, 'runReport');
       document.getElementById('report-table-wrap').classList.add('hidden');
       document.getElementById('report-summary').classList.add('hidden');
       document.getElementById('report-empty').classList.add('hidden');
