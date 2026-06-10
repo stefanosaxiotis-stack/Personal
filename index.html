@@ -3268,16 +3268,6 @@
     try {
       const reg = await navigator.serviceWorker.register('./sw.js', { scope: './' });
 
-      // Έλεγχος για update όταν εγκαθίσταται νέος SW
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateBanner(reg);
-          }
-        });
-      });
-
       // Έλεγχος για update κάθε φορά που η εφαρμογή έρχεται στο foreground
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
@@ -3294,55 +3284,29 @@
     }
   }
 
-  // Ελέγχει αν η έκδοση στο server είναι νεότερη
+  // Ελέγχει αν η έκδοση στο server είναι νεότερη και κάνει αυτόματο reload
   async function checkVersionChange() {
     try {
-      // Κατεβάζει το index.html χωρίς cache για να ελέγξει το meta version
       const resp = await fetch('./index.html', {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
       });
       const html = await resp.text();
       const match = html.match(/name="app-version" content="([^"]+)"/);
-      if (match) {
-        const serverVersion = match[1];
-        const localVersion = localStorage.getItem('pf_app_version');
-        if (localVersion && localVersion !== serverVersion) {
-          // Νέα έκδοση στο server!
-          showUpdateBanner(null);
-        } else {
-          localStorage.setItem('pf_app_version', serverVersion);
-        }
+      if (!match) return;
+      const serverVersion = match[1];
+      const localVersion = localStorage.getItem('pf_app_version');
+      if (!localVersion) {
+        // Πρώτη φορά — αποθήκευσε και συνέχισε
+        localStorage.setItem('pf_app_version', serverVersion);
+      } else if (localVersion !== serverVersion) {
+        // Νέα έκδοση — αποθήκευσε και κάνε αυτόματο reload
+        localStorage.setItem('pf_app_version', serverVersion);
+        window.location.reload(true);
       }
     } catch (e) {
       // Offline — αγνοούμε
     }
-  }
-
-  function showUpdateBanner(reg) {
-    if (document.getElementById('update-banner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'update-banner';
-    banner.style.cssText = [
-      'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:9999',
-      'background:#007aff', 'color:#fff',
-      'padding:14px 20px',
-      'display:flex', 'align-items:center', 'justify-content:space-between',
-      'font-family:-apple-system,sans-serif', 'font-size:14px', 'font-weight:500',
-      'box-shadow:0 2px 16px rgba(0,122,255,0.5)'
-    ].join(';');
-    banner.innerHTML = `
-      <span>🆕 Νέα έκδοση διαθέσιμη</span>
-      <button id="update-btn" style="background:#fff;color:#007aff;border:none;padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">
-        Ανανέωση
-      </button>
-    `;
-    banner.querySelector('#update-btn').onclick = async () => {
-      localStorage.removeItem('pf_app_version');
-      if (reg && reg.waiting) reg.waiting.postMessage('skipWaiting');
-      window.location.reload(true);
-    };
-    document.body.prepend(banner);
   }
 
   window.addEventListener('load', registerSW);
