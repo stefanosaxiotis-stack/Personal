@@ -2256,7 +2256,12 @@
         tr.onclick = () => showS4Subcategories(cat, val, catTotal, catColors[i%catColors.length]);
         tb4.appendChild(tr);
       });
-      if (catTotal > 0) tb4.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${formatMoney(catTotal)}</td><td class="text-right py-2 px-3">100%</td></tr>`;
+      if (catTotal > 0) {
+        const totRow = document.createElement('tr');
+        totRow.className = 'font-semibold bg-gray-50 text-sm';
+        totRow.innerHTML = `<td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${formatMoney(catTotal)}</td><td class="text-right py-2 px-3">100%</td>`;
+        tb4.appendChild(totRow);
+      }
     }
 
     // Drill-down state
@@ -2351,7 +2356,10 @@
         tb.appendChild(tr);
       });
       const totNet = Math.round((totE-totX)*100)/100;
-      tb.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(Math.round(totE*100)/100)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(Math.round(totX*100)/100)}</td><td class="text-right py-2 px-3 ${totNet>=0?'text-green-600':'text-red-600'}">${totNet>=0?'+':''}${formatMoney(totNet)}</td></tr>`;
+      const totRowD = document.createElement('tr');
+      totRowD.className = 'font-semibold bg-gray-50 text-sm';
+      totRowD.innerHTML = `<td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(Math.round(totE*100)/100)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(Math.round(totX*100)/100)}</td><td class="text-right py-2 px-3 ${totNet>=0?'text-green-600':'text-red-600'}">${totNet>=0?'+':''}${formatMoney(totNet)}</td>`;
+      tb.appendChild(totRowD);
     }
 
     function renderS1DrillSubcategories(catName) {
@@ -2382,7 +2390,10 @@
         tb.appendChild(tr);
       });
       const totNet = Math.round((totE-totX)*100)/100;
-      tb.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο ${catName}</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(Math.round(totE*100)/100)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(Math.round(totX*100)/100)}</td><td class="text-right py-2 px-3 ${totNet>=0?'text-green-600':'text-red-600'}">${totNet>=0?'+':''}${formatMoney(totNet)}</td></tr>`;
+      const totRowS = document.createElement('tr');
+      totRowS.className = 'font-semibold bg-gray-50 text-sm';
+      totRowS.innerHTML = `<td class="py-2 px-3">Σύνολο ${catName}</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(Math.round(totE*100)/100)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(Math.round(totX*100)/100)}</td><td class="text-right py-2 px-3 ${totNet>=0?'text-green-600':'text-red-600'}">${totNet>=0?'+':''}${formatMoney(totNet)}</td>`;
+      tb.appendChild(totRowS);
     }
 
     // ============================================
