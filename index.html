@@ -2036,7 +2036,7 @@
 
       const { data: txData } = await sb
         .from('transactions')
-        .select('date, report_date, amount, type, is_spiti, account_id, subcategory_id, subcategories(category_id, categories(name))')
+        .select('date, report_date, amount, type, is_spiti, account_id, subcategory_id, subcategories(name, category_id, categories(name))')
         .order('date', { ascending: true });
 
       const { data: accs } = await sb.from('accounts').select('id, name, type');
