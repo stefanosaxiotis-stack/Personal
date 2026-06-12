@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781113964">
+  <meta name="app-version" content="1781209713">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Personal Finance V2</title>
   
@@ -35,7 +35,7 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif; background: var(--bg-primary); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
     
     .hidden-section { display: none !important; }
-    .privacy-blur { filter: blur(10px); user-select: none; transition: filter 0.25s ease; }
+    .privacy-blur { filter: blur(6px); user-select: none; transition: filter 0.2s ease; }
 
     /* ---- CARDS ---- */
     .apple-card { background: var(--bg-secondary); border-radius: var(--card-radius); box-shadow: var(--card-shadow); }
@@ -95,7 +95,8 @@
     /* ---- INPUTS ---- */
     .apple-input { width: 100%; padding: 12px 14px; background: var(--bg-secondary); border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit; }
     .apple-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
-    .apple-select { width: 100%; padding: 12px 14px; background: var(--bg-secondary); border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.15s; font-family: inherit; -webkit-appearance: none; }
+    .apple-select { width: 100%; padding: 12px 14px; background: var(--bg-secondary); border: 0.5px solid rgba(0,0,0,0.12); border-radius: 10px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.15s; font-family: inherit; -webkit-appearance: none; appearance: none; }
+    select option { background: var(--bg-secondary); color: var(--text-primary); }
     .apple-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
 
     /* ---- TABLES ---- */
@@ -285,8 +286,8 @@
 
     <!-- MOBILE HEADER -->
     <header class="apple-header" id="mobile-header" style="position:sticky;top:0;z-index:30;padding:10px 16px 10px;display:flex;align-items:center;justify-content:space-between;">
-      <button id="mobile-menu-btn" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(120,120,128,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <button onclick="refreshData()" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(120,120,128,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;" title="Ανανέωση">
+        <svg id="refresh-icon-top" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
       <span id="mobile-page-title" style="font-size:17px;font-weight:600;letter-spacing:-0.3px;">Dashboard</span>
       <button id="privacy-btn-mobile" onclick="togglePrivacy()" style="width:36px;height:36px;border-radius:50%;border:none;background:rgba(120,120,128,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;">
@@ -652,13 +653,16 @@
                 🏠 Σπίτι
               </label>
             </div>
-            <!-- Φίλτρο Reporting Month -->
+            <!-- Φίλτρο Reporting Month + Year -->
             <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid var(--border-color);">
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
                 <span style="font-size:12px;color:var(--text-tertiary);font-weight:600;white-space:nowrap;">📅 Reporting μήνας</span>
-                <div id="tx-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+                <select id="tx-year-filter" class="apple-select" style="width:auto;min-height:32px;font-size:13px;padding:5px 10px;" onchange="onTxYearFilter()">
+                  <option value="">Όλα τα έτη</option>
+                </select>
                 <button onclick="clearTxReportFilter()" style="font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;">Καθαρισμός</button>
               </div>
+              <div id="tx-report-filter-pills" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
             </div>
           </div>
           <div id="transactions-container" class="apple-card" style="overflow:hidden;">
@@ -1251,6 +1255,13 @@
     function formatMoney(amount, currency = 'EUR') {
       return new Intl.NumberFormat('el-GR', { style: 'currency', currency }).format(amount || 0);
     }
+
+    // Δημιουργεί span με data-amount για privacy masking
+    // cssClass: π.χ. 'text-green-600 font-bold text-2xl'
+    function prvSpan(amount, cssClass = '') {
+      const formatted = formatMoney(amount);
+      return `<span data-amount="${amount}" class="${cssClass}" style="display:inline;">${privacyOn ? maskAmount(amount) : formatted}</span>`;
+    }
     
     function formatDate(dateStr) {
       const today = new Date().toISOString().split('T')[0];
@@ -1297,6 +1308,11 @@
       
       if (name === 'accounts') renderAccounts();
       if (name === 'transactions') {
+        initTxYearFilter();
+        // Default: τρέχων μήνας αν δεν έχει οριστεί τίποτα
+        if (txReportMonths.size === 0) {
+          txReportMonths.add(currentMonthKey());
+        }
         renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
         renderTransactions();
       }
@@ -1401,6 +1417,64 @@
     }
     
     // ACCOUNTS PAGE
+    const ACCOUNT_CONFIG = {
+      'Eurobank Μισθοδοσίας':  { icon: 'briefcase',   color: '#0066b2', order: 1 },
+      'Eurobank Αποταμιευτικός':{ icon: 'piggy-bank',  color: '#0066b2', order: 2 },
+      'Eurobank Πάγιες':       { icon: 'repeat',       color: '#0066b2', order: 3 },
+      'Πειραιώς Κοινός':       { icon: 'users',        color: '#f5a623', order: 4 },
+      'Πειραιώς Στεφ':         { icon: 'user',         color: '#f5a623', order: 5 },
+      'Μετρητά':               { icon: 'wallet',       color: '#34c759', order: 6 },
+      'AI Trading':            { icon: 'trending-up',  color: '#1a1a1a', order: 7 },
+      'ETF Portfolio':         { icon: 'bar-chart-2',  color: '#1a1a1a', order: 8 },
+    };
+
+    const SVG_ICONS = {
+      'briefcase':   '<path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>',
+      'piggy-bank':  '<path d="M19 8a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3c0 1 .5 2 1 2.5L5 21h14l-1-10.5c.5-.5 1-1.5 1-2.5z"/><line x1="12" y1="5" x2="12" y2="8"/>',
+      'repeat':      '<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+      'users':       '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      'user':        '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+      'wallet':      '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+      'trending-up': '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+      'bar-chart-2': '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    };
+
+    // Επιστρέφει λογαριασμούς ταξινομημένους βάσει ACCOUNT_CONFIG order
+    function sortedAccounts() {
+      return [...allAccounts].sort((a, b) => {
+        const oa = ACCOUNT_CONFIG[a.name]?.order ?? 99;
+        const ob = ACCOUNT_CONFIG[b.name]?.order ?? 99;
+        return oa - ob;
+      });
+    }
+
+    // Γεμίζει select element με λογαριασμούς (sorted) + optional placeholder
+    function populateAccountSelect(sel, placeholder = 'Επίλεξε...', includeAll = false) {
+      sel.innerHTML = '';
+      if (includeAll) {
+        const allOpt = document.createElement('option');
+        allOpt.value = ''; allOpt.textContent = 'Όλοι οι λογαριασμοί';
+        sel.appendChild(allOpt);
+      } else {
+        const ph = document.createElement('option');
+        ph.value = ''; ph.textContent = placeholder;
+        sel.appendChild(ph);
+      }
+      sortedAccounts().forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function getAccountSvg(name, size = 20) {
+      const cfg = ACCOUNT_CONFIG[name];
+      const icon = cfg ? SVG_ICONS[cfg.icon] : SVG_ICONS['wallet'];
+      const color = cfg?.color || '#8e8e93';
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>`;
+    }
+
     function renderAccounts() {
       const container = document.getElementById('accounts-container');
       const subtitle = document.getElementById('accounts-subtitle');
@@ -1411,44 +1485,75 @@
         return;
       }
       
+      // Υπολογισμός balances
       const balances = {};
       allAccounts.forEach(a => balances[a.id] = 0);
       allTransactions.forEach(t => {
         if (balances[t.account_id] === undefined) return;
-        if (t.type === 'income') balances[t.account_id] += parseFloat(t.amount);
-        else balances[t.account_id] -= parseFloat(t.amount);
+        t.type === 'income' ? balances[t.account_id] += parseFloat(t.amount) : balances[t.account_id] -= parseFloat(t.amount);
       });
-      // Συμπεριλαμβάνω τις μεταφορές στο balance
       allTransfers.forEach(tr => {
         if (balances[tr.from_account_id] !== undefined) balances[tr.from_account_id] -= parseFloat(tr.amount);
         if (balances[tr.to_account_id] !== undefined) balances[tr.to_account_id] += parseFloat(tr.amount);
       });
       
-      const totalEUR = allAccounts.filter(a => a.currency === 'EUR').reduce((sum, a) => sum + balances[a.id], 0);
-      totalEl.textContent = formatMoney(totalEUR);
-      totalEl.className = `text-2xl font-bold ${totalEUR < 0 ? 'text-red-600' : ''}`;
+      // Σύνολο — εξαιρείται ο Πειραιώς Κοινός
+      const totalEUR = allAccounts
+        .filter(a => a.currency === 'EUR' && a.name !== 'Πειραιώς Κοινός')
+        .reduce((sum, a) => sum + balances[a.id], 0);
+      totalEl.innerHTML = prvSpan(totalEUR, `text-2xl font-bold ${totalEUR < 0 ? 'text-red-600' : ''}`);
       subtitle.textContent = `${allAccounts.length} ενεργοί λογαριασμοί`;
       
+      // Ταξινόμηση λογαριασμών βάσει ACCOUNT_CONFIG order
+      const sorted = [...allAccounts].sort((a, b) => {
+        const oa = ACCOUNT_CONFIG[a.name]?.order ?? 99;
+        const ob = ACCOUNT_CONFIG[b.name]?.order ?? 99;
+        return oa - ob;
+      });
+
+      // Ομαδοποίηση ανά provider (διατηρώντας σειρά)
       const groups = {};
-      allAccounts.forEach(a => {
+      const groupOrder = [];
+      sorted.forEach(a => {
         const key = a.provider || (a.type === 'cash' ? 'Μετρητά' : 'Άλλο');
-        if (!groups[key]) groups[key] = [];
+        if (!groups[key]) { groups[key] = []; groupOrder.push(key); }
         groups[key].push(a);
       });
       
+      // Χρώμα γραμμής ανά provider
+      const providerBarColor = {
+        'Eurobank':   '#0066b2',
+        'Πειραιώς':  '#f5a623',
+        'Revolut':   '#1a1a1a',
+        'Μετρητά':   '#34c759',
+      };
+
       let html = '';
-      Object.entries(groups).forEach(([provider, accounts]) => {
-        html += `<div><h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">${provider}</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
-        accounts.forEach(a => {
+      groupOrder.forEach(provider => {
+        const barColor = providerBarColor[provider] || '#8e8e93';
+        html += `<div><h3 class="text-sm font-semibold uppercase tracking-wide mb-3" style="color:${barColor};">${provider}</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">`;
+        groups[provider].forEach(a => {
           const bal = balances[a.id] || 0;
           const balColor = bal < 0 ? 'text-red-600' : 'text-gray-900';
           const typeLabel = a.type === 'bank' ? 'Τράπεζα' : a.type === 'cash' ? 'Μετρητά' : 'Επένδυση';
           const typeColor = a.type === 'bank' ? 'bg-blue-100 text-blue-700' : a.type === 'cash' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700';
-          html += `<div class="apple-card" style="overflow:hidden;"><div class="h-1 bg-indigo-500"></div><div class="p-4"><div class="flex items-start justify-between mb-3"><h4 class="font-semibold">${a.name}</h4><span class="text-xs px-2 py-1 rounded-full ${typeColor}">${typeLabel}</span></div><div class="text-2xl font-bold ${balColor}">${formatMoney(bal, a.currency)}</div><div class="text-xs text-gray-400 mt-1">${a.currency}</div></div></div>`;
+          const svg = getAccountSvg(a.name, 22);
+          html += `<div class="apple-card" style="overflow:hidden;">
+            <div class="h-1" style="background:${barColor};"></div>
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center gap-2">${svg}<h4 class="font-semibold">${a.name}</h4></div>
+                <span class="text-xs px-2 py-1 rounded-full ${typeColor}">${typeLabel}</span>
+              </div>
+              <div class="text-2xl font-bold ${balColor}">${prvSpan(bal, `text-2xl font-bold ${balColor}`)}</div>
+              <div class="text-xs text-gray-400 mt-1">${a.currency}</div>
+            </div>
+          </div>`;
         });
         html += '</div></div>';
       });
       container.innerHTML = html;
+      applyPrivacyBlur();
     }
     
     // TRANSACTIONS PAGE
@@ -1474,22 +1579,16 @@
       
       const accountFilter = document.getElementById('filter-account');
       if (accountFilter.options.length === 1) {
-        allAccounts.forEach(a => {
-          const opt = document.createElement('option');
-          opt.value = a.id;
-          opt.textContent = a.name;
-          accountFilter.appendChild(opt);
-        });
+        populateAccountSelect(accountFilter, '', true);
       }
       const income = filtered.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
       const expense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + parseFloat(t.amount), 0);
       const net = income - expense;
       
-      document.getElementById('stat-income').textContent = formatMoney(income);
-      document.getElementById('stat-expense').textContent = formatMoney(expense);
+      document.getElementById('stat-income').innerHTML = prvSpan(income, 'text-2xl font-bold text-green-600');
+      document.getElementById('stat-expense').innerHTML = prvSpan(expense, 'text-2xl font-bold text-red-600');
       const netEl = document.getElementById('stat-net');
-      netEl.textContent = formatMoney(net);
-      netEl.className = `text-2xl font-bold ${net < 0 ? 'text-red-600' : net > 0 ? 'text-green-600' : ''}`;
+      netEl.innerHTML = prvSpan(net, `text-2xl font-bold ${net < 0 ? 'text-red-600' : net > 0 ? 'text-green-600' : ''}`);
       
       subtitle.textContent = `${filtered.length} ${filtered.length === 1 ? 'κίνηση' : 'κινήσεις'}`;
       
@@ -1511,7 +1610,7 @@
         txs.forEach(t => {
           const sign = t.type === 'income' ? '+' : '−';
           const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
-          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100"><div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div><div class="flex-1 min-w-0"><div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div><div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div></div><div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}<div class="${color} font-semibold whitespace-nowrap">${sign}${formatMoney(t.amount)}</div><button onclick="editTransaction('${t.id}')" class="text-gray-400 hover:text-blue-600 p-1" title="Επεξεργασία"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
+          html += `<div class="px-4 py-3 flex items-center gap-3 hover:bg-gray-50 border-t border-gray-100"><div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div><div class="flex-1 min-w-0"><div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div><div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div></div><div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}<div class="${color} font-semibold whitespace-nowrap">${sign === '-' ? prvSpan(-t.amount, color + ' font-semibold') : prvSpan(t.amount, color + ' font-semibold')}</div><button onclick="editTransaction('${t.id}')" class="text-gray-400 hover:text-blue-600 p-1" title="Επεξεργασία"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1" title="Διαγραφή"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
         });
         html += '</div>';
       });
@@ -1545,12 +1644,7 @@
 
       // Λογαριασμός
       const accSel = document.getElementById('tx-account');
-      accSel.innerHTML = '<option value="">Επίλεξε...</option>';
-      allAccounts.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.id; opt.textContent = a.name;
-        accSel.appendChild(opt);
-      });
+      populateAccountSelect(accSel);
       accSel.value = t.account_id;
 
       // Κατηγορία
@@ -1676,8 +1770,33 @@
 
     function clearTxReportFilter() {
       txReportMonths.clear();
+      const sel = document.getElementById('tx-year-filter');
+      if (sel) sel.value = '';
       renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
       renderTransactions();
+    }
+
+    function onTxYearFilter() {
+      const yr = document.getElementById('tx-year-filter')?.value;
+      txReportMonths.clear();
+      if (yr) {
+        // Επιλέγει όλους τους μήνες του επιλεγμένου έτους που υπάρχουν στα δεδομένα
+        getAvailableReportMonths().filter(k => k.startsWith(yr)).forEach(k => txReportMonths.add(k));
+      }
+      renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
+      renderTransactions();
+    }
+
+    function initTxYearFilter() {
+      const sel = document.getElementById('tx-year-filter');
+      if (!sel) return;
+      const years = [...new Set(getAvailableReportMonths().map(k => k.slice(0,4)))].sort((a,b)=>b-a);
+      sel.innerHTML = '<option value="">Όλα τα έτη</option>';
+      years.forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        sel.appendChild(opt);
+      });
     }
     function clearDashReportFilter() {
       // Επιστροφή στο default (τρέχων μήνας)
@@ -1706,14 +1825,7 @@
       document.querySelector('#new-transaction-section h1').textContent = 'Νέα Κίνηση';
       document.getElementById('tx-submit').textContent = 'Καταχώρηση';
 
-      const accountSelect = document.getElementById('tx-account');
-      accountSelect.innerHTML = '<option value="">Επίλεξε...</option>';
-      allAccounts.forEach(a => {
-        const opt = document.createElement('option');
-        opt.value = a.id;
-        opt.textContent = a.name;
-        accountSelect.appendChild(opt);
-      });
+      populateAccountSelect(document.getElementById('tx-account'));
     }
     
     function updateTypeButtons() {
@@ -1832,7 +1944,7 @@
       document.getElementById('mobile-drawer').classList.add('hidden-section');
     }
     
-    document.getElementById('mobile-menu-btn').addEventListener('click', openMobileDrawer);
+    // burger menu removed — replaced by refresh button
     document.getElementById('mobile-close-btn').addEventListener('click', closeMobileDrawer);
     document.getElementById('mobile-overlay').addEventListener('click', closeMobileDrawer);
     
@@ -2125,7 +2237,7 @@
       const netEl = document.getElementById('kpi-net');
       netEl.textContent = formatMoney(net);
       netEl.className = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
-      document.getElementById('kpi-spiti').textContent = formatMoney(avgSpiti);
+      document.getElementById('kpi-spiti').innerHTML = prvSpan(avgSpiti, 'text-2xl font-bold');
       document.getElementById('dashboard-subtitle').textContent = getFilterLabel();
 
       // Destroy old charts
@@ -2409,18 +2521,8 @@
       document.getElementById('tr-preview').classList.add('hidden');
       document.getElementById('tr-same-error').classList.add('hidden');
 
-      const fromSel = document.getElementById('tr-from');
-      const toSel   = document.getElementById('tr-to');
-      fromSel.innerHTML = '<option value="">Επίλεξε...</option>';
-      toSel.innerHTML   = '<option value="">Επίλεξε...</option>';
-      allAccounts.forEach(a => {
-        const o1 = document.createElement('option');
-        o1.value = a.id; o1.textContent = a.name;
-        fromSel.appendChild(o1);
-        const o2 = document.createElement('option');
-        o2.value = a.id; o2.textContent = a.name;
-        toSel.appendChild(o2);
-      });
+      populateAccountSelect(document.getElementById('tr-from'));
+      populateAccountSelect(document.getElementById('tr-to'));
 
       renderTransfersList();
     }
@@ -3163,14 +3265,35 @@
     // ============================================
     let privacyOn = false;
 
+    // Μετατρέπει αριθμό σε αστερίσκους ανάλογα με μέγεθος
+    function maskAmount(amount) {
+      const abs = Math.abs(parseFloat(amount) || 0);
+      let stars;
+      if (abs >= 10000)      stars = '** ***';
+      else if (abs >= 1000)  stars = '* ***';
+      else if (abs >= 100)   stars = '***';
+      else if (abs >= 10)    stars = '**';
+      else                   stars = '*';
+      return stars + ' €';
+    }
+
+    // Κρύβει/αποκαλύπτει όλα τα .prv-amount elements
     function applyPrivacyBlur() {
-      const ids = [
-        'dashboard-kpis','accounts-container','total-balance',
-        's1-chart-wrap','s1-table-wrap','s2-chart-wrap','s2-table-wrap',
-        's3-chart-wrap','s3-table-wrap','s4-chart-wrap','s4-table-wrap',
-        'kpi-income','kpi-expense','kpi-net','kpi-spiti'
+      document.querySelectorAll('[data-amount]').forEach(el => {
+        if (privacyOn) {
+          if (!el.dataset.original) el.dataset.original = el.textContent;
+          const masked = maskAmount(el.dataset.amount);
+          el.textContent = masked;
+        } else {
+          if (el.dataset.original) el.textContent = el.dataset.original;
+        }
+      });
+      // Charts και πίνακες — blur για να μην χρειάζεται re-render
+      const blurIds = [
+        's1-chart-wrap','s2-chart-wrap','s3-chart-wrap','s4-chart-wrap',
+        's1-drill-wrap'
       ];
-      ids.forEach(id => {
+      blurIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.toggle('privacy-blur', privacyOn);
       });
