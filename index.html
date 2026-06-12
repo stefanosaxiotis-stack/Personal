@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781209713">
+  <meta name="app-version" content="1781275022">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Personal Finance V2</title>
   
@@ -338,6 +338,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           Budgeting
         </button>
+        <button data-section="portfolio" class="nav-link-mobile apple-nav-link" onclick="closeMobileDrawer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          Χαρτοφυλάκιο
+        </button>
         <button data-section="settings" class="nav-link-mobile apple-nav-link" onclick="closeMobileDrawer()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Ρυθμίσεις
@@ -392,6 +396,10 @@
           <button data-section="budgeting" class="nav-link apple-nav-link">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Budgeting
+          </button>
+          <button data-section="portfolio" class="nav-link apple-nav-link">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            Χαρτοφυλάκιο
           </button>
         </nav>
         <div style="padding:12px 8px;border-top:0.5px solid var(--border-color);">
@@ -993,6 +1001,78 @@
         </section>
         <!-- END MY REPORT -->
 
+        <!-- PORTFOLIO SECTION -->
+        <section id="portfolio-section" class="hidden-section">
+          <div class="mb-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="page-title">Χαρτοφυλάκιο</h1>
+                <p class="page-subtitle" id="portfolio-subtitle">AI Trading · Revolut</p>
+              </div>
+              <button onclick="openTradeModal()" class="bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition flex items-center gap-2 min-h-[44px]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Νέο Trade
+              </button>
+            </div>
+          </div>
+
+          <!-- Σύνοψη -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6" id="portfolio-kpis">
+            <div class="apple-card p-4">
+              <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Τρέχουσα Αξία</div>
+              <div id="pf-current-value" class="text-2xl font-bold">—</div>
+            </div>
+            <div class="apple-card p-4">
+              <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Αρχικό Κεφάλαιο</div>
+              <div id="pf-cost-basis" class="text-2xl font-bold">—</div>
+            </div>
+            <div class="apple-card p-4">
+              <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Κέρδος / Απόδοση</div>
+              <div id="pf-pnl" class="text-2xl font-bold">—</div>
+            </div>
+          </div>
+
+          <!-- Φίλτρο -->
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <div class="segment">
+              <button onclick="setPortfolioAssetFilter('stock')" id="pf-asset-stock" class="segment-btn active">📈 Μετοχές</button>
+              <button onclick="setPortfolioAssetFilter('etf')" id="pf-asset-etf" class="segment-btn">🌍 ETF</button>
+            </div>
+            <div class="segment">
+              <button onclick="setPortfolioFilter('open')" id="pf-tab-open" class="segment-btn active">Ανοιχτές</button>
+              <button onclick="setPortfolioFilter('closed')" id="pf-tab-closed" class="segment-btn">Κλειστές</button>
+              <button onclick="setPortfolioFilter('all')" id="pf-tab-all" class="segment-btn">Όλες</button>
+            </div>
+            <div id="pf-live-status" style="font-size:12px;color:var(--text-tertiary);display:flex;align-items:center;gap:4px;">
+              <span id="pf-live-dot" style="width:6px;height:6px;border-radius:50%;background:#8e8e93;display:inline-block;"></span>
+              <span id="pf-live-label">—</span>
+            </div>
+          </div>
+
+          <!-- Πίνακας θέσεων -->
+          <div class="apple-card" style="overflow:hidden;">
+            <div class="overflow-x-auto">
+              <table class="apple-table w-full" style="min-width:700px;">
+                <thead>
+                  <tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                    <th class="text-left py-3 px-4">Ticker</th>
+                    <th class="text-right py-3 px-4">Ποσ/τα</th>
+                    <th class="text-right py-3 px-4">Μ.Τιμή Αγοράς</th>
+                    <th class="text-right py-3 px-4">Τρ. Τιμή</th>
+                    <th class="text-right py-3 px-4">Αξία</th>
+                    <th class="text-right py-3 px-4">Κέρδος/Ζημία</th>
+                    <th class="text-right py-3 px-4">%</th>
+                    <th class="text-center py-3 px-4"></th>
+                  </tr>
+                </thead>
+                <tbody id="portfolio-tbody">
+                  <tr><td colspan="8" class="text-center py-12 text-gray-400">Φόρτωση...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- SETTINGS SECTION -->
         <section id="settings-section" class="hidden-section">
           <div class="mb-6">
@@ -1185,6 +1265,12 @@
           </span>
           Budgeting
         </button>
+        <button onclick="showSectionFromMore('portfolio')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;background:transparent;font-size:15px;font-weight:500;color:var(--text-primary);cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+          <span style="width:36px;height:36px;background:rgba(255,149,0,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          </span>
+          Χαρτοφυλάκιο
+        </button>
         <button onclick="showSectionFromMore('settings')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;background:transparent;font-size:15px;font-weight:500;color:var(--text-primary);cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
           <span style="width:36px;height:36px;background:rgba(120,120,128,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1194,6 +1280,92 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- TRADE MODAL -->
+  <div id="trade-modal" class="hidden-section" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(4px);">
+    <div class="apple-card" style="padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;border-radius:20px;">
+      <div class="flex items-center justify-between mb-5">
+        <h3 id="trade-modal-title" class="text-xl font-bold">Νέο Trade</h3>
+        <button onclick="closeTradeModal()" style="width:32px;height:32px;border-radius:50%;border:none;background:rgba(120,120,128,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text-tertiary);">×</button>
+      </div>
+      <div class="space-y-4">
+        <!-- Trade Type -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Τύπος</label>
+          <div class="segment">
+            <button onclick="setTradeType('buy')" id="tt-buy" class="segment-btn active">🟢 Buy</button>
+            <button onclick="setTradeType('sell')" id="tt-sell" class="segment-btn">🔴 Sell</button>
+          </div>
+        </div>
+        <!-- Asset Type (hidden) -->
+        <input type="hidden" id="tm-asset-type" value="stock">
+        <!-- Account -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Λογαριασμός</label>
+          <select id="tm-account" class="apple-input"></select>
+        </div>
+        <!-- Ticker -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Ticker <span class="text-gray-400 font-normal">(π.χ. AAPL, NVDA)</span></label>
+          <input type="text" id="tm-ticker" class="apple-input" placeholder="AAPL" style="text-transform:uppercase;" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <!-- Name -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Όνομα εταιρείας</label>
+          <input type="text" id="tm-name" class="apple-input" placeholder="Apple Inc.">
+        </div>
+        <!-- Sell: επιλογή ανοιχτής θέσης -->
+        <div id="tm-position-wrap" class="hidden-section">
+          <label class="block text-sm font-medium mb-1">Ανοιχτή Θέση</label>
+          <select id="tm-position" class="apple-input"></select>
+          <p class="text-xs text-gray-400 mt-1">Επίλεξε ποια θέση κλείνεις</p>
+        </div>
+        <!-- Quantity -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Ποσότητα</label>
+          <input type="number" id="tm-qty" class="apple-input" placeholder="10" min="0.001" step="0.001">
+        </div>
+        <!-- Price -->
+        <div>
+          <label class="block text-sm font-medium mb-1" id="tm-price-label">Τιμή αγοράς/μονάδα (USD)</label>
+          <input type="number" id="tm-price" class="apple-input" placeholder="150.00" min="0.01" step="0.01">
+        </div>
+        <!-- Date -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Ημερομηνία</label>
+          <input type="date" id="tm-date" class="apple-input">
+        </div>
+        <!-- Sector -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Τομέας <span class="text-gray-400 font-normal">(προαιρετικό)</span></label>
+          <select id="tm-sector" class="apple-input">
+            <option value="">—</option>
+            <option>Technology</option>
+            <option>Healthcare</option>
+            <option>Finance</option>
+            <option>Energy</option>
+            <option>Consumer</option>
+            <option>Industrials</option>
+            <option>Real Estate</option>
+            <option>Materials</option>
+            <option>Utilities</option>
+            <option>Communications</option>
+          </select>
+        </div>
+        <!-- Notes -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Σημειώσεις</label>
+          <input type="text" id="tm-notes" class="apple-input" placeholder="Προαιρετικό...">
+        </div>
+        <!-- Preview -->
+        <div id="tm-preview" class="hidden-section" style="background:var(--bg-primary);border-radius:12px;padding:14px;">
+          <div class="text-sm text-gray-500 mb-1">Σύνολο συναλλαγής</div>
+          <div id="tm-preview-total" class="text-xl font-bold"></div>
+        </div>
+        <button onclick="submitTrade()" id="tm-submit" class="w-full bg-black text-white py-3 rounded-xl font-semibold text-base">Καταχώρηση</button>
+      </div>
+    </div>
   </div>
 
   <!-- PIN CHANGE MODAL -->
@@ -1309,13 +1481,11 @@
       if (name === 'accounts') renderAccounts();
       if (name === 'transactions') {
         initTxYearFilter();
-        // Default: τρέχων μήνας αν δεν έχει οριστεί τίποτα
-        if (txReportMonths.size === 0) {
-          txReportMonths.add(currentMonthKey());
-        }
+        if (txReportMonths.size === 0) txReportMonths.add(currentMonthKey());
         renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions');
         renderTransactions();
       }
+      if (name === 'portfolio') renderPortfolio();
       if (name === 'new-transaction') resetTransactionForm();
       if (name === 'new-transfer') resetTransferForm();
       if (name === 'dashboard') renderDashboard();
@@ -1425,7 +1595,8 @@
       'Πειραιώς Στεφ':         { icon: 'user',         color: '#f5a623', order: 5 },
       'Μετρητά':               { icon: 'wallet',       color: '#34c759', order: 6 },
       'AI Trading':            { icon: 'trending-up',  color: '#1a1a1a', order: 7 },
-      'ETF Portfolio':         { icon: 'bar-chart-2',  color: '#1a1a1a', order: 8 },
+      'ETF':                   { icon: 'bar-chart-2',  color: '#1a1a1a', order: 8 },
+      'Degiro':                { icon: 'trending-up',  color: '#ff6b00', order: 9 },
     };
 
     const SVG_ICONS = {
@@ -3311,6 +3482,338 @@
     }
 
     // ============================================
+
+    // ============================================
+    // PORTFOLIO
+    // ============================================
+    let allTrades = [];
+    let portfolioFilter = 'open';
+    let portfolioAssetFilter = 'stock'; // 'stock' | 'etf'
+    let livePrices = {};
+    let editingTradeId = null;
+
+    function setPortfolioFilter(f) {
+      portfolioFilter = f;
+      ['open','closed','all'].forEach(t => {
+        document.getElementById('pf-tab-' + t).className = t === f ? 'segment-btn active' : 'segment-btn';
+      });
+      renderPortfolioTable();
+    }
+
+    function setPortfolioAssetFilter(f) {
+      portfolioAssetFilter = f;
+      ['stock','etf'].forEach(t => {
+        document.getElementById('pf-asset-' + t).className = t === f ? 'segment-btn active' : 'segment-btn';
+      });
+      renderPortfolioTable();
+    }
+
+    async function renderPortfolio() {
+      const { data, error } = await sb
+        .from('investments_trades')
+        .select('*')
+        .eq('owner_id', currentUser.id)
+        .order('buy_date', { ascending: true });
+      if (error) { showToast('Σφάλμα φόρτωσης: ' + error.message, 'error'); return; }
+      allTrades = data || [];
+      await fetchLivePrices();
+      renderPortfolioTable();
+    }
+
+    // Υπολογίζει θέσεις ανά ticker — ξεχωριστά ανά account
+    function computePositions(assetType) {
+      const positions = {};
+      const filtered = allTrades.filter(t => (t.asset_type || 'stock') === assetType);
+      // Sort by buy_date ascending for correct FIFO cost basis
+      [...filtered].sort((a,b) => a.buy_date.localeCompare(b.buy_date)).forEach(t => {
+        // key = ticker+account για διαχωρισμό Revolut/Degiro στα ETF
+        const key = t.ticker + '|' + (t.account_id || '');
+        if (!positions[key]) {
+          positions[key] = {
+            key, ticker: t.ticker, name: t.name || t.ticker,
+            sector: t.sector || '', account_id: t.account_id,
+            totalQty: 0, totalCost: 0, realizedPnl: 0, trades: []
+          };
+        }
+        const qty = parseFloat(t.quantity || 0);
+        const price = parseFloat(t.buy_price || 0);
+        if (t.trade_type === 'buy' || !t.trade_type) {
+          positions[key].totalQty += qty;
+          positions[key].totalCost += qty * price;
+        } else if (t.trade_type === 'sell') {
+          const avgCostBefore = positions[key].totalQty > 0 ? positions[key].totalCost / positions[key].totalQty : 0;
+          positions[key].realizedPnl += qty * (price - avgCostBefore);
+          positions[key].totalQty -= qty;
+          positions[key].totalCost -= qty * avgCostBefore;
+        }
+        positions[key].trades.push(t);
+      });
+      return positions;
+    }
+
+    async function fetchLivePrices() {
+      const tickers = [...new Set(allTrades.map(t => t.ticker))];
+      if (!tickers.length) return;
+      document.getElementById('pf-live-dot').style.background = '#ff9500';
+      document.getElementById('pf-live-label').textContent = 'Ενημέρωση...';
+      let fetched = 0;
+      await Promise.all(tickers.map(async ticker => {
+        try {
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+          const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+          const res = await fetch(proxy, {signal: AbortSignal.timeout(8000)});
+          const json = await res.json();
+          const parsed = JSON.parse(json.contents);
+          const price = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          if (price) { livePrices[ticker] = price; fetched++; }
+        } catch(e) {}
+      }));
+      const now = new Date().toLocaleTimeString('el-GR', {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('pf-live-dot').style.background = fetched > 0 ? '#34c759' : '#ff3b30';
+      document.getElementById('pf-live-label').textContent = fetched > 0 ? `Live · ${now}` : 'Offline';
+    }
+
+    function getAccountName(id) {
+      return allAccounts.find(a => a.id === id)?.name || '—';
+    }
+
+    function renderPortfolioTable() {
+      const positions = computePositions(portfolioAssetFilter);
+      const tbody = document.getElementById('portfolio-tbody');
+      tbody.innerHTML = '';
+      const isEtf = portfolioAssetFilter === 'etf';
+      const currency = isEtf ? '€' : '$';
+
+      let totalCurrent = 0, totalCost = 0, totalRealized = 0;
+
+      const rows = Object.values(positions).filter(p => {
+        const isOpen = p.totalQty > 0.001;
+        if (portfolioFilter === 'open') return isOpen;
+        if (portfolioFilter === 'closed') return !isOpen;
+        return true;
+      }).sort((a,b) => a.ticker.localeCompare(b.ticker));
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-gray-400">Δεν υπάρχουν θέσεις</td></tr>`;
+        updatePortfolioKpis(0, 0, 0, currency);
+        return;
+      }
+
+      rows.forEach(pos => {
+        const livePrice = livePrices[pos.ticker] || null;
+        const avgCost = pos.totalQty > 0.001 ? pos.totalCost / pos.totalQty : 0;
+        const currentVal = livePrice && pos.totalQty > 0.001 ? livePrice * pos.totalQty : null;
+        const unrealizedPnl = currentVal !== null ? currentVal - (avgCost * pos.totalQty) : null;
+        const totalPnlPos = (unrealizedPnl || 0) + (pos.realizedPnl || 0);
+        const pnlPct = avgCost > 0 && currentVal !== null ? ((currentVal - avgCost * pos.totalQty) / (avgCost * pos.totalQty)) * 100 : null;
+        const costBasis = avgCost * Math.max(pos.totalQty, 0);
+        const isOpen = pos.totalQty > 0.001;
+
+        if (currentVal) totalCurrent += currentVal;
+        if (isOpen) totalCost += costBasis;
+        totalRealized += pos.realizedPnl || 0;
+
+        const pnlColor = unrealizedPnl === null ? '' : unrealizedPnl >= 0 ? 'color:#34c759' : 'color:#ff3b30';
+        const accName = isEtf ? getAccountName(pos.account_id) : '';
+
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
+        tr.onclick = () => openEditTradeModal(pos.trades[pos.trades.length - 1]?.id, pos);
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div style="font-weight:700;font-size:13px;">${pos.ticker}</div>
+            <div style="font-size:11px;color:#8e8e93;">${pos.name}</div>
+            ${pos.sector ? `<div style="font-size:10px;color:#c7c7cc;">${pos.sector}</div>` : ''}
+            ${accName ? `<div style="font-size:10px;color:var(--accent);">${accName}</div>` : ''}
+          </td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm">${pos.totalQty > 0.001 ? pos.totalQty.toFixed(isEtf?0:3) : '—'}</td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm">${avgCost > 0 ? currency + avgCost.toFixed(2) : '—'}</td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm">${livePrice ? `<span style="color:#007aff;">${currency}${livePrice.toFixed(2)}</span>` : '<span style="color:#c7c7cc;">—</span>'}</td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm font-semibold">${currentVal ? currency + currentVal.toFixed(2) : (isOpen ? `<span style="color:#c7c7cc;">${currency}${costBasis.toFixed(2)}</span>` : '—')}</td>
+          <td style="text-align:right;${pnlColor}" class="py-3 px-4 text-sm font-semibold">${unrealizedPnl !== null ? (unrealizedPnl >= 0 ? '+' : '') + currency + unrealizedPnl.toFixed(2) : '—'}</td>
+          <td style="text-align:right;${pnlColor}" class="py-3 px-4 text-sm font-semibold">${pnlPct !== null ? (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(1) + '%' : '—'}</td>
+          <td class="text-center py-3 px-4">
+            <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
+              ${isOpen ? `
+                <button onclick="event.stopPropagation();openAddModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(52,199,89,0.12);color:#34c759;cursor:pointer;font-weight:600;">+Buy</button>
+                <button onclick="event.stopPropagation();openSellModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(255,59,48,0.1);color:#ff3b30;cursor:pointer;font-weight:600;">Sell</button>
+              ` : '<span style="font-size:11px;color:#8e8e93;padding:3px 7px;background:rgba(0,0,0,0.05);border-radius:6px;">Κλειστή</span>'}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updatePortfolioKpis(totalCurrent, totalCost, totalRealized, currency);
+    }
+
+    function updatePortfolioKpis(totalCurrent, totalCost, totalRealized, currency) {
+      const pnl = totalCurrent - totalCost;
+      const pct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+      document.getElementById('pf-current-value').textContent = totalCurrent > 0 ? currency + totalCurrent.toFixed(2) : '—';
+      document.getElementById('pf-cost-basis').textContent = totalCost > 0 ? currency + totalCost.toFixed(2) : '—';
+      const pnlEl = document.getElementById('pf-pnl');
+      if (totalCurrent > 0) {
+        pnlEl.textContent = (pnl >= 0 ? '+' : '') + currency + pnl.toFixed(2) + ' (' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%)';
+        pnlEl.className = 'text-2xl font-bold ' + (pnl >= 0 ? 'text-green-600' : 'text-red-600');
+      } else { pnlEl.textContent = '—'; pnlEl.className = 'text-2xl font-bold'; }
+    }
+
+    // ---- TRADE MODAL ----
+    let currentTradeType = 'buy';
+    let currentTradeAccountId = null;
+
+    function openTradeModal(ticker = '', accountId = null) {
+      editingTradeId = null;
+      currentTradeType = 'buy';
+      currentTradeAccountId = accountId;
+      setTradeType('buy');
+      document.getElementById('tm-ticker').value = ticker;
+      document.getElementById('tm-name').value = '';
+      document.getElementById('tm-qty').value = '';
+      document.getElementById('tm-price').value = ticker && livePrices[ticker] ? livePrices[ticker].toFixed(2) : '';
+      document.getElementById('tm-notes').value = '';
+      document.getElementById('tm-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('tm-preview').classList.add('hidden-section');
+      document.getElementById('tm-asset-type').value = portfolioAssetFilter;
+
+      // Populate account select
+      const accSel = document.getElementById('tm-account');
+      accSel.innerHTML = '';
+      allAccounts.filter(a => a.type === 'investment').forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        accSel.appendChild(opt);
+      });
+      if (accountId) accSel.value = accountId;
+
+      document.getElementById('trade-modal-title').textContent = 'Νέο Trade';
+      document.getElementById('tm-submit').textContent = 'Καταχώρηση';
+      document.getElementById('trade-modal').classList.remove('hidden-section');
+      ['tm-qty','tm-price'].forEach(id => { document.getElementById(id).oninput = updateTradePreview; });
+    }
+
+    function openAddModal(ticker, accountId) {
+      openTradeModal(ticker, accountId);
+      const positions = computePositions(portfolioAssetFilter);
+      const pos = Object.values(positions).find(p => p.ticker === ticker && p.account_id === accountId);
+      if (pos) document.getElementById('tm-name').value = pos.name;
+      document.getElementById('trade-modal-title').textContent = '+ Προσθήκη σε ' + ticker;
+    }
+
+    function openSellModal(ticker, accountId) {
+      openTradeModal(ticker, accountId);
+      setTradeType('sell');
+      const positions = computePositions(portfolioAssetFilter);
+      const pos = Object.values(positions).find(p => p.ticker === ticker && p.account_id === accountId);
+      if (pos) {
+        document.getElementById('tm-name').value = pos.name;
+        const avgCost = pos.totalQty > 0 ? pos.totalCost / pos.totalQty : 0;
+        document.getElementById('tm-position').innerHTML = `<option>${ticker} · ${pos.totalQty.toFixed(3)} τεμ · μέση τιμή ${avgCost.toFixed(2)}</option>`;
+      }
+      if (livePrices[ticker]) document.getElementById('tm-price').value = livePrices[ticker].toFixed(2);
+      document.getElementById('trade-modal-title').textContent = '▼ Sell · ' + ticker;
+    }
+
+    function openEditTradeModal(tradeId, pos) {
+      // Opens modal pre-filled to edit last buy of this position
+      const trade = allTrades.find(t => t.id === tradeId);
+      if (!trade) return;
+      editingTradeId = tradeId;
+      openTradeModal(trade.ticker, trade.account_id);
+      document.getElementById('tm-name').value = trade.name || '';
+      document.getElementById('tm-qty').value = trade.quantity || '';
+      document.getElementById('tm-price').value = trade.buy_price || '';
+      document.getElementById('tm-date').value = trade.buy_date || '';
+      document.getElementById('tm-notes').value = trade.notes || '';
+      document.getElementById('tm-asset-type').value = trade.asset_type || 'stock';
+      document.getElementById('trade-modal-title').textContent = 'Επεξεργασία · ' + trade.ticker;
+      document.getElementById('tm-submit').textContent = 'Αποθήκευση';
+      setTradeType(trade.trade_type || 'buy');
+      updateTradePreview();
+    }
+
+    function closeTradeModal() {
+      document.getElementById('trade-modal').classList.add('hidden-section');
+      editingTradeId = null;
+    }
+
+    function setTradeType(type) {
+      currentTradeType = type;
+      document.getElementById('tt-buy').className = type === 'buy' ? 'segment-btn active' : 'segment-btn';
+      document.getElementById('tt-sell').className = type === 'sell' ? 'segment-btn active' : 'segment-btn';
+      document.getElementById('tm-price-label').textContent = type === 'buy' ? 'Τιμή αγοράς/μονάδα' : 'Τιμή πώλησης/μονάδα';
+      document.getElementById('tm-position-wrap').classList.toggle('hidden-section', type !== 'sell');
+    }
+
+    function updateTradePreview() {
+      const qty = parseFloat(document.getElementById('tm-qty').value) || 0;
+      const price = parseFloat(document.getElementById('tm-price').value) || 0;
+      if (qty > 0 && price > 0) {
+        document.getElementById('tm-preview').classList.remove('hidden-section');
+        document.getElementById('tm-preview-total').textContent = (qty * price).toFixed(2);
+      } else { document.getElementById('tm-preview').classList.add('hidden-section'); }
+    }
+
+    async function submitTrade() {
+      const ticker = document.getElementById('tm-ticker').value.trim().toUpperCase();
+      const name = document.getElementById('tm-name').value.trim() || ticker;
+      const qty = parseFloat(document.getElementById('tm-qty').value);
+      const price = parseFloat(document.getElementById('tm-price').value);
+      const date = document.getElementById('tm-date').value;
+      const sector = document.getElementById('tm-sector').value;
+      const notes = document.getElementById('tm-notes').value;
+      const assetType = document.getElementById('tm-asset-type').value;
+      const accountId = document.getElementById('tm-account').value;
+
+      if (!ticker || !price || !date) { showToast('Ticker, τιμή και ημερομηνία είναι υποχρεωτικά', 'error'); return; }
+
+      const btn = document.getElementById('tm-submit');
+      btn.disabled = true; btn.textContent = 'Αποθήκευση...';
+
+      const record = {
+        owner_id: currentUser.id,
+        account_id: accountId || null,
+        ticker, name,
+        quantity: qty || null,
+        buy_price: price,
+        buy_date: date,
+        sector: sector || null,
+        notes: notes || null,
+        trade_type: currentTradeType,
+        asset_type: assetType,
+        currency: assetType === 'etf' ? 'EUR' : 'USD',
+        status: currentTradeType === 'buy' ? 'open' : 'closed',
+      };
+
+      if (editingTradeId) {
+        const { data, error } = await sb.from('investments_trades').update(record).eq('id', editingTradeId).select().single();
+        btn.disabled = false; btn.textContent = 'Αποθήκευση';
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+        const idx = allTrades.findIndex(t => t.id === editingTradeId);
+        if (idx !== -1) allTrades[idx] = data;
+        showToast('Αποθηκεύτηκε ✓', 'success');
+      } else {
+        const { data, error } = await sb.from('investments_trades').insert(record).select().single();
+        btn.disabled = false; btn.textContent = 'Καταχώρηση';
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+        allTrades.push(data);
+        showToast(`${currentTradeType === 'buy' ? '▲ Buy' : '▼ Sell'} ${ticker} ✓`, 'success');
+      }
+
+      closeTradeModal();
+      renderPortfolioTable();
+    }
+
+    async function deleteTrade(id) {
+      if (!confirm('Διαγραφή αυτής της εγγραφής;')) return;
+      const { error } = await sb.from('investments_trades').delete().eq('id', id);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      allTrades = allTrades.filter(t => t.id !== id);
+      showToast('Διαγράφηκε', 'success');
+      renderPortfolioTable();
+    }
+
     // SETTINGS
     // ============================================
     let settingsTab = 'expense';
