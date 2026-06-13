@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781293990">
+  <meta name="app-version" content="1781336754">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1072,7 +1072,7 @@
                     <th class="text-right py-3 px-4">Ημ/νία</th>
                     <th class="text-right py-3 px-4">Ποσ/τα</th>
                     <th class="text-right py-3 px-4">Μ.Τιμή Αγοράς</th>
-                    <th class="text-right py-3 px-4">Τρ. Τιμή</th>
+                    <th class="text-right py-3 px-4">Κλείσιμο</th>
                     <th class="text-right py-3 px-4">Αξία</th>
                     <th class="text-right py-3 px-4">Κέρδος/Ζημία</th>
                     <th class="text-right py-3 px-4">%</th>
@@ -1294,6 +1294,17 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- TRADE LIST MODAL (εγγραφές ανά θέση) -->
+  <div id="trade-list-modal" class="hidden-section" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center;z-index:210;backdrop-filter:blur(4px);">
+    <div class="apple-card" style="padding:24px;width:100%;max-width:500px;max-height:80vh;overflow-y:auto;border-radius:20px 20px 0 0;">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="trade-list-title" class="text-lg font-bold">Εγγραφές</h3>
+        <button onclick="closeTradeListModal()" style="width:30px;height:30px;border-radius:50%;border:none;background:rgba(120,120,128,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text-tertiary);">×</button>
+      </div>
+      <div id="trade-list-container"></div>
+    </div>
   </div>
 
   <!-- TRADE MODAL -->
@@ -3687,22 +3698,29 @@
       const tickers = [...new Set(allTrades.map(t => t.ticker))];
       if (!tickers.length) return;
       document.getElementById('pf-live-dot').style.background = '#ff9500';
-      document.getElementById('pf-live-label').textContent = 'Ενημέρωση...';
+      document.getElementById('pf-live-label').textContent = 'Ενημέρωση τιμών...';
       let fetched = 0;
       await Promise.all(tickers.map(async ticker => {
         try {
-          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+          // range=5d για να πάρουμε σίγουρα τελευταία ημέρα κλεισίματος (χθες ή παρελθόν)
+          const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d&range=5d`;
           const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-          const res = await fetch(proxy, {signal: AbortSignal.timeout(8000)});
+          const res = await fetch(proxy, {signal: AbortSignal.timeout(10000)});
           const json = await res.json();
           const parsed = JSON.parse(json.contents);
-          const price = parsed?.chart?.result?.[0]?.meta?.regularMarketPrice;
+          const result = parsed?.chart?.result?.[0];
+          if (!result) return;
+          // Τιμή κλεισίματος τελευταίας ημέρας
+          const closes = result.indicators?.quote?.[0]?.close || [];
+          const lastClose = closes.filter(c => c !== null).slice(-1)[0];
+          // Fallback στο regularMarketPrice αν δεν βρούμε close
+          const price = lastClose || result.meta?.regularMarketPrice || result.meta?.previousClose;
           if (price) { livePrices[ticker] = price; fetched++; }
         } catch(e) {}
       }));
-      const now = new Date().toLocaleTimeString('el-GR', {hour:'2-digit',minute:'2-digit'});
+      const now = new Date().toLocaleDateString('el-GR', {day:'2-digit',month:'2-digit'});
       document.getElementById('pf-live-dot').style.background = fetched > 0 ? '#34c759' : '#ff3b30';
-      document.getElementById('pf-live-label').textContent = fetched > 0 ? `Live · ${now}` : 'Offline';
+      document.getElementById('pf-live-label').textContent = fetched > 0 ? `Κλείσιμο ${now} · ${fetched}/${tickers.length}` : 'Offline — χωρίς τιμές';
     }
 
     function getAccountName(id) {
@@ -3752,8 +3770,7 @@
         const dateStr = pos.firstBuyDate ? new Date(pos.firstBuyDate).toLocaleDateString('el-GR', {day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
 
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
-        tr.onclick = () => openEditTradeModal(pos.trades[pos.trades.length - 1]?.id, pos);
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
         tr.innerHTML = `
           <td class="py-3 px-4" style="position:sticky;left:0;background:var(--bg-secondary);z-index:1;">
             <div style="font-weight:700;font-size:13px;">${pos.ticker}</div>
@@ -3771,9 +3788,10 @@
           <td class="text-center py-3 px-4">
             <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
               ${isOpen ? `
-                <button onclick="event.stopPropagation();openAddModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(52,199,89,0.12);color:#34c759;cursor:pointer;font-weight:600;">+Buy</button>
-                <button onclick="event.stopPropagation();openSellModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(255,59,48,0.1);color:#ff3b30;cursor:pointer;font-weight:600;">Sell</button>
+                <button onclick="openAddModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(52,199,89,0.12);color:#34c759;cursor:pointer;font-weight:600;">+Buy</button>
+                <button onclick="openSellModal('${pos.ticker}','${pos.account_id}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(255,59,48,0.1);color:#ff3b30;cursor:pointer;font-weight:600;">Sell</button>
               ` : '<span style="font-size:11px;color:#8e8e93;padding:3px 7px;background:rgba(0,0,0,0.05);border-radius:6px;">Κλειστή</span>'}
+              <button onclick="openPositionTradeList('${pos.key}')" style="font-size:11px;padding:3px 8px;border-radius:7px;border:none;background:rgba(0,122,255,0.1);color:#007aff;cursor:pointer;font-weight:600;">✏️</button>
             </div>
           </td>
         `;
@@ -3851,22 +3869,81 @@
       document.getElementById('trade-modal-title').textContent = '▼ Sell · ' + ticker;
     }
 
-    function openEditTradeModal(tradeId, pos) {
-      // Opens modal pre-filled to edit last buy of this position
+    // Λίστα trades ανά θέση (για επεξεργασία/διαγραφή)
+    function openPositionTradeList(posKey) {
+      const positions = computePositions(portfolioAssetFilter);
+      const pos = positions[posKey];
+      if (!pos) return;
+      const modal = document.getElementById('trade-list-modal');
+      const container = document.getElementById('trade-list-container');
+      document.getElementById('trade-list-title').textContent = pos.ticker + ' — Εγγραφές';
+      container.innerHTML = '';
+
+      const sorted = [...pos.trades].sort((a,b) => (a.buy_date||'').localeCompare(b.buy_date||''));
+      sorted.forEach(t => {
+        const isBuy = !t.trade_type || t.trade_type === 'buy';
+        const typeColor = isBuy ? '#34c759' : '#ff3b30';
+        const typeLabel = isBuy ? '▲ Buy' : '▼ Sell';
+        const currency = (t.asset_type === 'etf') ? '€' : '$';
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--border-color);';
+        row.innerHTML = `
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+              <span style="font-size:12px;font-weight:700;color:${typeColor};">${typeLabel}</span>
+              <span style="font-size:12px;color:var(--text-tertiary);">${t.buy_date || '—'}</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;">
+              ${t.quantity ? t.quantity + ' τεμ. × ' : ''}${currency}${parseFloat(t.buy_price||0).toFixed(2)}
+              ${t.quantity ? `<span style="color:var(--text-tertiary);font-weight:400;">= ${currency}${(parseFloat(t.quantity)*parseFloat(t.buy_price||0)).toFixed(2)}</span>` : ''}
+            </div>
+            ${t.notes ? `<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px;">${t.notes}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button onclick="openEditSingleTrade('${t.id}')" style="padding:6px 12px;border-radius:8px;border:none;background:rgba(0,122,255,0.1);color:#007aff;font-size:12px;font-weight:600;cursor:pointer;">Επεξ.</button>
+            <button onclick="deleteTradeFromList('${t.id}')" style="padding:6px 12px;border-radius:8px;border:none;background:rgba(255,59,48,0.1);color:#ff3b30;font-size:12px;font-weight:600;cursor:pointer;">Διαγρ.</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      modal.classList.remove('hidden-section');
+    }
+
+    function closeTradeListModal() {
+      document.getElementById('trade-list-modal').classList.add('hidden-section');
+    }
+
+    function openEditSingleTrade(tradeId) {
       const trade = allTrades.find(t => t.id === tradeId);
       if (!trade) return;
+      closeTradeListModal();
       editingTradeId = tradeId;
       openTradeModal(trade.ticker, trade.account_id);
       document.getElementById('tm-name').value = trade.name || '';
-      document.getElementById('tm-qty').value = trade.quantity || '';
+      document.getElementById('tm-qty').value = trade.quantity !== null ? trade.quantity : '';
       document.getElementById('tm-price').value = trade.buy_price || '';
       document.getElementById('tm-date').value = trade.buy_date || '';
+      document.getElementById('tm-sector').value = trade.sector || '';
       document.getElementById('tm-notes').value = trade.notes || '';
       document.getElementById('tm-asset-type').value = trade.asset_type || 'stock';
+      // Set correct account
+      const accSel = document.getElementById('tm-account');
+      if (trade.account_id) accSel.value = trade.account_id;
       document.getElementById('trade-modal-title').textContent = 'Επεξεργασία · ' + trade.ticker;
-      document.getElementById('tm-submit').textContent = 'Αποθήκευση';
+      document.getElementById('tm-submit').textContent = 'Αποθήκευση αλλαγών';
       setTradeType(trade.trade_type || 'buy');
       updateTradePreview();
+    }
+
+    async function deleteTradeFromList(tradeId) {
+      if (!confirm('Διαγραφή αυτής της εγγραφής;')) return;
+      const { error } = await sb.from('investments_trades').delete().eq('id', tradeId);
+      if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+      allTrades = allTrades.filter(t => t.id !== tradeId);
+      showToast('Διαγράφηκε ✓', 'success');
+      closeTradeListModal();
+      renderPortfolioTable();
     }
 
     function closeTradeModal() {
