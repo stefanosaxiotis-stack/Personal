@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781368500">
+  <meta name="app-version" content="1781380000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -179,6 +179,7 @@
     /* AI tab buttons */
     .ai-tab-btn { flex:1; padding:8px 6px; border-radius:9px; border:none; background:transparent; color:var(--text-tertiary); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; }
     .ai-tab-btn.ai-tab-active { background:var(--bg-secondary); color:var(--text-primary); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+    .ai-tab-hidden { display:none !important; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     /* #2 Swipe actions */
     .tx-swipe-item { position:relative; overflow:hidden; touch-action:pan-y; }
@@ -1270,7 +1271,7 @@
         <!-- END SETTINGS -->
 
         <!-- AI AGENT SECTION -->
-        <section id="ai-agent-section" class="hidden-section" style="padding:0;margin:-20px -24px 0;display:flex;flex-direction:column;height:calc(100vh - 60px);">
+        <section id="ai-agent-section" class="hidden-section" style="padding:0;margin:-20px -24px 0;display:flex;flex-direction:column;height:calc(100dvh - 140px);min-height:400px;">
 
           <!-- Header + Tabs -->
           <div style="padding:14px 16px 0;background:var(--bg-primary);flex-shrink:0;">
@@ -1312,7 +1313,7 @@
           </div>
 
           <!-- PHOTO TAB -->
-          <div id="ai-tab-photo" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
+          <div id="ai-tab-photo" class="ai-tab-hidden" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
             <input type="file" id="ai-photo-input" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)">
             <div onclick="document.getElementById('ai-photo-input').click()" style="border:2px dashed var(--border-color);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:14px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
               <svg style="margin:0 auto 10px;opacity:0.35;" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -1340,7 +1341,7 @@
           </div>
 
           <!-- QUICK ENTRY TAB -->
-          <div id="ai-tab-quick" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
+          <div id="ai-tab-quick" class="ai-tab-hidden" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
             <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:12px;">Γράψε ή πες τι έγινε και ο AI θα δημιουργήσει την κίνηση.</p>
             <textarea id="quick-entry-text" class="apple-input" rows="3" placeholder="π.χ. «Πλήρωσα 50€ σούπερμάρκετ χθες» ή «Βενζίνη 60 ευρώ από Μετρητά»" style="resize:none;line-height:1.5;margin-bottom:10px;"></textarea>
             <div style="display:flex;gap:10px;margin-bottom:16px;">
@@ -1725,7 +1726,7 @@
       if (name === 'settings') renderSettings();
       if (name === 'my-report') initMyReport();
       if (name === 'budgeting') renderBudgeting();
-      if (name === 'ai-agent') { setAiTab('chat'); }
+      if (name === 'ai-agent') { if (typeof window.setAiTab === 'function') window.setAiTab('chat'); }
       // Εφαρμογή privacy blur αν είναι ενεργό
       setTimeout(applyPrivacyBlur, 50);
     }
@@ -4081,6 +4082,15 @@
       const allTickers = openTickers.length > 0 ? openTickers : [...new Set(allTrades.map(t => t.ticker))];
 
       if (!allTickers.length) return;
+
+      // 1. Φόρτωσε ΠΡΩΤΑ τις αποθηκευμένες τιμές από τη βάση (τελευταία γνωστή)
+      allTrades.forEach(t => {
+        if (t.current_price && t.trade_type !== 'sell' && !livePrices[t.ticker]) {
+          livePrices[t.ticker] = parseFloat(t.current_price);
+        }
+      });
+      renderPortfolioTable();
+
       document.getElementById('pf-live-dot').style.background = '#ff9500';
       document.getElementById('pf-live-label').textContent = 'Φόρτωση τιμών...';
 
@@ -4099,7 +4109,7 @@
               'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4Z3RoY3hqcmxyeWxveXJ2a25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTgzNzQsImV4cCI6MjA2MzkzNDM3NH0.iIFRh4PvCZQSJIkOLIaH1dJPBxbhSLJMCiNOQN67khM'
             },
             body: JSON.stringify({ tickers: allTickers }),
-            signal: AbortSignal.timeout(15000)
+            signal: AbortSignal.timeout(30000)
           }
         );
 
@@ -4107,23 +4117,41 @@
         const json = await res.json();
         const prices = json.prices || {};
         let fetched = 0;
+        const toSave = [];
         Object.entries(prices).forEach(([ticker, price]) => {
           if (price !== null && price !== undefined) {
             livePrices[ticker] = parseFloat(price);
             fetched++;
+            toSave.push({ ticker, price: parseFloat(price) });
           }
         });
 
+        // 2. Αποθήκευσε τις νέες τιμές στη βάση (current_price + last_updated)
+        // ώστε την επόμενη φορά να υπάρχει η τελευταία γνωστή τιμή
+        if (toSave.length) {
+          await Promise.all(toSave.map(({ ticker, price }) =>
+            sb.from('investments_trades')
+              .update({ current_price: price, last_updated: new Date().toISOString() })
+              .eq('ticker', ticker)
+              .neq('trade_type', 'sell')
+          ));
+        }
+
         const now = new Date().toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
-        document.getElementById('pf-live-dot').style.background = fetched > 0 ? '#34c759' : '#ff3b30';
+        const hasCached = Object.keys(livePrices).length > 0;
+        document.getElementById('pf-live-dot').style.background = fetched > 0 ? '#34c759' : (hasCached ? '#ff9500' : '#ff3b30');
         document.getElementById('pf-live-label').textContent = fetched > 0
-          ? `Τιμές ${now} · ${fetched} από ${allTickers.length} tickers`
-          : 'Δεν βρέθηκαν τιμές — ελέγξτε tickers';
+          ? `Τιμές ${now} · ${fetched}/${allTickers.length} tickers`
+          : (hasCached ? 'Τελευταίες αποθηκευμένες τιμές' : 'Δεν βρέθηκαν τιμές');
 
       } catch(e) {
         console.error('fetchLivePrices error:', e);
-        document.getElementById('pf-live-dot').style.background = '#ff3b30';
-        document.getElementById('pf-live-label').textContent = 'Σφάλμα φόρτωσης τιμών';
+        // Αν απέτυχε το live, κράτα τις αποθηκευμένες τιμές (ήδη φορτωμένες παραπάνω)
+        const hasCached = Object.keys(livePrices).length > 0;
+        document.getElementById('pf-live-dot').style.background = hasCached ? '#ff9500' : '#ff3b30';
+        document.getElementById('pf-live-label').textContent = hasCached
+          ? 'Τελευταίες αποθηκευμένες τιμές (live απέτυχε)'
+          : 'Σφάλμα φόρτωσης τιμών';
       }
     }
 
@@ -4656,29 +4684,37 @@
   // AI AGENT
   // ============================================
 
-  const SUPABASE_URL = 'https://qxgthcxjrlryloyrvknq.supabase.co';
-  const CLAUDE_PROXY = SUPABASE_URL + '/functions/v1/claude-proxy';
+  const AI_SUPABASE_URL = 'https://qxgthcxjrlryloyrvknq.supabase.co';
+  const CLAUDE_PROXY = AI_SUPABASE_URL + '/functions/v1/claude-proxy';
 
   // Aliases για πρόσβαση σε globals από το main script
   const getAccounts = () => window._allAccounts || [];
   const getCategories = () => window._allCategories || [];
   const getSubcategories = () => window._allSubcategories || [];
   const getTransactions = () => window._allTransactions || [];
-  const showToast = (m, t) => window._showToast && window._showToast(m, t);
+  const aiToast = (m, t) => window._showToast && window._showToast(m, t);
   const formatAmount = (n) => window._formatMoney ? window._formatMoney(n) : n.toFixed(2) + ' €';
-  const refreshData = () => window._refreshData && window._refreshData(true);
+  const aiRefresh = () => window._refreshData && window._refreshData(true);
 
   // --- Tab switching ---
   function setAiTab(tab) {
-    const displayMap = { chat: 'flex', photo: 'block', quick: 'block' };
+    const displayMap = { chat: 'flex', photo: 'flex', quick: 'flex' };
     ['chat','photo','quick'].forEach(t => {
       const btn = document.getElementById('ait-' + t);
       if (btn) btn.classList.toggle('ai-tab-active', t === tab);
       const el = document.getElementById('ai-tab-' + t);
-      if (el) el.style.display = (t === tab) ? displayMap[t] : 'none';
+      if (el) {
+        if (t === tab) {
+          el.classList.remove('ai-tab-hidden');
+          el.style.display = displayMap[t];
+        } else {
+          el.classList.add('ai-tab-hidden');
+        }
+      }
     });
     if (tab === 'quick') populateQuickEntryDropdowns();
   }
+  window.setAiTab = setAiTab;
 
   // --- Auto resize textarea ---
   function autoResizeAiInput(el) {
@@ -4890,12 +4926,12 @@ ${context}
       const { error } = await window._sb.from('transactions').insert(txData);
       if (error) throw error;
       btn.closest('.ai-chat-bubble').innerHTML = '<span style="color:var(--income-color);font-weight:600;">✅ Καταχωρήθηκε!</span>';
-      showToast('Κίνηση καταχωρήθηκε', 'success');
-      await refreshData();
+      aiToast('Κίνηση καταχωρήθηκε', 'success');
+      await aiRefresh();
     } catch(e) {
       btn.textContent = '✅ Καταχώρηση';
       btn.disabled = false;
-      showToast('Σφάλμα: ' + e.message, 'error');
+      aiToast('Σφάλμα: ' + e.message, 'error');
     }
   }
 
@@ -5029,7 +5065,7 @@ ${accountHint}
       prefillPhotoResults(txList);
 
     } catch(err) {
-      showToast('Σφάλμα ανάλυσης: ' + err.message, 'error');
+      aiToast('Σφάλμα ανάλυσης: ' + err.message, 'error');
       btn.disabled = false;
       lbl.textContent = '🔍 Ανάλυση κινήσεων';
     }
@@ -5047,7 +5083,7 @@ ${accountHint}
     lbl.textContent = '🔍 Ανάλυση κινήσεων';
 
     if (!txList || txList.length === 0) {
-      showToast('Δεν εντοπίστηκαν κινήσεις', 'error');
+      aiToast('Δεν εντοπίστηκαν κινήσεις', 'error');
       return;
     }
 
@@ -5119,7 +5155,7 @@ ${accountHint}
 
   async function importApprovedTx() {
     const checks = document.querySelectorAll('.photo-tx-check:checked');
-    if (checks.length === 0) { showToast('Δεν επιλέχτηκε καμία κίνηση', 'error'); return; }
+    if (checks.length === 0) { aiToast('Δεν επιλέχτηκε καμία κίνηση', 'error'); return; }
 
     const btn = document.getElementById('import-btn');
     btn.disabled = true;
@@ -5163,18 +5199,18 @@ ${accountHint}
       });
     });
 
-    if (inserts.length === 0) { showToast('Δεν βρέθηκαν έγκυρες κινήσεις', 'error'); btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων'; return; }
+    if (inserts.length === 0) { aiToast('Δεν βρέθηκαν έγκυρες κινήσεις', 'error'); btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων'; return; }
 
     const { error } = await window._sb.from('transactions').insert(inserts);
     if (error) {
-      showToast('Σφάλμα εισαγωγής: ' + error.message, 'error');
+      aiToast('Σφάλμα εισαγωγής: ' + error.message, 'error');
       btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων';
       return;
     }
 
-    showToast(`✅ ${inserts.length} κινήσεις εισήχθησαν!`, 'success');
+    aiToast(`✅ ${inserts.length} κινήσεις εισήχθησαν!`, 'success');
     resetPhotoTab();
-    await refreshData();
+    await aiRefresh();
   }
 
   // ============================================================
@@ -5220,7 +5256,7 @@ ${accountHint}
       fillQuickResult(proposal);
 
     } catch(err) {
-      showToast('Σφάλμα: ' + err.message, 'error');
+      aiToast('Σφάλμα: ' + err.message, 'error');
     }
 
     btn.disabled = false;
@@ -5308,7 +5344,7 @@ ${accountHint}
     const type = document.getElementById('qr-type')?.value || 'expense';
 
     if (!amount || !date || !accountId || !categoryId || !subcatId) {
-      showToast('Συμπλήρωσε όλα τα πεδία', 'error'); return;
+      aiToast('Συμπλήρωσε όλα τα πεδία', 'error'); return;
     }
 
     const { error } = await window._sb.from('transactions').insert({
@@ -5317,16 +5353,16 @@ ${accountHint}
       is_spiti: ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()))
     });
 
-    if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
-    showToast('✅ Κίνηση καταχωρήθηκε!', 'success');
+    if (error) { aiToast('Σφάλμα: ' + error.message, 'error'); return; }
+    aiToast('✅ Κίνηση καταχωρήθηκε!', 'success');
     document.getElementById('quick-entry-text').value = '';
     document.getElementById('quick-result').style.display = 'none';
-    await refreshData();
+    await aiRefresh();
   }
 
   function startVoiceInput() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { showToast('Voice δεν υποστηρίζεται σε αυτόν τον browser', 'error'); return; }
+    if (!SpeechRecognition) { aiToast('Voice δεν υποστηρίζεται σε αυτόν τον browser', 'error'); return; }
     const btn = document.getElementById('voice-btn');
     if (voiceRecognition) { voiceRecognition.stop(); return; }
     voiceRecognition = new SpeechRecognition();
