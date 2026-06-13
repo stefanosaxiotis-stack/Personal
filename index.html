@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781360000">
+  <meta name="app-version" content="1781362000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1266,22 +1266,22 @@
         <!-- END SETTINGS -->
 
         <!-- AI AGENT SECTION -->
-        <section id="ai-agent-section" class="hidden-section" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 120px);max-height:100%;">
-          <div style="padding:20px 20px 0;">
-            <h1 class="page-title">AI Agent</h1>
-            <p class="page-subtitle">Ανάλυση κινήσεων, ερωτήσεις, γρήγορη καταχώρηση</p>
-            <!-- Tabs -->
-            <div class="ai-tab-bar" style="margin-top:16px;">
-              <button class="ai-tab active" id="ait-chat" onclick="setAiTab('chat')">💬 Chat</button>
-              <button class="ai-tab" id="ait-photo" onclick="setAiTab('photo')">📸 Φωτογραφία</button>
-              <button class="ai-tab" id="ait-quick" onclick="setAiTab('quick')">✍️ Γρήγορη</button>
+        <section id="ai-agent-section" class="hidden-section" style="padding:0;margin:-20px -24px 0;display:flex;flex-direction:column;height:calc(100vh - 60px);">
+
+          <!-- Header + Tabs -->
+          <div style="padding:14px 16px 0;background:var(--bg-primary);flex-shrink:0;">
+            <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;color:var(--text-primary);">AI Agent</h1>
+            <p style="font-size:13px;color:var(--text-tertiary);margin-top:2px;margin-bottom:12px;">Ανάλυση κινήσεων, ερωτήσεις, γρήγορη καταχώρηση</p>
+            <div style="display:flex;background:var(--bg-tertiary);border-radius:12px;padding:3px;gap:2px;margin-bottom:0;">
+              <button id="ait-chat" onclick="setAiTab('chat')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:var(--bg-secondary);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.12);">💬 Chat</button>
+              <button id="ait-photo" onclick="setAiTab('photo')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;">📸 Φωτογραφία</button>
+              <button id="ait-quick" onclick="setAiTab('quick')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;">✍️ Γρήγορη</button>
             </div>
           </div>
 
           <!-- CHAT TAB -->
-          <div id="ai-tab-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
-            <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:4px;">
-              <!-- Welcome message -->
+          <div id="ai-tab-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+            <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:4px;min-height:0;">
               <div class="ai-chat-bubble ai">
                 <strong>Γεια σου Στέφανε! 👋</strong><br><br>
                 Μπορείς να με ρωτήσεις για τα οικονομικά σου ή να μου πεις τι έξοδα έκανες.<br><br>
@@ -1292,52 +1292,42 @@
                 • "Πλήρωσα 50€ σούπερμάρκετ"</span>
               </div>
             </div>
-            <div class="ai-input-bar">
-              <button class="ai-upload-btn" onclick="document.getElementById('ai-photo-input-chat').click()" title="Επισύναψη φωτογραφία">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              </button>
+            <div style="background:var(--bg-secondary);border-top:0.5px solid var(--border-color);padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));flex-shrink:0;">
               <input type="file" id="ai-photo-input-chat" accept="image/*" multiple style="display:none;" onchange="handleChatPhotoAttach(event)">
-              <textarea id="ai-chat-input" placeholder="Ρώτησέ με κάτι ή πες τι έγινε..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}" oninput="autoResizeAiInput(this)"></textarea>
-              <button class="ai-send-btn" onclick="sendAiChat()" id="ai-chat-send-btn" title="Αποστολή">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
+              <div id="ai-chat-attachments" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;min-height:0;"></div>
+              <div style="display:flex;gap:8px;align-items:flex-end;">
+                <button onclick="document.getElementById('ai-photo-input-chat').click()" style="width:40px;height:40px;border-radius:50%;background:var(--bg-tertiary);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+                <textarea id="ai-chat-input" placeholder="Ρώτησέ με κάτι ή πες τι έγινε..." rows="1" style="flex:1;resize:none;border:0.5px solid rgba(0,0,0,0.12);border-radius:20px;padding:10px 14px;font-size:15px;font-family:inherit;background:var(--bg-primary);color:var(--text-primary);outline:none;max-height:100px;min-height:40px;line-height:1.4;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}" oninput="autoResizeAiInput(this)"></textarea>
+                <button onclick="sendAiChat()" id="ai-chat-send-btn" style="width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- PHOTO TAB -->
-          <div id="ai-tab-photo" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:16px 20px;">
-            <!-- Upload area -->
-            <div id="photo-upload-area" onclick="document.getElementById('ai-photo-input').click()" style="border:2px dashed var(--border-color);border-radius:16px;padding:32px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:16px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
-              <svg style="margin:0 auto 12px;opacity:0.4;" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <p style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Ανέβασε φωτογραφίες κίνησης</p>
-              <p style="font-size:13px;color:var(--text-tertiary);">Από την εφαρμογή της τράπεζας · Πολλαπλές επιτρέπονται</p>
-            </div>
+          <div id="ai-tab-photo" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
             <input type="file" id="ai-photo-input" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)">
-
-            <!-- Photo previews -->
-            <div id="photo-previews" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>
-
-            <!-- Account selector -->
-            <div id="photo-account-wrap" style="display:none;margin-bottom:16px;">
-              <label style="font-size:13px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Λογαριασμός</label>
-              <select id="photo-account-select" class="apple-select">
-                <option value="">Αυτόματη αναγνώριση από AI</option>
-              </select>
+            <div onclick="document.getElementById('ai-photo-input').click()" style="border:2px dashed var(--border-color);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:14px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
+              <svg style="margin:0 auto 10px;opacity:0.35;" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <p style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:2px;">Ανέβασε φωτογραφίες κίνησης</p>
+              <p style="font-size:13px;color:var(--text-tertiary);">Από την εφαρμογή τράπεζας · Πολλαπλές OK</p>
             </div>
-
-            <!-- Analyze button -->
-            <button id="photo-analyze-btn" onclick="analyzePhotos()" class="btn-primary" style="display:none;width:100%;margin-bottom:20px;">
-              <span id="photo-analyze-label">🔍 Ανάλυση κινήσεων</span>
-            </button>
-
-            <!-- Results -->
+            <div id="photo-previews" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+            <div id="photo-account-wrap" style="display:none;margin-bottom:14px;">
+              <label style="font-size:13px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Λογαριασμός</label>
+              <select id="photo-account-select" class="apple-select"><option value="">Αυτόματη αναγνώριση από AI</option></select>
+            </div>
+            <button id="photo-analyze-btn" onclick="analyzePhotos()" class="btn-primary" style="display:none;width:100%;margin-bottom:14px;"><span id="photo-analyze-label">🔍 Ανάλυση κινήσεων</span></button>
             <div id="photo-results" style="display:none;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <h3 style="font-size:16px;font-weight:700;">Κινήσεις που εντοπίστηκαν</h3>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <h3 style="font-size:15px;font-weight:700;">Κινήσεις που εντοπίστηκαν</h3>
                 <span id="photo-results-count" style="font-size:13px;color:var(--text-tertiary);"></span>
               </div>
-              <div id="photo-results-warning" style="display:none;background:rgba(255,149,0,0.1);border:1px solid rgba(255,149,0,0.3);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#b45309;"></div>
-              <div id="photo-tx-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+              <div id="photo-results-warning" style="display:none;background:rgba(255,149,0,0.1);border:1px solid rgba(255,149,0,0.3);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:#b45309;"></div>
+              <div id="photo-tx-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
               <div style="display:flex;gap:10px;">
                 <button onclick="importApprovedTx()" class="btn-primary" style="flex:1;" id="import-btn">✅ Εισαγωγή επιλεγμένων</button>
                 <button onclick="resetPhotoTab()" class="btn-secondary" style="padding:11px 16px;">Ακύρωση</button>
@@ -1346,62 +1336,25 @@
           </div>
 
           <!-- QUICK ENTRY TAB -->
-          <div id="ai-tab-quick" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:16px 20px;">
-            <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:16px;">Γράψε ή πες τι έγινε και ο AI θα δημιουργήσει την κίνηση.</p>
-            
-            <div style="position:relative;margin-bottom:12px;">
-              <textarea id="quick-entry-text" class="apple-input" rows="3" placeholder="π.χ. «Πλήρωσα 50€ σούπερμάρκετ χθες» ή «Βενζίνη 60 ευρώ από Μετρητά»" style="resize:none;line-height:1.5;"></textarea>
+          <div id="ai-tab-quick" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
+            <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:12px;">Γράψε ή πες τι έγινε και ο AI θα δημιουργήσει την κίνηση.</p>
+            <textarea id="quick-entry-text" class="apple-input" rows="3" placeholder="π.χ. «Πλήρωσα 50€ σούπερμάρκετ χθες» ή «Βενζίνη 60 ευρώ από Μετρητά»" style="resize:none;line-height:1.5;margin-bottom:10px;"></textarea>
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+              <button onclick="startVoiceInput()" id="voice-btn" class="btn-secondary" style="min-width:48px;padding:11px 14px;">🎤</button>
+              <button onclick="parseQuickEntry()" class="btn-primary" style="flex:1;" id="quick-parse-btn">✨ Ανάλυση</button>
             </div>
-            
-            <!-- Voice button -->
-            <div style="display:flex;gap:10px;margin-bottom:20px;">
-              <button onclick="startVoiceInput()" id="voice-btn" class="btn-secondary" style="flex:0;min-width:48px;padding:11px;">
-                🎤
-              </button>
-              <button onclick="parseQuickEntry()" class="btn-primary" style="flex:1;" id="quick-parse-btn">
-                ✨ Ανάλυση
-              </button>
-            </div>
-
-            <!-- Quick entry result -->
             <div id="quick-result" style="display:none;">
-              <div style="margin-bottom:12px;">
-                <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;">Προτεινόμενη κίνηση</h3>
-                <div class="apple-card" style="padding:16px;">
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Τύπος</label>
-                      <select id="qr-type" class="apple-select" style="margin-top:4px;font-size:14px;" onchange="loadQrCategories()">
-                        <option value="expense">Έξοδο</option>
-                        <option value="income">Έσοδο</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ποσό (€)</label>
-                      <input type="number" id="qr-amount" class="apple-input" style="margin-top:4px;font-size:14px;" step="0.01">
-                    </div>
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ημερομηνία</label>
-                      <input type="date" id="qr-date" class="apple-input" style="margin-top:4px;font-size:14px;">
-                    </div>
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Λογαριασμός</label>
-                      <select id="qr-account" class="apple-select" style="margin-top:4px;font-size:14px;"></select>
-                    </div>
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Κατηγορία</label>
-                      <select id="qr-category" class="apple-select" style="margin-top:4px;font-size:14px;" onchange="loadQrSubcategories()"></select>
-                    </div>
-                    <div>
-                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Υποκατηγορία</label>
-                      <select id="qr-subcategory" class="apple-select" style="margin-top:4px;font-size:14px;"></select>
-                    </div>
-                  </div>
-                  <div>
-                    <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Περιγραφή</label>
-                    <input type="text" id="qr-description" class="apple-input" style="margin-top:4px;font-size:14px;">
-                  </div>
+              <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;">Προτεινόμενη κίνηση</h3>
+              <div class="apple-card" style="padding:14px;margin-bottom:12px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Τύπος</label><select id="qr-type" class="apple-select" style="font-size:14px;" onchange="loadQrCategories()"><option value="expense">Έξοδο</option><option value="income">Έσοδο</option></select></div>
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Ποσό (€)</label><input type="number" id="qr-amount" class="apple-input" style="font-size:14px;" step="0.01"></div>
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Ημερομηνία</label><input type="date" id="qr-date" class="apple-input" style="font-size:14px;"></div>
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Λογαριασμός</label><select id="qr-account" class="apple-select" style="font-size:14px;"></select></div>
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Κατηγορία</label><select id="qr-category" class="apple-select" style="font-size:14px;" onchange="loadQrSubcategories()"></select></div>
+                  <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Υποκατηγορία</label><select id="qr-subcategory" class="apple-select" style="font-size:14px;"></select></div>
                 </div>
+                <div><label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Περιγραφή</label><input type="text" id="qr-description" class="apple-input" style="font-size:14px;"></div>
               </div>
               <div style="display:flex;gap:10px;">
                 <button onclick="confirmQuickEntry()" class="btn-primary" style="flex:1;">✅ Καταχώρηση</button>
@@ -1410,8 +1363,7 @@
             </div>
           </div>
         </section>
-        <!-- END AI AGENT -->
-    </div>
+        <!-- END AI AGENT -->    </div>
 
     <div id="mobile-overlay" class="hidden-section fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
     <div id="mobile-drawer" class="hidden-section fixed left-0 top-0 bottom-0 w-72 bg-white z-40 lg:hidden flex flex-col">
@@ -4695,8 +4647,22 @@
 
   // --- Tab switching ---
   function setAiTab(tab) {
+    // Update tab button styles
     ['chat','photo','quick'].forEach(t => {
-      document.getElementById('ait-' + t)?.classList.toggle('active', t === tab);
+      const btn = document.getElementById('ait-' + t);
+      if (!btn) return;
+      if (t === tab) {
+        btn.style.background = 'var(--bg-secondary)';
+        btn.style.color = 'var(--text-primary)';
+        btn.style.fontWeight = '600';
+        btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-tertiary)';
+        btn.style.fontWeight = '500';
+        btn.style.boxShadow = 'none';
+      }
+      // Show/hide tab content
       const el = document.getElementById('ai-tab-' + t);
       if (el) el.style.display = (t === tab) ? 'flex' : 'none';
     });
@@ -4730,32 +4696,25 @@
   }
 
   function renderChatAttachments() {
-    const bar = document.getElementById('ai-input-bar-attachments');
-    if (!bar) {
-      // Create attachment strip above input bar
-      const inputBar = document.querySelector('.ai-input-bar');
-      if (!inputBar) return;
-      const strip = document.createElement('div');
-      strip.id = 'ai-input-bar-attachments';
-      strip.style.cssText = 'display:flex;gap:8px;padding:8px 16px 0;background:var(--bg-secondary);flex-wrap:wrap;';
-      inputBar.parentNode.insertBefore(strip, inputBar);
+    let strip = document.getElementById('ai-chat-attachments');
+    if (!strip) return;
+    if (chatAttachedImages.length === 0) {
+      strip.innerHTML = '';
+      strip.style.display = 'none';
+      return;
     }
-    const strip = document.getElementById('ai-input-bar-attachments');
+    strip.style.display = 'flex';
     strip.innerHTML = chatAttachedImages.map((img, i) => `
       <div class="photo-preview-item">
-        <img src="data:${img.mediaType};base64,${img.base64}" alt="attachment">
-        <button class="remove-photo" onclick="removeChatAttachment(${i})">×</button>
+        <img src="data:${img.mediaType};base64,${img.base64}" alt="attachment" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1.5px solid var(--border-color);">
+        <button class="remove-photo" onclick="removeChatAttachment(${i})" style="position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#ff3b30;border:none;color:#fff;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
       </div>
     `).join('');
   }
 
   function removeChatAttachment(i) {
     chatAttachedImages.splice(i, 1);
-    if (chatAttachedImages.length === 0) {
-      document.getElementById('ai-input-bar-attachments')?.remove();
-    } else {
-      renderChatAttachments();
-    }
+    renderChatAttachments();
   }
 
   async function sendAiChat() {
@@ -4783,7 +4742,8 @@
     input.style.height = 'auto';
     const imgs = [...chatAttachedImages];
     chatAttachedImages = [];
-    document.getElementById('ai-input-bar-attachments')?.remove();
+    const attachDiv = document.getElementById('ai-chat-attachments');
+    if (attachDiv) { attachDiv.innerHTML = ''; attachDiv.style.display = 'none'; }
 
     // Show typing indicator
     const typingEl = addTypingIndicator();
