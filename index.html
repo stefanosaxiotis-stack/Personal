@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781367000">
+  <meta name="app-version" content="1781368500">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1638,13 +1638,6 @@
     let allCategories = [];
     let allSubcategories = [];
     let allTransactions = [];
-    // Expose to window so AI Agent script can access them
-    Object.defineProperties(window, {
-      _allAccounts:      { get: () => allAccounts },
-      _allCategories:    { get: () => allCategories },
-      _allSubcategories: { get: () => allSubcategories },
-      _allTransactions:  { get: () => allTransactions },
-    });
     let allTransfers = [];
     let selectedTxType = 'expense';
     
@@ -1809,6 +1802,8 @@
       if (!silent) showToast('Τα δεδομένα ανανεώθηκαν ✓', 'success');
     }
     window._refreshData = refreshData;
+
+    async function loadAllData() {
       const [accountsRes, categoriesRes, subcategoriesRes, transactionsRes, transfersRes] = await Promise.all([
         sb.from('accounts').select('*').eq('is_active', true).order('sort_order'),
         sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
@@ -1822,6 +1817,11 @@
       allSubcategories = subcategoriesRes.data || [];
       allTransactions = transactionsRes.data || [];
       allTransfers = transfersRes.data || [];
+      // Expose to window for AI Agent script
+      window._allAccounts = allAccounts;
+      window._allCategories = allCategories;
+      window._allSubcategories = allSubcategories;
+      window._allTransactions = allTransactions;
       // Φόρτωση investment trades για τις κάρτες λογαριασμών
       const tradesRes = await sb.from('investments_trades').select('*').order('buy_date', { ascending: true });
       allTrades = tradesRes.data || [];
