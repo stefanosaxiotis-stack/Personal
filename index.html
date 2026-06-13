@@ -2,8 +2,16 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781275022">
+  <meta name="app-version" content="1781293990">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- PWA / Add to Home Screen -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cashflow">
+  <meta name="theme-color" content="#111111">
   <title>Personal Finance V2</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
@@ -683,6 +691,11 @@
             <h1 class="text-3xl font-bold">Νέα Κίνηση</h1>
             <p class="page-subtitle">Χειροκίνητη καταχώρηση συναλλαγής</p>
           </div>
+          <!-- Quick Add — συχνές υποκατηγορίες -->
+          <div id="quick-add-wrap" class="max-w-2xl mb-4 hidden">
+            <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">⚡ Γρήγορη καταχώρηση</div>
+            <div id="quick-add-chips" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
           <form id="transaction-form" class="bg-white rounded-xl border border-gray-200 p-6 max-w-2xl space-y-5">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Τύπος κίνησης</label>
@@ -698,7 +711,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Ποσό (€)</label>
-                <input type="number" id="tx-amount" step="0.01" min="0" required class="apple-input">
+                <input type="number" id="tx-amount" step="0.01" min="0" required class="apple-input" inputmode="decimal" placeholder="0,00">
               </div>
             </div>
             <div class="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -1056,6 +1069,7 @@
                 <thead>
                   <tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
                     <th class="text-left py-3 px-4">Ticker</th>
+                    <th class="text-right py-3 px-4">Ημ/νία</th>
                     <th class="text-right py-3 px-4">Ποσ/τα</th>
                     <th class="text-right py-3 px-4">Μ.Τιμή Αγοράς</th>
                     <th class="text-right py-3 px-4">Τρ. Τιμή</th>
@@ -1486,7 +1500,7 @@
         renderTransactions();
       }
       if (name === 'portfolio') renderPortfolio();
-      if (name === 'new-transaction') resetTransactionForm();
+      if (name === 'new-transaction') { resetTransactionForm(); renderQuickAddChips(); }
       if (name === 'new-transfer') resetTransferForm();
       if (name === 'dashboard') renderDashboard();
       if (name === 'settings') renderSettings();
@@ -1582,6 +1596,9 @@
       allSubcategories = subcategoriesRes.data || [];
       allTransactions = transactionsRes.data || [];
       allTransfers = transfersRes.data || [];
+      // Φόρτωση investment trades για τις κάρτες λογαριασμών
+      const tradesRes = await sb.from('investments_trades').select('*').order('buy_date', { ascending: true });
+      allTrades = tradesRes.data || [];
       // Populate reporting month dropdown for new transaction form
       populateReportMonthDropdown();
     }
@@ -1666,6 +1683,31 @@
       allTransfers.forEach(tr => {
         if (balances[tr.from_account_id] !== undefined) balances[tr.from_account_id] -= parseFloat(tr.amount);
         if (balances[tr.to_account_id] !== undefined) balances[tr.to_account_id] += parseFloat(tr.amount);
+      });
+      // Investment accounts: αξία = cost basis ανοιχτών θέσεων από investments_trades
+      allAccounts.filter(a => a.type === 'investment').forEach(a => {
+        let costBasis = 0;
+        const accTrades = allTrades.filter(t => t.account_id === a.id);
+        // Group ανά ticker
+        const byTicker = {};
+        accTrades.forEach(t => {
+          if (!byTicker[t.ticker]) byTicker[t.ticker] = { qty: 0, cost: 0, sumBuyOpen: 0, hasQty: true };
+          const g = byTicker[t.ticker];
+          const qty = t.quantity !== null && t.quantity !== undefined ? parseFloat(t.quantity) : null;
+          const price = parseFloat(t.buy_price || 0);
+          if (qty === null) g.hasQty = false;
+          if (t.trade_type === 'buy' || !t.trade_type) {
+            if (qty !== null) { g.qty += qty; g.cost += qty * price; }
+            else if (t.status === 'open') g.sumBuyOpen += price;
+          } else if (t.trade_type === 'sell' && qty !== null) {
+            const avg = g.qty > 0 ? g.cost / g.qty : 0;
+            g.qty -= qty; g.cost -= qty * avg;
+          }
+        });
+        Object.values(byTicker).forEach(g => {
+          costBasis += g.hasQty ? Math.max(g.cost, 0) : g.sumBuyOpen;
+        });
+        balances[a.id] = costBasis;
       });
       
       // Σύνολο — εξαιρείται ο Πειραιώς Κοινός
@@ -2043,6 +2085,79 @@
         updateTypeButtons();
       });
     });
+
+    // ============================================
+    // QUICK ADD — συχνές υποκατηγορίες εξόδων
+    // ============================================
+    const QUICK_ADD_EMOJI = {
+      'Καφέδες': '☕', 'Τσιγάρα': '🚬', 'Super Market': '🛒',
+      'Φαγητό': '🍔', 'Βενζίνη': '⛽', 'Φαρμακείο': '💊',
+      'Κούρεμα': '💈', 'Padel': '🎾', 'Σπίτι': '🏠',
+      'Διαφ/Σπίτι': '🏠', 'Διάφορα Έξοδα': '📦', 'Γιατρός': '🩺'
+    };
+
+    function renderQuickAddChips() {
+      const wrap = document.getElementById('quick-add-wrap');
+      const container = document.getElementById('quick-add-chips');
+      if (!wrap || !container) return;
+
+      // Top 6 υποκατηγορίες εξόδων των τελευταίων 90 ημερών
+      const cutoff = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+      const freq = {};
+      allTransactions.forEach(t => {
+        if (t.type !== 'expense' || !t.subcategory_id || t.date < cutoff) return;
+        if (!freq[t.subcategory_id]) freq[t.subcategory_id] = { count: 0, spitiCount: 0, accounts: {} };
+        freq[t.subcategory_id].count++;
+        if (t.is_spiti) freq[t.subcategory_id].spitiCount++;
+        if (t.account_id) freq[t.subcategory_id].accounts[t.account_id] = (freq[t.subcategory_id].accounts[t.account_id] || 0) + 1;
+      });
+
+      const top = Object.entries(freq).sort((a,b) => b[1].count - a[1].count).slice(0, 6);
+      if (!top.length) { wrap.classList.add('hidden'); return; }
+
+      container.innerHTML = '';
+      top.forEach(([subId, info]) => {
+        const sub = allSubcategories.find(s => s.id === subId);
+        if (!sub) return;
+        const emoji = QUICK_ADD_EMOJI[sub.name] || '💶';
+        // Πιο συχνός λογαριασμός για αυτή την υποκατηγορία
+        const topAccount = Object.entries(info.accounts).sort((a,b) => b[1]-a[1])[0]?.[0] || null;
+        const isSpitiDefault = info.spitiCount > info.count / 2;
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.style.cssText = 'display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:22px;border:1.5px solid rgba(0,0,0,0.1);background:var(--bg-secondary);font-size:14px;font-weight:600;color:var(--text-primary);cursor:pointer;min-height:44px;box-shadow:0 1px 3px rgba(0,0,0,0.06);';
+        chip.innerHTML = `<span style="font-size:18px;">${emoji}</span> ${sub.name}`;
+        chip.onclick = () => quickFill(sub, topAccount, isSpitiDefault);
+        container.appendChild(chip);
+      });
+      wrap.classList.remove('hidden');
+    }
+
+    function quickFill(sub, accountId, isSpiti) {
+      // Τύπος = έξοδο
+      selectedTxType = 'expense';
+      updateTypeButtons();
+      // Κατηγορία + υποκατηγορία
+      document.getElementById('tx-category').value = sub.category_id;
+      updateSubcategoryDropdown();
+      document.getElementById('tx-subcategory').value = sub.id;
+      // Λογαριασμός (πιο συχνός για αυτή τη sub, αλλιώς Μισθοδοσίας)
+      const accSel = document.getElementById('tx-account');
+      if (accountId) accSel.value = accountId;
+      else {
+        const mis = allAccounts.find(a => a.name === 'Eurobank Μισθοδοσίας');
+        if (mis) accSel.value = mis.id;
+      }
+      // Σπίτι flag
+      document.getElementById('tx-spiti').checked = isSpiti;
+      // Ημερομηνία = σήμερα (ήδη default), reporting = τρέχων (ήδη default)
+      // Focus στο ποσό
+      const amountEl = document.getElementById('tx-amount');
+      amountEl.value = '';
+      amountEl.focus();
+      amountEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     
     document.getElementById('tx-category').addEventListener('change', updateSubcategoryDropdown);
     
@@ -3521,34 +3636,51 @@
     }
 
     // Υπολογίζει θέσεις ανά ticker — ξεχωριστά ανά account
+    // Υποστηρίζει και εγγραφές ΧΩΡΙΣ quantity (μόνο συνολικά ποσά + status)
     function computePositions(assetType) {
       const positions = {};
       const filtered = allTrades.filter(t => (t.asset_type || 'stock') === assetType);
-      // Sort by buy_date ascending for correct FIFO cost basis
-      [...filtered].sort((a,b) => a.buy_date.localeCompare(b.buy_date)).forEach(t => {
-        // key = ticker+account για διαχωρισμό Revolut/Degiro στα ETF
+      [...filtered].sort((a,b) => (a.buy_date||'').localeCompare(b.buy_date||'')).forEach(t => {
         const key = t.ticker + '|' + (t.account_id || '');
         if (!positions[key]) {
           positions[key] = {
             key, ticker: t.ticker, name: t.name || t.ticker,
             sector: t.sector || '', account_id: t.account_id,
-            totalQty: 0, totalCost: 0, realizedPnl: 0, trades: []
+            totalQty: 0, totalCost: 0, realizedPnl: 0,
+            sumBuy: 0, sumSell: 0, hasQty: true, hasOpenStatus: false,
+            firstBuyDate: null, trades: []
           };
         }
-        const qty = parseFloat(t.quantity || 0);
+        const p = positions[key];
+        const qty = t.quantity !== null && t.quantity !== undefined ? parseFloat(t.quantity) : null;
         const price = parseFloat(t.buy_price || 0);
-        if (t.trade_type === 'buy' || !t.trade_type) {
-          positions[key].totalQty += qty;
-          positions[key].totalCost += qty * price;
+        if (qty === null) p.hasQty = false;
+        if (t.status === 'open') p.hasOpenStatus = true;
+        if ((t.trade_type === 'buy' || !t.trade_type)) {
+          if (!p.firstBuyDate || (t.buy_date && t.buy_date < p.firstBuyDate)) p.firstBuyDate = t.buy_date;
+          p.sumBuy += qty !== null ? qty * price : price;
+          if (qty !== null) { p.totalQty += qty; p.totalCost += qty * price; }
         } else if (t.trade_type === 'sell') {
-          const avgCostBefore = positions[key].totalQty > 0 ? positions[key].totalCost / positions[key].totalQty : 0;
-          positions[key].realizedPnl += qty * (price - avgCostBefore);
-          positions[key].totalQty -= qty;
-          positions[key].totalCost -= qty * avgCostBefore;
+          p.sumSell += qty !== null ? qty * price : price;
+          if (qty !== null) {
+            const avgBefore = p.totalQty > 0 ? p.totalCost / p.totalQty : 0;
+            p.realizedPnl += qty * (price - avgBefore);
+            p.totalQty -= qty;
+            p.totalCost -= qty * avgBefore;
+          }
         }
-        positions[key].trades.push(t);
+        p.trades.push(t);
+      });
+      // Για θέσεις χωρίς qty: realized = sumSell - sumBuy όταν κλειστές
+      Object.values(positions).forEach(p => {
+        if (!p.hasQty && !p.hasOpenStatus) p.realizedPnl = p.sumSell - p.sumBuy;
       });
       return positions;
+    }
+
+    // Καθορίζει αν μια θέση είναι ανοιχτή
+    function isPositionOpen(p) {
+      return p.hasQty ? p.totalQty > 0.001 : p.hasOpenStatus;
     }
 
     async function fetchLivePrices() {
@@ -3587,50 +3719,54 @@
       let totalCurrent = 0, totalCost = 0, totalRealized = 0;
 
       const rows = Object.values(positions).filter(p => {
-        const isOpen = p.totalQty > 0.001;
+        const isOpen = isPositionOpen(p);
         if (portfolioFilter === 'open') return isOpen;
         if (portfolioFilter === 'closed') return !isOpen;
         return true;
       }).sort((a,b) => a.ticker.localeCompare(b.ticker));
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-gray-400">Δεν υπάρχουν θέσεις</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-12 text-gray-400">Δεν υπάρχουν θέσεις</td></tr>`;
         updatePortfolioKpis(0, 0, 0, currency);
         return;
       }
 
       rows.forEach(pos => {
+        const isOpen = isPositionOpen(pos);
         const livePrice = livePrices[pos.ticker] || null;
-        const avgCost = pos.totalQty > 0.001 ? pos.totalCost / pos.totalQty : 0;
-        const currentVal = livePrice && pos.totalQty > 0.001 ? livePrice * pos.totalQty : null;
-        const unrealizedPnl = currentVal !== null ? currentVal - (avgCost * pos.totalQty) : null;
-        const totalPnlPos = (unrealizedPnl || 0) + (pos.realizedPnl || 0);
-        const pnlPct = avgCost > 0 && currentVal !== null ? ((currentVal - avgCost * pos.totalQty) / (avgCost * pos.totalQty)) * 100 : null;
-        const costBasis = avgCost * Math.max(pos.totalQty, 0);
-        const isOpen = pos.totalQty > 0.001;
+        // Με ποσότητα: κανονικός υπολογισμός. Χωρίς: συνολικά ποσά.
+        const hasQty = pos.hasQty;
+        const avgCost = hasQty && pos.totalQty > 0.001 ? pos.totalCost / pos.totalQty : 0;
+        const costBasis = hasQty ? avgCost * Math.max(pos.totalQty, 0) : (isOpen ? pos.sumBuy : 0);
+        const currentVal = hasQty && livePrice && pos.totalQty > 0.001 ? livePrice * pos.totalQty : null;
+        const unrealizedPnl = currentVal !== null ? currentVal - costBasis : null;
+        const pnlShown = unrealizedPnl !== null ? unrealizedPnl : (!isOpen && pos.realizedPnl ? pos.realizedPnl : null);
+        const pnlPct = pnlShown !== null ? (isOpen && costBasis > 0 ? (pnlShown / costBasis) * 100 : (!isOpen && pos.sumBuy > 0 ? (pnlShown / pos.sumBuy) * 100 : null)) : null;
 
         if (currentVal) totalCurrent += currentVal;
         if (isOpen) totalCost += costBasis;
         totalRealized += pos.realizedPnl || 0;
 
-        const pnlColor = unrealizedPnl === null ? '' : unrealizedPnl >= 0 ? 'color:#34c759' : 'color:#ff3b30';
+        const pnlColor = pnlShown === null ? '' : pnlShown >= 0 ? 'color:#34c759' : 'color:#ff3b30';
         const accName = isEtf ? getAccountName(pos.account_id) : '';
+        const dateStr = pos.firstBuyDate ? new Date(pos.firstBuyDate).toLocaleDateString('el-GR', {day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
 
         const tr = document.createElement('tr');
         tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
         tr.onclick = () => openEditTradeModal(pos.trades[pos.trades.length - 1]?.id, pos);
         tr.innerHTML = `
-          <td class="py-3 px-4">
+          <td class="py-3 px-4" style="position:sticky;left:0;background:var(--bg-secondary);z-index:1;">
             <div style="font-weight:700;font-size:13px;">${pos.ticker}</div>
             <div style="font-size:11px;color:#8e8e93;">${pos.name}</div>
             ${pos.sector ? `<div style="font-size:10px;color:#c7c7cc;">${pos.sector}</div>` : ''}
             ${accName ? `<div style="font-size:10px;color:var(--accent);">${accName}</div>` : ''}
           </td>
-          <td style="text-align:right;" class="py-3 px-4 text-sm">${pos.totalQty > 0.001 ? pos.totalQty.toFixed(isEtf?0:3) : '—'}</td>
+          <td style="text-align:right;white-space:nowrap;" class="py-3 px-4 text-sm">${dateStr}</td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm">${hasQty && pos.totalQty > 0.001 ? pos.totalQty.toFixed(isEtf?0:3) : '—'}</td>
           <td style="text-align:right;" class="py-3 px-4 text-sm">${avgCost > 0 ? currency + avgCost.toFixed(2) : '—'}</td>
           <td style="text-align:right;" class="py-3 px-4 text-sm">${livePrice ? `<span style="color:#007aff;">${currency}${livePrice.toFixed(2)}</span>` : '<span style="color:#c7c7cc;">—</span>'}</td>
-          <td style="text-align:right;" class="py-3 px-4 text-sm font-semibold">${currentVal ? currency + currentVal.toFixed(2) : (isOpen ? `<span style="color:#c7c7cc;">${currency}${costBasis.toFixed(2)}</span>` : '—')}</td>
-          <td style="text-align:right;${pnlColor}" class="py-3 px-4 text-sm font-semibold">${unrealizedPnl !== null ? (unrealizedPnl >= 0 ? '+' : '') + currency + unrealizedPnl.toFixed(2) : '—'}</td>
+          <td style="text-align:right;" class="py-3 px-4 text-sm font-semibold">${currentVal ? currency + currentVal.toFixed(2) : (isOpen && costBasis > 0 ? `<span style="color:#c7c7cc;">${currency}${costBasis.toFixed(2)}</span>` : '—')}</td>
+          <td style="text-align:right;${pnlColor}" class="py-3 px-4 text-sm font-semibold">${pnlShown !== null ? (pnlShown >= 0 ? '+' : '') + currency + pnlShown.toFixed(2) : '—'}</td>
           <td style="text-align:right;${pnlColor}" class="py-3 px-4 text-sm font-semibold">${pnlPct !== null ? (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(1) + '%' : '—'}</td>
           <td class="text-center py-3 px-4">
             <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;">
