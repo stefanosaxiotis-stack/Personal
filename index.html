@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781347962">
+  <meta name="app-version" content="1781360000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -145,6 +145,36 @@
 
     /* ---- SECTION TITLE ---- */
     .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.8px; color: var(--text-primary); }
+
+    /* ---- AI AGENT ---- */
+    .ai-tab-bar { display:flex; background:var(--bg-tertiary); border-radius:12px; padding:3px; gap:2px; margin-bottom:20px; }
+    .ai-tab { flex:1; padding:8px 10px; border-radius:9px; border:none; background:transparent; font-size:13px; font-weight:500; color:var(--text-tertiary); cursor:pointer; transition:all 0.2s; }
+    .ai-tab.active { background:var(--bg-secondary); color:var(--text-primary); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+    .ai-chat-bubble { max-width:85%; padding:12px 16px; border-radius:18px; font-size:14px; line-height:1.5; margin-bottom:8px; word-break:break-word; }
+    .ai-chat-bubble.user { background:var(--accent); color:#fff; border-bottom-right-radius:4px; align-self:flex-end; }
+    .ai-chat-bubble.ai { background:var(--bg-secondary); color:var(--text-primary); border-bottom-left-radius:4px; align-self:flex-start; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+    .ai-chat-bubble.ai pre { white-space:pre-wrap; font-family:inherit; margin:0; }
+    .ai-input-bar { display:flex; gap:8px; align-items:flex-end; padding:12px 16px; background:var(--bg-secondary); border-top:0.5px solid var(--border-color); position:sticky; bottom:0; }
+    .ai-input-bar textarea { flex:1; resize:none; border:0.5px solid rgba(0,0,0,0.12); border-radius:20px; padding:10px 14px; font-size:15px; font-family:inherit; background:var(--bg-primary); color:var(--text-primary); outline:none; max-height:120px; min-height:42px; line-height:1.4; }
+    .ai-input-bar textarea:focus { border-color:var(--accent); }
+    .ai-send-btn { width:42px; height:42px; border-radius:50%; background:var(--accent); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:transform 0.1s; }
+    .ai-send-btn:active { transform:scale(0.93); }
+    .ai-send-btn:disabled { opacity:0.4; cursor:not-allowed; }
+    .ai-upload-btn { width:42px; height:42px; border-radius:50%; background:var(--bg-tertiary); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+    .photo-preview-item { position:relative; display:inline-block; }
+    .photo-preview-item img { width:72px; height:72px; object-fit:cover; border-radius:10px; border:2px solid var(--border-color); }
+    .photo-preview-item .remove-photo { position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:#ff3b30; border:none; color:#fff; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
+    .ai-tx-proposal { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:14px; padding:14px 16px; margin:6px 0; }
+    .ai-tx-proposal .tx-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:3px 0; }
+    .ai-tx-proposal .tx-row .label { color:var(--text-tertiary); font-size:12px; }
+    .ai-typing { display:flex; gap:4px; align-items:center; padding:12px 16px; background:var(--bg-secondary); border-radius:18px; border-bottom-left-radius:4px; align-self:flex-start; box-shadow:0 1px 4px rgba(0,0,0,0.08); margin-bottom:8px; }
+    .ai-typing span { width:7px; height:7px; border-radius:50%; background:var(--text-tertiary); animation:aiDot 1.2s infinite; }
+    .ai-typing span:nth-child(2) { animation-delay:0.2s; }
+    .ai-typing span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes aiDot { 0%,80%,100%{transform:scale(0.7);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+    [data-theme="dark"] .ai-input-bar textarea { background:var(--bg-tertiary); border-color:rgba(255,255,255,0.1); }
+    [data-theme="dark"] .ai-tab { color:var(--text-tertiary); }
+    [data-theme="dark"] .ai-tab.active { background:var(--bg-secondary); color:var(--text-primary); }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     /* #2 Swipe actions */
     .tx-swipe-item { position:relative; overflow:hidden; touch-action:pan-y; }
@@ -380,6 +410,10 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           Ρυθμίσεις
         </button>
+        <button data-section="ai-agent" class="nav-link-mobile apple-nav-link" onclick="closeMobileDrawer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          AI Agent
+        </button>
         <div style="padding:16px 0 8px;">
           <button id="logout-btn-mobile" style="width:100%;padding:12px;border-radius:10px;border:none;background:rgba(255,59,48,0.1);color:var(--expense-color);font-size:15px;font-weight:600;cursor:pointer;">Αποσύνδεση</button>
         </div>
@@ -434,6 +468,10 @@
           <button data-section="portfolio" class="nav-link apple-nav-link">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
             Χαρτοφυλάκιο
+          </button>
+          <button data-section="ai-agent" class="nav-link apple-nav-link">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            AI Agent
           </button>
         </nav>
         <div style="padding:12px 8px;border-top:0.5px solid var(--border-color);">
@@ -1227,7 +1265,152 @@
         </section>
         <!-- END SETTINGS -->
 
-      </main>
+        <!-- AI AGENT SECTION -->
+        <section id="ai-agent-section" class="hidden-section" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 120px);max-height:100%;">
+          <div style="padding:20px 20px 0;">
+            <h1 class="page-title">AI Agent</h1>
+            <p class="page-subtitle">Ανάλυση κινήσεων, ερωτήσεις, γρήγορη καταχώρηση</p>
+            <!-- Tabs -->
+            <div class="ai-tab-bar" style="margin-top:16px;">
+              <button class="ai-tab active" id="ait-chat" onclick="setAiTab('chat')">💬 Chat</button>
+              <button class="ai-tab" id="ait-photo" onclick="setAiTab('photo')">📸 Φωτογραφία</button>
+              <button class="ai-tab" id="ait-quick" onclick="setAiTab('quick')">✍️ Γρήγορη</button>
+            </div>
+          </div>
+
+          <!-- CHAT TAB -->
+          <div id="ai-tab-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+            <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:4px;">
+              <!-- Welcome message -->
+              <div class="ai-chat-bubble ai">
+                <strong>Γεια σου Στέφανε! 👋</strong><br><br>
+                Μπορείς να με ρωτήσεις για τα οικονομικά σου ή να μου πεις τι έξοδα έκανες.<br><br>
+                <span style="color:var(--text-tertiary);font-size:13px;">Παραδείγματα:<br>
+                • "Πόσα ξόδεψα για τσιγάρα αυτό το μήνα;"<br>
+                • "Ποια τα 5 μεγαλύτερα έξοδα Ιουνίου;"<br>
+                • "Σύγκρινε Μάιο-Ιούνιο έξοδα"<br>
+                • "Πλήρωσα 50€ σούπερμάρκετ"</span>
+              </div>
+            </div>
+            <div class="ai-input-bar">
+              <button class="ai-upload-btn" onclick="document.getElementById('ai-photo-input-chat').click()" title="Επισύναψη φωτογραφία">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </button>
+              <input type="file" id="ai-photo-input-chat" accept="image/*" multiple style="display:none;" onchange="handleChatPhotoAttach(event)">
+              <textarea id="ai-chat-input" placeholder="Ρώτησέ με κάτι ή πες τι έγινε..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}" oninput="autoResizeAiInput(this)"></textarea>
+              <button class="ai-send-btn" onclick="sendAiChat()" id="ai-chat-send-btn" title="Αποστολή">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- PHOTO TAB -->
+          <div id="ai-tab-photo" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:16px 20px;">
+            <!-- Upload area -->
+            <div id="photo-upload-area" onclick="document.getElementById('ai-photo-input').click()" style="border:2px dashed var(--border-color);border-radius:16px;padding:32px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:16px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
+              <svg style="margin:0 auto 12px;opacity:0.4;" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <p style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Ανέβασε φωτογραφίες κίνησης</p>
+              <p style="font-size:13px;color:var(--text-tertiary);">Από την εφαρμογή της τράπεζας · Πολλαπλές επιτρέπονται</p>
+            </div>
+            <input type="file" id="ai-photo-input" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)">
+
+            <!-- Photo previews -->
+            <div id="photo-previews" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>
+
+            <!-- Account selector -->
+            <div id="photo-account-wrap" style="display:none;margin-bottom:16px;">
+              <label style="font-size:13px;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Λογαριασμός</label>
+              <select id="photo-account-select" class="apple-select">
+                <option value="">Αυτόματη αναγνώριση από AI</option>
+              </select>
+            </div>
+
+            <!-- Analyze button -->
+            <button id="photo-analyze-btn" onclick="analyzePhotos()" class="btn-primary" style="display:none;width:100%;margin-bottom:20px;">
+              <span id="photo-analyze-label">🔍 Ανάλυση κινήσεων</span>
+            </button>
+
+            <!-- Results -->
+            <div id="photo-results" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                <h3 style="font-size:16px;font-weight:700;">Κινήσεις που εντοπίστηκαν</h3>
+                <span id="photo-results-count" style="font-size:13px;color:var(--text-tertiary);"></span>
+              </div>
+              <div id="photo-results-warning" style="display:none;background:rgba(255,149,0,0.1);border:1px solid rgba(255,149,0,0.3);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;color:#b45309;"></div>
+              <div id="photo-tx-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+              <div style="display:flex;gap:10px;">
+                <button onclick="importApprovedTx()" class="btn-primary" style="flex:1;" id="import-btn">✅ Εισαγωγή επιλεγμένων</button>
+                <button onclick="resetPhotoTab()" class="btn-secondary" style="padding:11px 16px;">Ακύρωση</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- QUICK ENTRY TAB -->
+          <div id="ai-tab-quick" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:16px 20px;">
+            <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:16px;">Γράψε ή πες τι έγινε και ο AI θα δημιουργήσει την κίνηση.</p>
+            
+            <div style="position:relative;margin-bottom:12px;">
+              <textarea id="quick-entry-text" class="apple-input" rows="3" placeholder="π.χ. «Πλήρωσα 50€ σούπερμάρκετ χθες» ή «Βενζίνη 60 ευρώ από Μετρητά»" style="resize:none;line-height:1.5;"></textarea>
+            </div>
+            
+            <!-- Voice button -->
+            <div style="display:flex;gap:10px;margin-bottom:20px;">
+              <button onclick="startVoiceInput()" id="voice-btn" class="btn-secondary" style="flex:0;min-width:48px;padding:11px;">
+                🎤
+              </button>
+              <button onclick="parseQuickEntry()" class="btn-primary" style="flex:1;" id="quick-parse-btn">
+                ✨ Ανάλυση
+              </button>
+            </div>
+
+            <!-- Quick entry result -->
+            <div id="quick-result" style="display:none;">
+              <div style="margin-bottom:12px;">
+                <h3 style="font-size:15px;font-weight:600;margin-bottom:10px;">Προτεινόμενη κίνηση</h3>
+                <div class="apple-card" style="padding:16px;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Τύπος</label>
+                      <select id="qr-type" class="apple-select" style="margin-top:4px;font-size:14px;" onchange="loadQrCategories()">
+                        <option value="expense">Έξοδο</option>
+                        <option value="income">Έσοδο</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ποσό (€)</label>
+                      <input type="number" id="qr-amount" class="apple-input" style="margin-top:4px;font-size:14px;" step="0.01">
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Ημερομηνία</label>
+                      <input type="date" id="qr-date" class="apple-input" style="margin-top:4px;font-size:14px;">
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Λογαριασμός</label>
+                      <select id="qr-account" class="apple-select" style="margin-top:4px;font-size:14px;"></select>
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Κατηγορία</label>
+                      <select id="qr-category" class="apple-select" style="margin-top:4px;font-size:14px;" onchange="loadQrSubcategories()"></select>
+                    </div>
+                    <div>
+                      <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Υποκατηγορία</label>
+                      <select id="qr-subcategory" class="apple-select" style="margin-top:4px;font-size:14px;"></select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Περιγραφή</label>
+                    <input type="text" id="qr-description" class="apple-input" style="margin-top:4px;font-size:14px;">
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button onclick="confirmQuickEntry()" class="btn-primary" style="flex:1;">✅ Καταχώρηση</button>
+                <button onclick="document.getElementById('quick-result').style.display='none'" class="btn-secondary" style="padding:11px 16px;">Ακύρωση</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- END AI AGENT -->
     </div>
 
     <div id="mobile-overlay" class="hidden-section fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
@@ -1321,6 +1504,12 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </span>
           Ρυθμίσεις
+        </button>
+        <button onclick="showSectionFromMore('ai-agent')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;background:transparent;font-size:15px;font-weight:500;color:var(--text-primary);cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
+          <span style="width:36px;height:36px;background:rgba(0,122,255,0.12);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          AI Agent
         </button>
       </div>
     </div>
@@ -4493,6 +4682,769 @@
       showToast('Κατηγορία προστέθηκε', 'success');
       await renderSettings();
     }
+
+  </script>
+
+  <script>
+  // ============================================
+  // AI AGENT
+  // ============================================
+
+  const SUPABASE_URL = 'https://qxgthcxjrlryloyrvknq.supabase.co';
+  const CLAUDE_PROXY = SUPABASE_URL + '/functions/v1/claude-proxy';
+
+  // --- Tab switching ---
+  function setAiTab(tab) {
+    ['chat','photo','quick'].forEach(t => {
+      document.getElementById('ait-' + t)?.classList.toggle('active', t === tab);
+      const el = document.getElementById('ai-tab-' + t);
+      if (el) el.style.display = (t === tab) ? 'flex' : 'none';
+    });
+    if (tab === 'quick') populateQuickEntryDropdowns();
+  }
+
+  // --- Auto resize textarea ---
+  function autoResizeAiInput(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  // ============================================================
+  // CHAT TAB
+  // ============================================================
+  let chatAttachedImages = []; // { base64, mediaType, name }
+
+  function handleChatPhotoAttach(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const base64 = e.target.result.split(',')[1];
+        chatAttachedImages.push({ base64, mediaType: file.type, name: file.name });
+        renderChatAttachments();
+      };
+      reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+  }
+
+  function renderChatAttachments() {
+    const bar = document.getElementById('ai-input-bar-attachments');
+    if (!bar) {
+      // Create attachment strip above input bar
+      const inputBar = document.querySelector('.ai-input-bar');
+      if (!inputBar) return;
+      const strip = document.createElement('div');
+      strip.id = 'ai-input-bar-attachments';
+      strip.style.cssText = 'display:flex;gap:8px;padding:8px 16px 0;background:var(--bg-secondary);flex-wrap:wrap;';
+      inputBar.parentNode.insertBefore(strip, inputBar);
+    }
+    const strip = document.getElementById('ai-input-bar-attachments');
+    strip.innerHTML = chatAttachedImages.map((img, i) => `
+      <div class="photo-preview-item">
+        <img src="data:${img.mediaType};base64,${img.base64}" alt="attachment">
+        <button class="remove-photo" onclick="removeChatAttachment(${i})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function removeChatAttachment(i) {
+    chatAttachedImages.splice(i, 1);
+    if (chatAttachedImages.length === 0) {
+      document.getElementById('ai-input-bar-attachments')?.remove();
+    } else {
+      renderChatAttachments();
+    }
+  }
+
+  async function sendAiChat() {
+    const input = document.getElementById('ai-chat-input');
+    const text = input?.value?.trim();
+    if (!text && chatAttachedImages.length === 0) return;
+
+    const btn = document.getElementById('ai-chat-send-btn');
+    btn.disabled = true;
+
+    // Append user message
+    const messagesEl = document.getElementById('ai-chat-messages');
+    if (text) appendChatBubble(text, 'user');
+    if (chatAttachedImages.length) {
+      chatAttachedImages.forEach(img => {
+        const div = document.createElement('div');
+        div.style.cssText = 'align-self:flex-end;margin-bottom:8px;';
+        div.innerHTML = `<img src="data:${img.mediaType};base64,${img.base64}" style="max-width:200px;border-radius:12px;border:2px solid var(--border-color);">`;
+        messagesEl.appendChild(div);
+      });
+    }
+
+    // Clear input
+    input.value = '';
+    input.style.height = 'auto';
+    const imgs = [...chatAttachedImages];
+    chatAttachedImages = [];
+    document.getElementById('ai-input-bar-attachments')?.remove();
+
+    // Show typing indicator
+    const typingEl = addTypingIndicator();
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    try {
+      // Build context summary from data
+      const context = buildDataContext();
+
+      // Build content array
+      const userContent = [];
+      imgs.forEach(img => {
+        userContent.push({ type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.base64 } });
+      });
+      if (text) userContent.push({ type: 'text', text });
+
+      const systemPrompt = `Είσαι ο οικονομικός βοηθός του Στέφανου Αξιώτη. Απαντάς ΠΑΝΤΑ στα Ελληνικά.
+
+ΟΙΚΟΝΟΜΙΚΑ ΔΕΔΟΜΕΝΑ:
+${context}
+
+ΟΔΗΓΙΕΣ:
+- Απάντα σε ερωτήσεις για τα οικονομικά του Στέφανου βασισμένος ΜΟΝΟ στα παραπάνω δεδομένα
+- Αν δεν έχεις αρκετά δεδομένα, πες το ξεκάθαρα
+- Χρησιμοποίησε € για ποσά και ελληνικές ημερομηνίες
+- Αν ο χρήστης περιγράφει μια συναλλαγή (π.χ. "πλήρωσα 50€ σούπερμάρκετ"), αναγνώρισέ την και πρότεινε καταχώρηση
+- Όταν προτείνεις καταχώρηση, απάντα με JSON εντός <TX_PROPOSAL> tags: <TX_PROPOSAL>{"type":"expense","amount":50,"description":"Σούπερμάρκετ","category":"Σπίτι","subcategory":"Super Market","account":"Eurobank Μισθοδοσίας","date":"${new Date().toISOString().split('T')[0]}"}</TX_PROPOSAL>
+- Για φωτογραφίες τράπεζας: ανάλυσε τις κινήσεις και εξάγαγέ τες ως JSON εντός <PHOTO_TRANSACTIONS> tags`;
+
+      const response = await callClaudeProxy({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userContent }]
+      });
+
+      typingEl.remove();
+
+      const replyText = response.content?.[0]?.text || 'Κάτι πήγε στραβά.';
+
+      // Check for TX_PROPOSAL
+      const txMatch = replyText.match(/<TX_PROPOSAL>([\s\S]*?)<\/TX_PROPOSAL>/);
+      const cleanText = replyText.replace(/<TX_PROPOSAL>[\s\S]*?<\/TX_PROPOSAL>/g, '').trim();
+
+      if (cleanText) appendChatBubble(cleanText, 'ai');
+
+      if (txMatch) {
+        try {
+          const proposal = JSON.parse(txMatch[1]);
+          showChatTxProposal(proposal);
+        } catch(e) {}
+      }
+
+      // Check for PHOTO_TRANSACTIONS
+      const photoMatch = replyText.match(/<PHOTO_TRANSACTIONS>([\s\S]*?)<\/PHOTO_TRANSACTIONS>/);
+      if (photoMatch) {
+        try {
+          const txList = JSON.parse(photoMatch[1]);
+          showChatPhotoProposals(txList);
+        } catch(e) {}
+      }
+
+    } catch(err) {
+      typingEl.remove();
+      appendChatBubble('❌ Σφάλμα: ' + err.message, 'ai');
+    }
+
+    btn.disabled = false;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function appendChatBubble(text, role) {
+    const messagesEl = document.getElementById('ai-chat-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-chat-bubble ' + role;
+    div.innerHTML = text.replace(/\n/g, '<br>');
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function addTypingIndicator() {
+    const messagesEl = document.getElementById('ai-chat-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  function showChatTxProposal(p) {
+    const messagesEl = document.getElementById('ai-chat-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-chat-bubble ai';
+    div.style.width = '100%';
+    div.innerHTML = `
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">📋 Προτεινόμενη καταχώρηση:</div>
+      <div class="ai-tx-proposal">
+        <div class="tx-row"><span class="label">Τύπος</span><span>${p.type === 'expense' ? '🔴 Έξοδο' : '🟢 Έσοδο'}</span></div>
+        <div class="tx-row"><span class="label">Ποσό</span><span style="font-weight:700;">${formatAmount(p.amount)}</span></div>
+        <div class="tx-row"><span class="label">Ημερομηνία</span><span>${p.date || today()}</span></div>
+        <div class="tx-row"><span class="label">Λογαριασμός</span><span>${p.account || 'Eurobank Μισθοδοσίας'}</span></div>
+        <div class="tx-row"><span class="label">Κατηγορία</span><span>${p.category || '—'}</span></div>
+        <div class="tx-row"><span class="label">Υποκατηγορία</span><span>${p.subcategory || '—'}</span></div>
+        <div class="tx-row"><span class="label">Περιγραφή</span><span>${p.description || '—'}</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="approveChatProposal(this, ${JSON.stringify(p).replace(/"/g, '&quot;')})" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--income-color);color:#fff;font-weight:600;cursor:pointer;font-size:13px;">✅ Καταχώρηση</button>
+        <button onclick="this.closest('.ai-chat-bubble').remove()" style="padding:10px 14px;border-radius:10px;border:none;background:var(--bg-tertiary);color:var(--text-primary);font-weight:600;cursor:pointer;font-size:13px;">❌</button>
+      </div>`;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function showChatPhotoProposals(txList) {
+    const messagesEl = document.getElementById('ai-chat-messages');
+    const div = document.createElement('div');
+    div.className = 'ai-chat-bubble ai';
+    div.style.width = '100%';
+    div.innerHTML = `<div style="font-size:13px;font-weight:600;margin-bottom:10px;">📸 Εντοπίστηκαν ${txList.length} κινήσεις — μεταβαίνω στο tab Φωτογραφία...</div>`;
+    messagesEl.appendChild(div);
+    // Switch to photo tab and prefill
+    setAiTab('photo');
+    prefillPhotoResults(txList);
+  }
+
+  async function approveChatProposal(btn, p) {
+    btn.disabled = true;
+    btn.textContent = '⏳';
+    try {
+      const txData = await buildTxFromProposal(p);
+      const { error } = await sb.from('transactions').insert(txData);
+      if (error) throw error;
+      btn.closest('.ai-chat-bubble').innerHTML = '<span style="color:var(--income-color);font-weight:600;">✅ Καταχωρήθηκε!</span>';
+      showToast('Κίνηση καταχωρήθηκε', 'success');
+      await refreshData();
+    } catch(e) {
+      btn.textContent = '✅ Καταχώρηση';
+      btn.disabled = false;
+      showToast('Σφάλμα: ' + e.message, 'error');
+    }
+  }
+
+  // ============================================================
+  // PHOTO TAB
+  // ============================================================
+  let photoFiles = []; // { base64, mediaType, name }
+
+  function handlePhotoUpload(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const base64 = e.target.result.split(',')[1];
+        photoFiles.push({ base64, mediaType: file.type, name: file.name });
+        renderPhotoPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+    event.target.value = '';
+  }
+
+  function renderPhotoPreviews() {
+    const container = document.getElementById('photo-previews');
+    const accountWrap = document.getElementById('photo-account-wrap');
+    const analyzeBtn = document.getElementById('photo-analyze-btn');
+
+    container.innerHTML = photoFiles.map((f, i) => `
+      <div class="photo-preview-item">
+        <img src="data:${f.mediaType};base64,${f.base64}" alt="photo ${i+1}">
+        <button class="remove-photo" onclick="removePhoto(${i})">×</button>
+      </div>
+    `).join('');
+
+    const hasPhotos = photoFiles.length > 0;
+    accountWrap.style.display = hasPhotos ? 'block' : 'none';
+    analyzeBtn.style.display = hasPhotos ? 'block' : 'none';
+
+    // Populate account select if needed
+    const sel = document.getElementById('photo-account-select');
+    if (sel.children.length <= 1 && allAccounts.length) {
+      allAccounts.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name;
+        sel.appendChild(opt);
+      });
+    }
+  }
+
+  function removePhoto(i) {
+    photoFiles.splice(i, 1);
+    renderPhotoPreviews();
+    if (photoFiles.length === 0) resetPhotoTab();
+  }
+
+  function resetPhotoTab() {
+    photoFiles = [];
+    document.getElementById('photo-previews').innerHTML = '';
+    document.getElementById('photo-account-wrap').style.display = 'none';
+    document.getElementById('photo-analyze-btn').style.display = 'none';
+    document.getElementById('photo-results').style.display = 'none';
+    document.getElementById('photo-tx-list').innerHTML = '';
+    document.getElementById('photo-analyze-label').textContent = '🔍 Ανάλυση κινήσεων';
+    document.getElementById('photo-analyze-btn').disabled = false;
+  }
+
+  async function analyzePhotos() {
+    if (photoFiles.length === 0) return;
+    const btn = document.getElementById('photo-analyze-btn');
+    const lbl = document.getElementById('photo-analyze-label');
+    btn.disabled = true;
+    lbl.textContent = '⏳ Ανάλυση...';
+
+    const selectedAccountId = document.getElementById('photo-account-select').value;
+    const selectedAccount = allAccounts.find(a => a.id === selectedAccountId);
+
+    try {
+      const content = [];
+      photoFiles.forEach(f => {
+        content.push({ type: 'image', source: { type: 'base64', media_type: f.mediaType, data: f.base64 } });
+      });
+
+      const accountHint = selectedAccount ? `Ο λογαριασμός είναι: "${selectedAccount.name}"` : 'Αναγνώρισε τον λογαριασμό από τη φωτογραφία.';
+
+      content.push({ type: 'text', text: `Ανάλυσε αυτές τις φωτογραφίες από εφαρμογή τράπεζας.
+${accountHint}
+
+Οι διαθέσιμοι λογαριασμοί είναι: ${allAccounts.map(a => a.name).join(', ')}
+
+Οι διαθέσιμες κατηγορίες εξόδων είναι: ${allCategories.filter(c=>c.type==='expense'&&!c.is_archived).map(c=>c.name).join(', ')}
+
+Οι διαθέσιμες υποκατηγορίες εξόδων είναι: ${allSubcategories.filter(s=>!s.is_archived).map(s=>s.name).join(', ')}
+
+Εξάγαγε ΟΛΕΣ τις κινήσεις που βλέπεις. Για ΚΑΘΕ κίνηση δώσε:
+- date: ημερομηνία σε μορφή YYYY-MM-DD (χρησιμοποίησε το τρέχον έτος 2025 αν δεν φαίνεται)
+- amount: ποσό (θετικό αριθμός)
+- type: "expense" ή "income"  
+- description: η περιγραφή όπως φαίνεται στη φωτογραφία
+- account_name: όνομα λογαριασμού
+- category: κατηγορία από τη λίστα
+- subcategory: υποκατηγορία από τη λίστα
+- is_spiti: true αν είναι έξοδο σπιτιού (Super Market, φαγητό, φαρμακείο, κλπ)
+- confidence: "high"/"medium"/"low"
+
+ΣΗΜΑΝΤΙΚΟ: Μεταφορές μεταξύ λογαριασμών (POO SITA, COM POO SITA) είναι transfers, ΟΧΙ transactions - παράλειψέ τες ή σημείωσέ τες ως type="transfer".
+Έσοδα (ΕΠΙΔ ΑΔΕΙΑΣ, ΤΑΚΤ ΜΑΙΟΥ κλπ) είναι income.
+
+Απάντα ΜΟΝΟ με valid JSON array, χωρίς άλλο κείμενο:
+[{"date":"...","amount":0,"type":"expense","description":"...","account_name":"...","category":"...","subcategory":"...","is_spiti":false,"confidence":"high"}]` });
+
+      const response = await callClaudeProxy({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 3000,
+        messages: [{ role: 'user', content }]
+      });
+
+      const rawText = response.content?.[0]?.text || '[]';
+      let txList;
+      try {
+        const clean = rawText.replace(/```json|```/g, '').trim();
+        txList = JSON.parse(clean);
+      } catch(e) {
+        throw new Error('Δεν ήταν δυνατή η ανάλυση της απάντησης του AI');
+      }
+
+      // Filter out transfers
+      txList = txList.filter(t => t.type !== 'transfer');
+
+      prefillPhotoResults(txList);
+
+    } catch(err) {
+      showToast('Σφάλμα ανάλυσης: ' + err.message, 'error');
+      btn.disabled = false;
+      lbl.textContent = '🔍 Ανάλυση κινήσεων';
+    }
+  }
+
+  function prefillPhotoResults(txList) {
+    const resultsEl = document.getElementById('photo-results');
+    const listEl = document.getElementById('photo-tx-list');
+    const countEl = document.getElementById('photo-results-count');
+    const warnEl = document.getElementById('photo-results-warning');
+    const btn = document.getElementById('photo-analyze-btn');
+    const lbl = document.getElementById('photo-analyze-label');
+
+    btn.disabled = false;
+    lbl.textContent = '🔍 Ανάλυση κινήσεων';
+
+    if (!txList || txList.length === 0) {
+      showToast('Δεν εντοπίστηκαν κινήσεις', 'error');
+      return;
+    }
+
+    countEl.textContent = txList.length + ' κινήσεις';
+
+    // Check for low confidence
+    const lowConf = txList.filter(t => t.confidence === 'low');
+    if (lowConf.length > 0) {
+      warnEl.style.display = 'block';
+      warnEl.textContent = `⚠️ ${lowConf.length} κινήσεις έχουν χαμηλή βεβαιότητα κατηγοριοποίησης. Ελέγξτε τες πριν την εισαγωγή.`;
+    } else {
+      warnEl.style.display = 'none';
+    }
+
+    listEl.innerHTML = '';
+    txList.forEach((tx, i) => {
+      const categoryOptions = allCategories.filter(c=>c.type===tx.type&&!c.is_archived).map(c=>`<option value="${c.id}" ${c.name===tx.category?'selected':''}>${c.name}</option>`).join('');
+      const subcatOptions = allSubcategories.filter(s=>!s.is_archived).map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
+      const accountOptions = allAccounts.map(a=>`<option value="${a.id}" ${a.name===tx.account_name?'selected':''}>${a.name}</option>`).join('');
+
+      const card = document.createElement('div');
+      card.className = 'ai-tx-proposal';
+      card.style.position = 'relative';
+      card.dataset.index = i;
+      card.innerHTML = `
+        <label style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" class="photo-tx-check" data-index="${i}" checked style="width:18px;height:18px;cursor:pointer;">
+        </label>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-right:32px;">
+          <span style="font-size:18px;">${tx.type==='expense'?'🔴':'🟢'}</span>
+          <span style="font-size:15px;font-weight:700;">${formatAmount(tx.amount)}</span>
+          <span style="font-size:12px;color:var(--text-tertiary);">${tx.date}</span>
+          ${tx.confidence==='low'?'<span style="font-size:11px;background:rgba(255,149,0,0.15);color:#b45309;padding:2px 8px;border-radius:6px;">⚠️ χαμηλή βεβαιότητα</span>':''}
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${tx.description}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Λογαριασμός</label>
+            <select class="apple-select photo-tx-account" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;">${accountOptions}</select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Κατηγορία</label>
+            <select class="apple-select photo-tx-category" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;" onchange="updatePhotoSubcat(${i})">${categoryOptions}</select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Υποκατηγορία</label>
+            <select class="apple-select photo-tx-subcat" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;">${subcatOptions}</select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Ημερομηνία</label>
+            <input type="date" class="apple-input photo-tx-date" data-index="${i}" value="${tx.date}" style="margin-top:2px;font-size:13px;padding:6px 10px;">
+          </div>
+        </div>`;
+      listEl.appendChild(card);
+    });
+
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function updatePhotoSubcat(i) {
+    const catSel = document.querySelector(`.photo-tx-category[data-index="${i}"]`);
+    const subcatSel = document.querySelector(`.photo-tx-subcat[data-index="${i}"]`);
+    if (!catSel || !subcatSel) return;
+    const catId = catSel.value;
+    const subs = allSubcategories.filter(s => s.category_id === catId && !s.is_archived);
+    subcatSel.innerHTML = subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+
+  async function importApprovedTx() {
+    const checks = document.querySelectorAll('.photo-tx-check:checked');
+    if (checks.length === 0) { showToast('Δεν επιλέχτηκε καμία κίνηση', 'error'); return; }
+
+    const btn = document.getElementById('import-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Εισαγωγή...';
+
+    const inserts = [];
+    checks.forEach(chk => {
+      const i = chk.dataset.index;
+      const accountId = document.querySelector(`.photo-tx-account[data-index="${i}"]`)?.value;
+      const categoryId = document.querySelector(`.photo-tx-category[data-index="${i}"]`)?.value;
+      const subcatId = document.querySelector(`.photo-tx-subcat[data-index="${i}"]`)?.value;
+      const date = document.querySelector(`.photo-tx-date[data-index="${i}"]`)?.value;
+
+      const card = document.querySelector(`.ai-tx-proposal[data-index="${i}"]`);
+      const amountEl = card?.querySelector('.font-bold'); // fallback - we'll read from DOM differently
+
+      // Get amount from card text content - find the bold amount span
+      const spans = card?.querySelectorAll('span');
+      let amount = 0;
+      spans?.forEach(s => { if (s.style.fontWeight === '700') { const n = parseFloat(s.textContent.replace(/[^0-9.,]/g,'').replace(',','.')); if (!isNaN(n)) amount = n; } });
+
+      const typeEl = card?.querySelector('span[style*="font-size:18px"]');
+      const type = typeEl?.textContent?.includes('🔴') ? 'expense' : 'income';
+
+      const descEl = card?.querySelector('div[style*="color:var(--text-secondary)"]');
+      const description = descEl?.textContent || '';
+
+      if (!accountId || !categoryId || !subcatId || !date || amount <= 0) return;
+
+      inserts.push({
+        account_id: accountId,
+        category_id: categoryId,
+        subcategory_id: subcatId,
+        date,
+        report_date: date,
+        amount,
+        type,
+        description,
+        source: 'agent',
+        is_spiti: ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()))
+      });
+    });
+
+    if (inserts.length === 0) { showToast('Δεν βρέθηκαν έγκυρες κινήσεις', 'error'); btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων'; return; }
+
+    const { error } = await sb.from('transactions').insert(inserts);
+    if (error) {
+      showToast('Σφάλμα εισαγωγής: ' + error.message, 'error');
+      btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων';
+      return;
+    }
+
+    showToast(`✅ ${inserts.length} κινήσεις εισήχθησαν!`, 'success');
+    resetPhotoTab();
+    await refreshData();
+  }
+
+  // ============================================================
+  // QUICK ENTRY TAB
+  // ============================================================
+  let voiceRecognition = null;
+
+  async function parseQuickEntry() {
+    const text = document.getElementById('quick-entry-text')?.value?.trim();
+    if (!text) return;
+
+    const btn = document.getElementById('quick-parse-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Ανάλυση...';
+
+    try {
+      const catList = allCategories.filter(c=>!c.is_archived).map(c=>`${c.name} (${c.type})`).join(', ');
+      const subcatList = allSubcategories.filter(s=>!s.is_archived).map(s=>s.name).join(', ');
+      const accList = allAccounts.map(a=>a.name).join(', ');
+
+      const prompt = `Ανάλυσε αυτό το κείμενο ως οικονομική συναλλαγή:
+"${text}"
+
+Διαθέσιμοι λογαριασμοί: ${accList}
+Διαθέσιμες κατηγορίες: ${catList}  
+Διαθέσιμες υποκατηγορίες: ${subcatList}
+Σημερινή ημερομηνία: ${today()}
+
+Απάντα ΜΟΝΟ με valid JSON (χωρίς άλλο κείμενο):
+{"type":"expense","amount":0,"date":"${today()}","account_name":"Eurobank Μισθοδοσίας","category":"","subcategory":"","description":"","is_spiti":false}`;
+
+      const response = await callClaudeProxy({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      });
+
+      const raw = response.content?.[0]?.text || '{}';
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const proposal = JSON.parse(clean);
+
+      populateQuickEntryDropdowns();
+      fillQuickResult(proposal);
+
+    } catch(err) {
+      showToast('Σφάλμα: ' + err.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '✨ Ανάλυση';
+  }
+
+  function fillQuickResult(p) {
+    document.getElementById('qr-amount').value = p.amount || '';
+    document.getElementById('qr-date').value = p.date || today();
+    document.getElementById('qr-description').value = p.description || '';
+
+    const typeEl = document.getElementById('qr-type');
+    if (typeEl) typeEl.value = p.type || 'expense';
+
+    loadQrCategories();
+    setTimeout(() => {
+      // Set category
+      const catSel = document.getElementById('qr-category');
+      if (catSel && p.category) {
+        const cat = allCategories.find(c => c.name === p.category && !c.is_archived);
+        if (cat) { catSel.value = cat.id; loadQrSubcategories(); }
+      }
+      // Set account
+      const accSel = document.getElementById('qr-account');
+      if (accSel && p.account_name) {
+        const acc = allAccounts.find(a => a.name === p.account_name);
+        if (acc) accSel.value = acc.id;
+      }
+      setTimeout(() => {
+        const subcatSel = document.getElementById('qr-subcategory');
+        if (subcatSel && p.subcategory) {
+          const sub = allSubcategories.find(s => s.name === p.subcategory && !s.is_archived);
+          if (sub) subcatSel.value = sub.id;
+        }
+        document.getElementById('quick-result').style.display = 'block';
+        document.getElementById('quick-result').scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }, 50);
+  }
+
+  function populateQuickEntryDropdowns() {
+    const accSel = document.getElementById('qr-account');
+    if (accSel && accSel.children.length === 0) {
+      allAccounts.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        accSel.appendChild(opt);
+      });
+    }
+    loadQrCategories();
+  }
+
+  function loadQrCategories() {
+    const type = document.getElementById('qr-type')?.value || 'expense';
+    const catSel = document.getElementById('qr-category');
+    if (!catSel) return;
+    catSel.innerHTML = '';
+    allCategories.filter(c => c.type === type && !c.is_archived).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id; opt.textContent = c.name;
+      catSel.appendChild(opt);
+    });
+    loadQrSubcategories();
+  }
+
+  function loadQrSubcategories() {
+    const catId = document.getElementById('qr-category')?.value;
+    const subcatSel = document.getElementById('qr-subcategory');
+    if (!subcatSel || !catId) return;
+    subcatSel.innerHTML = '';
+    allSubcategories.filter(s => s.category_id === catId && !s.is_archived).forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id; opt.textContent = s.name;
+      subcatSel.appendChild(opt);
+    });
+  }
+
+  async function confirmQuickEntry() {
+    const amount = parseFloat(document.getElementById('qr-amount')?.value);
+    const date = document.getElementById('qr-date')?.value;
+    const accountId = document.getElementById('qr-account')?.value;
+    const categoryId = document.getElementById('qr-category')?.value;
+    const subcatId = document.getElementById('qr-subcategory')?.value;
+    const description = document.getElementById('qr-description')?.value || '';
+    const type = document.getElementById('qr-type')?.value || 'expense';
+
+    if (!amount || !date || !accountId || !categoryId || !subcatId) {
+      showToast('Συμπλήρωσε όλα τα πεδία', 'error'); return;
+    }
+
+    const { error } = await sb.from('transactions').insert({
+      account_id: accountId, category_id: categoryId, subcategory_id: subcatId,
+      date, report_date: date, amount, type, description, source: 'agent',
+      is_spiti: ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()))
+    });
+
+    if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+    showToast('✅ Κίνηση καταχωρήθηκε!', 'success');
+    document.getElementById('quick-entry-text').value = '';
+    document.getElementById('quick-result').style.display = 'none';
+    await refreshData();
+  }
+
+  function startVoiceInput() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { showToast('Voice δεν υποστηρίζεται σε αυτόν τον browser', 'error'); return; }
+    const btn = document.getElementById('voice-btn');
+    if (voiceRecognition) { voiceRecognition.stop(); return; }
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.lang = 'el-GR';
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = false;
+    btn.textContent = '⏹';
+    btn.style.background = 'rgba(255,59,48,0.15)';
+    voiceRecognition.onresult = e => {
+      const transcript = e.results[0][0].transcript;
+      const textArea = document.getElementById('quick-entry-text');
+      if (textArea) textArea.value = transcript;
+    };
+    voiceRecognition.onend = () => { btn.textContent = '🎤'; btn.style.background = ''; voiceRecognition = null; };
+    voiceRecognition.onerror = () => { btn.textContent = '🎤'; btn.style.background = ''; voiceRecognition = null; };
+    voiceRecognition.start();
+  }
+
+  // ============================================================
+  // HELPERS
+  // ============================================================
+  function today() { return new Date().toISOString().split('T')[0]; }
+
+  function buildDataContext() {
+    // Build a summary of recent transactions for AI context
+    const recent = (allTransactions || []).slice(0, 200);
+    const bySubcat = {};
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    recent.forEach(tx => {
+      if (!tx.report_date) return;
+      const [y, m] = tx.report_date.split('-').map(Number);
+      if (y === currentYear && m === currentMonth) {
+        const sub = tx.subcategories?.name || '—';
+        if (!bySubcat[sub]) bySubcat[sub] = 0;
+        if (tx.type === 'expense') bySubcat[sub] += tx.amount;
+      }
+    });
+
+    const monthSummary = Object.entries(bySubcat)
+      .sort((a,b) => b[1]-a[1])
+      .map(([k,v]) => `  ${k}: ${formatAmount(v)}`)
+      .join('\n');
+
+    const totalIncome = recent.filter(t=>t.type==='income'&&new Date(t.report_date).getFullYear()===currentYear&&new Date(t.report_date).getMonth()+1===currentMonth).reduce((s,t)=>s+t.amount,0);
+    const totalExpense = recent.filter(t=>t.type==='expense'&&new Date(t.report_date).getFullYear()===currentYear&&new Date(t.report_date).getMonth()+1===currentMonth).reduce((s,t)=>s+t.amount,0);
+
+    return `Τρέχων μήνας (${currentMonth}/${currentYear}):
+Έσοδα: ${formatAmount(totalIncome)}
+Έξοδα: ${formatAmount(totalExpense)}
+Ανά υποκατηγορία:
+${monthSummary || '  (δεν υπάρχουν δεδομένα)'}
+
+Σύνολο κινήσεων στη βάση: ${(allTransactions||[]).length}`;
+  }
+
+  async function buildTxFromProposal(p) {
+    const account = allAccounts.find(a => a.name === p.account) || allAccounts[0];
+    const cat = allCategories.find(c => c.name === p.category && !c.is_archived);
+    const sub = allSubcategories.find(s => s.name === p.subcategory && !s.is_archived);
+    return {
+      account_id: account?.id,
+      category_id: cat?.id,
+      subcategory_id: sub?.id,
+      date: p.date || today(),
+      report_date: p.date || today(),
+      amount: p.amount,
+      type: p.type || 'expense',
+      description: p.description || '',
+      source: 'agent',
+      is_spiti: p.is_spiti || false
+    };
+  }
+
+  async function callClaudeProxy(payload) {
+    const session = await sb.auth.getSession();
+    const token = session.data?.session?.access_token;
+    const resp = await fetch(CLAUDE_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error('Claude API error: ' + err);
+    }
+    return resp.json();
+  }
 
   </script>
 
