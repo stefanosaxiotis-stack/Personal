@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781362000">
+  <meta name="app-version" content="1781367000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -175,6 +175,10 @@
     [data-theme="dark"] .ai-input-bar textarea { background:var(--bg-tertiary); border-color:rgba(255,255,255,0.1); }
     [data-theme="dark"] .ai-tab { color:var(--text-tertiary); }
     [data-theme="dark"] .ai-tab.active { background:var(--bg-secondary); color:var(--text-primary); }
+
+    /* AI tab buttons */
+    .ai-tab-btn { flex:1; padding:8px 6px; border-radius:9px; border:none; background:transparent; color:var(--text-tertiary); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+    .ai-tab-btn.ai-tab-active { background:var(--bg-secondary); color:var(--text-primary); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     /* #2 Swipe actions */
     .tx-swipe-item { position:relative; overflow:hidden; touch-action:pan-y; }
@@ -1272,10 +1276,10 @@
           <div style="padding:14px 16px 0;background:var(--bg-primary);flex-shrink:0;">
             <h1 style="font-size:22px;font-weight:700;letter-spacing:-0.5px;color:var(--text-primary);">AI Agent</h1>
             <p style="font-size:13px;color:var(--text-tertiary);margin-top:2px;margin-bottom:12px;">Ανάλυση κινήσεων, ερωτήσεις, γρήγορη καταχώρηση</p>
-            <div style="display:flex;background:var(--bg-tertiary);border-radius:12px;padding:3px;gap:2px;margin-bottom:0;">
-              <button id="ait-chat" onclick="setAiTab('chat')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:var(--bg-secondary);color:var(--text-primary);font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.12);">💬 Chat</button>
-              <button id="ait-photo" onclick="setAiTab('photo')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;">📸 Φωτογραφία</button>
-              <button id="ait-quick" onclick="setAiTab('quick')" style="flex:1;padding:8px 6px;border-radius:9px;border:none;background:transparent;color:var(--text-tertiary);font-size:13px;font-weight:500;cursor:pointer;">✍️ Γρήγορη</button>
+            <div style="display:flex;background:var(--bg-tertiary);border-radius:12px;padding:3px;gap:2px;margin-bottom:0;" id="ai-tab-bar">
+              <button id="ait-chat" onclick="setAiTab('chat')" class="ai-tab-btn ai-tab-active">💬 Chat</button>
+              <button id="ait-photo" onclick="setAiTab('photo')" class="ai-tab-btn">📸 Φωτογραφία</button>
+              <button id="ait-quick" onclick="setAiTab('quick')" class="ai-tab-btn">✍️ Γρήγορη</button>
             </div>
           </div>
 
@@ -1308,7 +1312,7 @@
           </div>
 
           <!-- PHOTO TAB -->
-          <div id="ai-tab-photo" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
+          <div id="ai-tab-photo" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
             <input type="file" id="ai-photo-input" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)">
             <div onclick="document.getElementById('ai-photo-input').click()" style="border:2px dashed var(--border-color);border-radius:16px;padding:28px 16px;text-align:center;cursor:pointer;transition:border-color 0.2s;margin-bottom:14px;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border-color)'">
               <svg style="margin:0 auto 10px;opacity:0.35;" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -1336,7 +1340,7 @@
           </div>
 
           <!-- QUICK ENTRY TAB -->
-          <div id="ai-tab-quick" style="display:none;flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
+          <div id="ai-tab-quick" style="flex-direction:column;flex:1;overflow-y:auto;padding:14px 16px;min-height:0;">
             <p style="font-size:14px;color:var(--text-tertiary);margin-bottom:12px;">Γράψε ή πες τι έγινε και ο AI θα δημιουργήσει την κίνηση.</p>
             <textarea id="quick-entry-text" class="apple-input" rows="3" placeholder="π.χ. «Πλήρωσα 50€ σούπερμάρκετ χθες» ή «Βενζίνη 60 ευρώ από Μετρητά»" style="resize:none;line-height:1.5;margin-bottom:10px;"></textarea>
             <div style="display:flex;gap:10px;margin-bottom:16px;">
@@ -1625,6 +1629,7 @@
     // ΣΗΜΑΝΤΙΚΟ: χρησιμοποιούμε "sb" αντί για "supabase" στη μεταβλητή
     // γιατί το CDN έχει ήδη ορίσει global "supabase" - θα γινόταν σύγκρουση
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window._sb = sb; // expose globally for AI Agent script
     
     // GLOBAL STATE
     let currentUser = null;
@@ -1633,6 +1638,13 @@
     let allCategories = [];
     let allSubcategories = [];
     let allTransactions = [];
+    // Expose to window so AI Agent script can access them
+    Object.defineProperties(window, {
+      _allAccounts:      { get: () => allAccounts },
+      _allCategories:    { get: () => allCategories },
+      _allSubcategories: { get: () => allSubcategories },
+      _allTransactions:  { get: () => allTransactions },
+    });
     let allTransfers = [];
     let selectedTxType = 'expense';
     
@@ -1640,6 +1652,7 @@
     function formatMoney(amount, currency = 'EUR') {
       return new Intl.NumberFormat('el-GR', { style: 'currency', currency }).format(amount || 0);
     }
+    window._formatMoney = formatMoney;
 
     // Δημιουργεί span με data-amount για privacy masking
     // cssClass: π.χ. 'text-green-600 font-bold text-2xl'
@@ -1667,6 +1680,7 @@
         setTimeout(() => toast.remove(), 300);
       }, 3000);
     }
+    window._showToast = showToast;
     
     // ROUTING
     function showSection(name) {
@@ -1718,6 +1732,7 @@
       if (name === 'settings') renderSettings();
       if (name === 'my-report') initMyReport();
       if (name === 'budgeting') renderBudgeting();
+      if (name === 'ai-agent') { setAiTab('chat'); }
       // Εφαρμογή privacy blur αν είναι ενεργό
       setTimeout(applyPrivacyBlur, 50);
     }
@@ -1793,8 +1808,7 @@
       if (icon) icon.style.animation = '';
       if (!silent) showToast('Τα δεδομένα ανανεώθηκαν ✓', 'success');
     }
-
-    async function loadAllData() {
+    window._refreshData = refreshData;
       const [accountsRes, categoriesRes, subcategoriesRes, transactionsRes, transfersRes] = await Promise.all([
         sb.from('accounts').select('*').eq('is_active', true).order('sort_order'),
         sb.from('categories').select('*').eq('is_archived', false).order('sort_order'),
@@ -4645,26 +4659,23 @@
   const SUPABASE_URL = 'https://qxgthcxjrlryloyrvknq.supabase.co';
   const CLAUDE_PROXY = SUPABASE_URL + '/functions/v1/claude-proxy';
 
+  // Aliases για πρόσβαση σε globals από το main script
+  const getAccounts = () => window._allAccounts || [];
+  const getCategories = () => window._allCategories || [];
+  const getSubcategories = () => window._allSubcategories || [];
+  const getTransactions = () => window._allTransactions || [];
+  const showToast = (m, t) => window._showToast && window._showToast(m, t);
+  const formatAmount = (n) => window._formatMoney ? window._formatMoney(n) : n.toFixed(2) + ' €';
+  const refreshData = () => window._refreshData && window._refreshData(true);
+
   // --- Tab switching ---
   function setAiTab(tab) {
-    // Update tab button styles
+    const displayMap = { chat: 'flex', photo: 'block', quick: 'block' };
     ['chat','photo','quick'].forEach(t => {
       const btn = document.getElementById('ait-' + t);
-      if (!btn) return;
-      if (t === tab) {
-        btn.style.background = 'var(--bg-secondary)';
-        btn.style.color = 'var(--text-primary)';
-        btn.style.fontWeight = '600';
-        btn.style.boxShadow = '0 1px 4px rgba(0,0,0,0.12)';
-      } else {
-        btn.style.background = 'transparent';
-        btn.style.color = 'var(--text-tertiary)';
-        btn.style.fontWeight = '500';
-        btn.style.boxShadow = 'none';
-      }
-      // Show/hide tab content
+      if (btn) btn.classList.toggle('ai-tab-active', t === tab);
       const el = document.getElementById('ai-tab-' + t);
-      if (el) el.style.display = (t === tab) ? 'flex' : 'none';
+      if (el) el.style.display = (t === tab) ? displayMap[t] : 'none';
     });
     if (tab === 'quick') populateQuickEntryDropdowns();
   }
@@ -4876,7 +4887,7 @@ ${context}
     btn.textContent = '⏳';
     try {
       const txData = await buildTxFromProposal(p);
-      const { error } = await sb.from('transactions').insert(txData);
+      const { error } = await window._sb.from('transactions').insert(txData);
       if (error) throw error;
       btn.closest('.ai-chat-bubble').innerHTML = '<span style="color:var(--income-color);font-weight:600;">✅ Καταχωρήθηκε!</span>';
       showToast('Κίνηση καταχωρήθηκε', 'success');
@@ -4926,8 +4937,8 @@ ${context}
 
     // Populate account select if needed
     const sel = document.getElementById('photo-account-select');
-    if (sel.children.length <= 1 && allAccounts.length) {
-      allAccounts.forEach(a => {
+    if (sel.children.length <= 1 && getAccounts().length) {
+      getAccounts().forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.id;
         opt.textContent = a.name;
@@ -4961,7 +4972,7 @@ ${context}
     lbl.textContent = '⏳ Ανάλυση...';
 
     const selectedAccountId = document.getElementById('photo-account-select').value;
-    const selectedAccount = allAccounts.find(a => a.id === selectedAccountId);
+    const selectedAccount = getAccounts().find(a => a.id === selectedAccountId);
 
     try {
       const content = [];
@@ -4974,11 +4985,11 @@ ${context}
       content.push({ type: 'text', text: `Ανάλυσε αυτές τις φωτογραφίες από εφαρμογή τράπεζας.
 ${accountHint}
 
-Οι διαθέσιμοι λογαριασμοί είναι: ${allAccounts.map(a => a.name).join(', ')}
+Οι διαθέσιμοι λογαριασμοί είναι: ${getAccounts().map(a => a.name).join(', ')}
 
-Οι διαθέσιμες κατηγορίες εξόδων είναι: ${allCategories.filter(c=>c.type==='expense'&&!c.is_archived).map(c=>c.name).join(', ')}
+Οι διαθέσιμες κατηγορίες εξόδων είναι: ${getCategories().filter(c=>c.type==='expense'&&!c.is_archived).map(c=>c.name).join(', ')}
 
-Οι διαθέσιμες υποκατηγορίες εξόδων είναι: ${allSubcategories.filter(s=>!s.is_archived).map(s=>s.name).join(', ')}
+Οι διαθέσιμες υποκατηγορίες εξόδων είναι: ${getSubcategories().filter(s=>!s.is_archived).map(s=>s.name).join(', ')}
 
 Εξάγαγε ΟΛΕΣ τις κινήσεις που βλέπεις. Για ΚΑΘΕ κίνηση δώσε:
 - date: ημερομηνία σε μορφή YYYY-MM-DD (χρησιμοποίησε το τρέχον έτος 2025 αν δεν φαίνεται)
@@ -5053,9 +5064,9 @@ ${accountHint}
 
     listEl.innerHTML = '';
     txList.forEach((tx, i) => {
-      const categoryOptions = allCategories.filter(c=>c.type===tx.type&&!c.is_archived).map(c=>`<option value="${c.id}" ${c.name===tx.category?'selected':''}>${c.name}</option>`).join('');
-      const subcatOptions = allSubcategories.filter(s=>!s.is_archived).map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
-      const accountOptions = allAccounts.map(a=>`<option value="${a.id}" ${a.name===tx.account_name?'selected':''}>${a.name}</option>`).join('');
+      const categoryOptions = getCategories().filter(c=>c.type===tx.type&&!c.is_archived).map(c=>`<option value="${c.id}" ${c.name===tx.category?'selected':''}>${c.name}</option>`).join('');
+      const subcatOptions = getSubcategories().filter(s=>!s.is_archived).map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
+      const accountOptions = getAccounts().map(a=>`<option value="${a.id}" ${a.name===tx.account_name?'selected':''}>${a.name}</option>`).join('');
 
       const card = document.createElement('div');
       card.className = 'ai-tx-proposal';
@@ -5102,7 +5113,7 @@ ${accountHint}
     const subcatSel = document.querySelector(`.photo-tx-subcat[data-index="${i}"]`);
     if (!catSel || !subcatSel) return;
     const catId = catSel.value;
-    const subs = allSubcategories.filter(s => s.category_id === catId && !s.is_archived);
+    const subs = getSubcategories().filter(s => s.category_id === catId && !s.is_archived);
     subcatSel.innerHTML = subs.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
   }
 
@@ -5154,7 +5165,7 @@ ${accountHint}
 
     if (inserts.length === 0) { showToast('Δεν βρέθηκαν έγκυρες κινήσεις', 'error'); btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων'; return; }
 
-    const { error } = await sb.from('transactions').insert(inserts);
+    const { error } = await window._sb.from('transactions').insert(inserts);
     if (error) {
       showToast('Σφάλμα εισαγωγής: ' + error.message, 'error');
       btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων';
@@ -5180,9 +5191,9 @@ ${accountHint}
     btn.textContent = '⏳ Ανάλυση...';
 
     try {
-      const catList = allCategories.filter(c=>!c.is_archived).map(c=>`${c.name} (${c.type})`).join(', ');
-      const subcatList = allSubcategories.filter(s=>!s.is_archived).map(s=>s.name).join(', ');
-      const accList = allAccounts.map(a=>a.name).join(', ');
+      const catList = getCategories().filter(c=>!c.is_archived).map(c=>`${c.name} (${c.type})`).join(', ');
+      const subcatList = getSubcategories().filter(s=>!s.is_archived).map(s=>s.name).join(', ');
+      const accList = getAccounts().map(a=>a.name).join(', ');
 
       const prompt = `Ανάλυσε αυτό το κείμενο ως οικονομική συναλλαγή:
 "${text}"
@@ -5229,19 +5240,19 @@ ${accountHint}
       // Set category
       const catSel = document.getElementById('qr-category');
       if (catSel && p.category) {
-        const cat = allCategories.find(c => c.name === p.category && !c.is_archived);
+        const cat = getCategories().find(c => c.name === p.category && !c.is_archived);
         if (cat) { catSel.value = cat.id; loadQrSubcategories(); }
       }
       // Set account
       const accSel = document.getElementById('qr-account');
       if (accSel && p.account_name) {
-        const acc = allAccounts.find(a => a.name === p.account_name);
+        const acc = getAccounts().find(a => a.name === p.account_name);
         if (acc) accSel.value = acc.id;
       }
       setTimeout(() => {
         const subcatSel = document.getElementById('qr-subcategory');
         if (subcatSel && p.subcategory) {
-          const sub = allSubcategories.find(s => s.name === p.subcategory && !s.is_archived);
+          const sub = getSubcategories().find(s => s.name === p.subcategory && !s.is_archived);
           if (sub) subcatSel.value = sub.id;
         }
         document.getElementById('quick-result').style.display = 'block';
@@ -5253,7 +5264,7 @@ ${accountHint}
   function populateQuickEntryDropdowns() {
     const accSel = document.getElementById('qr-account');
     if (accSel && accSel.children.length === 0) {
-      allAccounts.forEach(a => {
+      getAccounts().forEach(a => {
         const opt = document.createElement('option');
         opt.value = a.id; opt.textContent = a.name;
         accSel.appendChild(opt);
@@ -5267,7 +5278,7 @@ ${accountHint}
     const catSel = document.getElementById('qr-category');
     if (!catSel) return;
     catSel.innerHTML = '';
-    allCategories.filter(c => c.type === type && !c.is_archived).forEach(c => {
+    getCategories().filter(c => c.type === type && !c.is_archived).forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id; opt.textContent = c.name;
       catSel.appendChild(opt);
@@ -5280,7 +5291,7 @@ ${accountHint}
     const subcatSel = document.getElementById('qr-subcategory');
     if (!subcatSel || !catId) return;
     subcatSel.innerHTML = '';
-    allSubcategories.filter(s => s.category_id === catId && !s.is_archived).forEach(s => {
+    getSubcategories().filter(s => s.category_id === catId && !s.is_archived).forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id; opt.textContent = s.name;
       subcatSel.appendChild(opt);
@@ -5300,7 +5311,7 @@ ${accountHint}
       showToast('Συμπλήρωσε όλα τα πεδία', 'error'); return;
     }
 
-    const { error } = await sb.from('transactions').insert({
+    const { error } = await window._sb.from('transactions').insert({
       account_id: accountId, category_id: categoryId, subcategory_id: subcatId,
       date, report_date: date, amount, type, description, source: 'agent',
       is_spiti: ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()))
@@ -5341,7 +5352,7 @@ ${accountHint}
 
   function buildDataContext() {
     // Build a summary of recent transactions for AI context
-    const recent = (allTransactions || []).slice(0, 200);
+    const recent = (getTransactions() || []).slice(0, 200);
     const bySubcat = {};
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
@@ -5370,13 +5381,13 @@ ${accountHint}
 Ανά υποκατηγορία:
 ${monthSummary || '  (δεν υπάρχουν δεδομένα)'}
 
-Σύνολο κινήσεων στη βάση: ${(allTransactions||[]).length}`;
+Σύνολο κινήσεων στη βάση: ${(getTransactions()||[]).length}`;
   }
 
   async function buildTxFromProposal(p) {
-    const account = allAccounts.find(a => a.name === p.account) || allAccounts[0];
-    const cat = allCategories.find(c => c.name === p.category && !c.is_archived);
-    const sub = allSubcategories.find(s => s.name === p.subcategory && !s.is_archived);
+    const account = getAccounts().find(a => a.name === p.account) || getAccounts()[0];
+    const cat = getCategories().find(c => c.name === p.category && !c.is_archived);
+    const sub = getSubcategories().find(s => s.name === p.subcategory && !s.is_archived);
     return {
       account_id: account?.id,
       category_id: cat?.id,
@@ -5392,7 +5403,9 @@ ${monthSummary || '  (δεν υπάρχουν δεδομένα)'}
   }
 
   async function callClaudeProxy(payload) {
-    const session = await sb.auth.getSession();
+    const sbClient = window._sb;
+    if (!sbClient) throw new Error('Supabase client not initialized');
+    const session = await sbClient.auth.getSession();
     const token = session.data?.session?.access_token;
     const resp = await fetch(CLAUDE_PROXY, {
       method: 'POST',
