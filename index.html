@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781380000">
+  <meta name="app-version" content="1781392000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -175,11 +175,20 @@
     [data-theme="dark"] .ai-input-bar textarea { background:var(--bg-tertiary); border-color:rgba(255,255,255,0.1); }
     [data-theme="dark"] .ai-tab { color:var(--text-tertiary); }
     [data-theme="dark"] .ai-tab.active { background:var(--bg-secondary); color:var(--text-primary); }
+    [data-theme="dark"] #ai-chat-input { background:var(--bg-tertiary) !important; border-color:rgba(255,255,255,0.12) !important; }
+    [data-theme="dark"] .ai-tx-proposal { background:var(--bg-tertiary); border-color:rgba(255,255,255,0.1); }
+    [data-theme="dark"] .ai-chat-bubble.ai { background:var(--bg-tertiary); }
 
     /* AI tab buttons */
-    .ai-tab-btn { flex:1; padding:8px 6px; border-radius:9px; border:none; background:transparent; color:var(--text-tertiary); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; }
+    .ai-tab-btn { flex:1; padding:8px 4px; border-radius:9px; border:none; background:transparent; color:var(--text-tertiary); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; justify-content:center; gap:3px; white-space:nowrap; }
     .ai-tab-btn.ai-tab-active { background:var(--bg-secondary); color:var(--text-primary); font-weight:600; box-shadow:0 1px 4px rgba(0,0,0,0.12); }
     .ai-tab-hidden { display:none !important; }
+
+    /* #6 Skeleton loaders */
+    @keyframes skeletonPulse { 0%{opacity:0.5} 50%{opacity:1} 100%{opacity:0.5} }
+    .skeleton { background:linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%); background-size:200% 100%; animation:skeletonPulse 1.4s ease-in-out infinite; border-radius:8px; display:inline-block; }
+    .skeleton-row { height:48px; margin-bottom:8px; border-radius:12px; }
+    .skeleton-kpi { height:28px; width:120px; border-radius:8px; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     /* #2 Swipe actions */
     .tx-swipe-item { position:relative; overflow:hidden; touch-action:pan-y; }
@@ -1271,7 +1280,7 @@
         <!-- END SETTINGS -->
 
         <!-- AI AGENT SECTION -->
-        <section id="ai-agent-section" class="hidden-section" style="padding:0;margin:-20px -24px 0;display:flex;flex-direction:column;height:calc(100dvh - 140px);min-height:400px;">
+        <section id="ai-agent-section" class="hidden-section" style="padding:0;margin:0 -24px;display:flex;flex-direction:column;">
 
           <!-- Header + Tabs -->
           <div style="padding:14px 16px 0;background:var(--bg-primary);flex-shrink:0;">
@@ -1285,7 +1294,7 @@
           </div>
 
           <!-- CHAT TAB -->
-          <div id="ai-tab-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0;">
+          <div id="ai-tab-chat" style="display:flex;flex-direction:column;height:calc(100vh - 280px);min-height:340px;">
             <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:4px;min-height:0;">
               <div class="ai-chat-bubble ai">
                 <strong>Γεια σου Στέφανε! 👋</strong><br><br>
@@ -1297,14 +1306,14 @@
                 • "Πλήρωσα 50€ σούπερμάρκετ"</span>
               </div>
             </div>
-            <div style="background:var(--bg-secondary);border-top:0.5px solid var(--border-color);padding:10px 16px;padding-bottom:calc(10px + env(safe-area-inset-bottom));flex-shrink:0;">
+            <div style="background:var(--bg-secondary);border-top:0.5px solid var(--border-color);padding:10px 16px;flex-shrink:0;">
               <input type="file" id="ai-photo-input-chat" accept="image/*" multiple style="display:none;" onchange="handleChatPhotoAttach(event)">
-              <div id="ai-chat-attachments" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;min-height:0;"></div>
+              <div id="ai-chat-attachments" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
               <div style="display:flex;gap:8px;align-items:flex-end;">
                 <button onclick="document.getElementById('ai-photo-input-chat').click()" style="width:40px;height:40px;border-radius:50%;background:var(--bg-tertiary);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 </button>
-                <textarea id="ai-chat-input" placeholder="Ρώτησέ με κάτι ή πες τι έγινε..." rows="1" style="flex:1;resize:none;border:0.5px solid rgba(0,0,0,0.12);border-radius:20px;padding:10px 14px;font-size:15px;font-family:inherit;background:var(--bg-primary);color:var(--text-primary);outline:none;max-height:100px;min-height:40px;line-height:1.4;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}" oninput="autoResizeAiInput(this)"></textarea>
+                <textarea id="ai-chat-input" placeholder="Ρώτησέ με κάτι ή πες τι έγινε..." rows="1" style="flex:1;resize:none;border:0.5px solid var(--border-color);border-radius:20px;padding:10px 14px;font-size:15px;font-family:inherit;background:var(--bg-primary);color:var(--text-primary);outline:none;max-height:100px;min-height:40px;line-height:1.4;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiChat();}" oninput="autoResizeAiInput(this)"></textarea>
                 <button onclick="sendAiChat()" id="ai-chat-send-btn" style="width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                 </button>
@@ -1429,7 +1438,7 @@
 
     <!-- MORE DRAWER (bottom sheet) -->
     <div id="more-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:60;backdrop-filter:blur(2px);" onclick="closeMoreDrawer()"></div>
-    <div id="more-drawer" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(242,242,247,0.98);backdrop-filter:blur(30px);border-radius:20px 20px 0 0;z-index:61;padding:12px 0 calc(40px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);max-height:70vh;overflow-y:auto;">
+    <div id="more-drawer" style="display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(242,242,247,0.98);backdrop-filter:blur(30px);border-radius:20px 20px 0 0;z-index:61;padding:12px 0 calc(110px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);max-height:80vh;overflow-y:auto;">
       <div style="width:36px;height:4px;background:rgba(0,0,0,0.15);border-radius:2px;margin:0 auto 16px;"></div>
       <div style="padding:0 8px;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
         <button onclick="showSectionFromMore('new-transfer')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:none;background:transparent;font-size:15px;font-weight:500;color:var(--text-primary);cursor:pointer;text-align:left;" onmouseover="this.style.background='rgba(0,0,0,0.05)'" onmouseout="this.style.background='transparent'">
@@ -1826,6 +1835,9 @@
       // Φόρτωση investment trades για τις κάρτες λογαριασμών
       const tradesRes = await sb.from('investments_trades').select('*').order('buy_date', { ascending: true });
       allTrades = tradesRes.data || [];
+      // Φόρτωση auto-categorization rules για τον AI Agent
+      const rulesRes = await sb.from('rules').select('*').eq('is_active', true).order('priority', { ascending: false });
+      window._allRules = rulesRes.data || [];
       // Populate reporting month dropdown for new transaction form
       populateReportMonthDropdown();
     }
@@ -4006,6 +4018,14 @@
       document.getElementById('pf-live-dot').style.background = '#ff9500';
       document.getElementById('pf-live-label').textContent = 'Φόρτωση δεδομένων...';
 
+      // #6: skeleton loader όσο φορτώνει
+      const tbody = document.getElementById('portfolio-tbody');
+      if (tbody) {
+        tbody.innerHTML = Array(4).fill(0).map(() =>
+          `<tr><td colspan="10" style="padding:6px 12px;"><div class="skeleton skeleton-row" style="width:100%;"></div></td></tr>`
+        ).join('');
+      }
+
       const { data, error } = await sb
         .from('investments_trades')
         .select('*')
@@ -4198,8 +4218,18 @@
         const pnlShown = unrealizedPnl !== null ? unrealizedPnl : (!isOpen && pos.realizedPnl ? pos.realizedPnl : null);
         const pnlPct = pnlShown !== null ? (isOpen && costBasis > 0 ? (pnlShown / costBasis) * 100 : (!isOpen && pos.sumBuy > 0 ? (pnlShown / pos.sumBuy) * 100 : null)) : null;
 
-        if (currentVal) totalCurrent += currentVal;
-        if (isOpen) totalCost += costBasis;
+        // KPI totals: για ανοιχτές θέσεις με τιμή → πραγματική αξία.
+        // Για ανοιχτές θέσεις ΧΩΡΙΣ τιμή (π.χ. SECO που δεν βρέθηκε) → χρησιμοποίησε
+        // το κόστος κτήσης ως αξία, ώστε το κεφάλαιο να μη χάνεται και το κέρδος να μη βγαίνει ψευδώς αρνητικό
+        if (isOpen) {
+          if (currentVal !== null) {
+            totalCurrent += currentVal;
+            totalCost += costBasis;
+          } else if (costBasis > 0) {
+            totalCurrent += costBasis; // 0 κέρδος για θέσεις χωρίς τιμή
+            totalCost += costBasis;
+          }
+        }
         totalRealized += pos.realizedPnl || 0;
 
         const pnlColor = pnlShown === null ? '' : pnlShown >= 0 ? 'color:#34c759' : 'color:#ff3b30';
@@ -4695,6 +4725,64 @@
   const aiToast = (m, t) => window._showToast && window._showToast(m, t);
   const formatAmount = (n) => window._formatMoney ? window._formatMoney(n) : n.toFixed(2) + ' €';
   const aiRefresh = () => window._refreshData && window._refreshData(true);
+  const getRules = () => window._allRules || [];
+
+  // --- #2 AUTO-CATEGORIZATION RULES ---
+  // Ψάχνει αν μια περιγραφή ταιριάζει σε κανόνα και επιστρέφει category/subcategory
+  function matchRule(description) {
+    if (!description) return null;
+    const desc = description.toLowerCase().trim();
+    const rules = getRules();
+    for (const r of rules) {
+      if (!r.pattern) continue;
+      const pat = r.pattern.toLowerCase().trim();
+      let isMatch = false;
+      if (r.match_type === 'exact') isMatch = (desc === pat);
+      else if (r.match_type === 'starts_with') isMatch = desc.startsWith(pat);
+      else isMatch = desc.includes(pat); // 'contains' (default)
+      if (isMatch) return r;
+    }
+    return null;
+  }
+
+  // Αποθηκεύει νέο κανόνα όταν ο χρήστης κατηγοριοποιεί μια περιγραφή
+  async function learnRule(description, categoryId, subcategoryId, isSpiti) {
+    if (!description || !categoryId || !subcategoryId) return;
+    // Κράτα μόνο τα πρώτα 2-3 λέξεις ως pattern (πιο γενικό)
+    const pattern = description.trim().split(/\s+/).slice(0, 2).join(' ').toLowerCase();
+    if (pattern.length < 3) return;
+    try {
+      // Αν υπάρχει ήδη ίδιο pattern, μην το ξαναβάλεις
+      const existing = getRules().find(r => r.pattern && r.pattern.toLowerCase() === pattern);
+      if (existing) return;
+      await window._sb.from('rules').insert({
+        pattern,
+        match_type: 'contains',
+        category_id: categoryId,
+        subcategory_id: subcategoryId,
+        set_is_spiti: !!isSpiti,
+        priority: 10,
+        times_applied: 0,
+        is_active: true
+      });
+    } catch (_e) { /* σιωπηλά */ }
+  }
+
+  // --- #1 DUPLICATE DETECTION ---
+  // Ελέγχει αν υπάρχει ήδη κίνηση με ίδια ημερομηνία + ποσό (±0.01) + παρόμοια περιγραφή
+  function isDuplicate(date, amount, description) {
+    const txs = getTransactions();
+    const amt = parseFloat(amount);
+    const desc = (description || '').toLowerCase().trim().slice(0, 15);
+    return txs.some(t => {
+      if (t.date !== date) return false;
+      if (Math.abs(parseFloat(t.amount) - amt) > 0.01) return false;
+      // Αν ταιριάζει ημερομηνία+ποσό, θεωρείται πιθανό duplicate
+      if (!desc) return true;
+      const tDesc = (t.description || '').toLowerCase().trim().slice(0, 15);
+      return tDesc === desc || tDesc.includes(desc) || desc.includes(tDesc);
+    });
+  }
 
   // --- Tab switching ---
   function setAiTab(tab) {
@@ -5087,13 +5175,35 @@ ${accountHint}
       return;
     }
 
+    // #2: Εφάρμοσε rules — αν μια περιγραφή ταιριάζει σε κανόνα, χρησιμοποίησε τη γνωστή κατηγορία
+    txList.forEach(tx => {
+      const rule = matchRule(tx.description);
+      if (rule) {
+        const cat = getCategories().find(c => c.id === rule.category_id);
+        const sub = getSubcategories().find(s => s.id === rule.subcategory_id);
+        if (cat) tx.category = cat.name;
+        if (sub) tx.subcategory = sub.name;
+        if (rule.set_is_spiti !== null) tx.is_spiti = rule.set_is_spiti;
+        tx._fromRule = true;
+      }
+    });
+
+    // #1: Σημείωσε πιθανά duplicates
+    let dupCount = 0;
+    txList.forEach(tx => {
+      tx._duplicate = isDuplicate(tx.date, tx.amount, tx.description);
+      if (tx._duplicate) dupCount++;
+    });
+
     countEl.textContent = txList.length + ' κινήσεις';
 
-    // Check for low confidence
     const lowConf = txList.filter(t => t.confidence === 'low');
-    if (lowConf.length > 0) {
+    const warnings = [];
+    if (lowConf.length > 0) warnings.push(`⚠️ ${lowConf.length} με χαμηλή βεβαιότητα`);
+    if (dupCount > 0) warnings.push(`🔁 ${dupCount} πιθανά διπλότυπα (ξεμαρκαρισμένα)`);
+    if (warnings.length) {
       warnEl.style.display = 'block';
-      warnEl.textContent = `⚠️ ${lowConf.length} κινήσεις έχουν χαμηλή βεβαιότητα κατηγοριοποίησης. Ελέγξτε τες πριν την εισαγωγή.`;
+      warnEl.innerHTML = warnings.join(' · ') + '<br><span style="font-size:11px;">Έλεγξέ τα πριν την εισαγωγή.</span>';
     } else {
       warnEl.style.display = 'none';
     }
@@ -5101,22 +5211,31 @@ ${accountHint}
     listEl.innerHTML = '';
     txList.forEach((tx, i) => {
       const categoryOptions = getCategories().filter(c=>c.type===tx.type&&!c.is_archived).map(c=>`<option value="${c.id}" ${c.name===tx.category?'selected':''}>${c.name}</option>`).join('');
-      const subcatOptions = getSubcategories().filter(s=>!s.is_archived).map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
+      const matchedCat = getCategories().find(c => c.name === tx.category && c.type === tx.type && !c.is_archived);
+      const subsForCat = matchedCat ? getSubcategories().filter(s => s.category_id === matchedCat.id && !s.is_archived) : getSubcategories().filter(s=>!s.is_archived);
+      const subcatOptions = subsForCat.map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
       const accountOptions = getAccounts().map(a=>`<option value="${a.id}" ${a.name===tx.account_name?'selected':''}>${a.name}</option>`).join('');
 
       const card = document.createElement('div');
       card.className = 'ai-tx-proposal';
       card.style.position = 'relative';
+      if (tx._duplicate) card.style.opacity = '0.6';
       card.dataset.index = i;
+      // #1: αποθήκευση καθαρών δεδομένων σε attributes (όχι DOM parsing)
+      card.dataset.amount = tx.amount;
+      card.dataset.type = tx.type;
+      card.dataset.description = tx.description || '';
       card.innerHTML = `
         <label style="position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px;cursor:pointer;">
-          <input type="checkbox" class="photo-tx-check" data-index="${i}" checked style="width:18px;height:18px;cursor:pointer;">
+          <input type="checkbox" class="photo-tx-check" data-index="${i}" ${tx._duplicate ? '' : 'checked'} style="width:18px;height:18px;cursor:pointer;">
         </label>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-right:32px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-right:32px;flex-wrap:wrap;">
           <span style="font-size:18px;">${tx.type==='expense'?'🔴':'🟢'}</span>
           <span style="font-size:15px;font-weight:700;">${formatAmount(tx.amount)}</span>
           <span style="font-size:12px;color:var(--text-tertiary);">${tx.date}</span>
-          ${tx.confidence==='low'?'<span style="font-size:11px;background:rgba(255,149,0,0.15);color:#b45309;padding:2px 8px;border-radius:6px;">⚠️ χαμηλή βεβαιότητα</span>':''}
+          ${tx._fromRule?'<span style="font-size:11px;background:rgba(52,199,89,0.15);color:#1a7431;padding:2px 8px;border-radius:6px;">✓ από κανόνα</span>':''}
+          ${tx._duplicate?'<span style="font-size:11px;background:rgba(255,59,48,0.12);color:#c0392b;padding:2px 8px;border-radius:6px;">🔁 διπλότυπο;</span>':''}
+          ${tx.confidence==='low'&&!tx._fromRule?'<span style="font-size:11px;background:rgba(255,149,0,0.15);color:#b45309;padding:2px 8px;border-radius:6px;">⚠️ χαμηλή</span>':''}
         </div>
         <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${tx.description}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
@@ -5162,28 +5281,25 @@ ${accountHint}
     btn.textContent = '⏳ Εισαγωγή...';
 
     const inserts = [];
+    const rulesToLearn = [];
     checks.forEach(chk => {
       const i = chk.dataset.index;
+      const card = document.querySelector(`.ai-tx-proposal[data-index="${i}"]`);
+      if (!card) return;
+
       const accountId = document.querySelector(`.photo-tx-account[data-index="${i}"]`)?.value;
       const categoryId = document.querySelector(`.photo-tx-category[data-index="${i}"]`)?.value;
       const subcatId = document.querySelector(`.photo-tx-subcat[data-index="${i}"]`)?.value;
       const date = document.querySelector(`.photo-tx-date[data-index="${i}"]`)?.value;
 
-      const card = document.querySelector(`.ai-tx-proposal[data-index="${i}"]`);
-      const amountEl = card?.querySelector('.font-bold'); // fallback - we'll read from DOM differently
+      // #1: καθαρή ανάγνωση από data attributes (όχι DOM parsing)
+      const amount = parseFloat(card.dataset.amount);
+      const type = card.dataset.type || 'expense';
+      const description = card.dataset.description || '';
 
-      // Get amount from card text content - find the bold amount span
-      const spans = card?.querySelectorAll('span');
-      let amount = 0;
-      spans?.forEach(s => { if (s.style.fontWeight === '700') { const n = parseFloat(s.textContent.replace(/[^0-9.,]/g,'').replace(',','.')); if (!isNaN(n)) amount = n; } });
+      if (!accountId || !categoryId || !subcatId || !date || !amount || amount <= 0) return;
 
-      const typeEl = card?.querySelector('span[style*="font-size:18px"]');
-      const type = typeEl?.textContent?.includes('🔴') ? 'expense' : 'income';
-
-      const descEl = card?.querySelector('div[style*="color:var(--text-secondary)"]');
-      const description = descEl?.textContent || '';
-
-      if (!accountId || !categoryId || !subcatId || !date || amount <= 0) return;
+      const isSpiti = ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()));
 
       inserts.push({
         account_id: accountId,
@@ -5195,8 +5311,13 @@ ${accountHint}
         type,
         description,
         source: 'agent',
-        is_spiti: ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()))
+        is_spiti: isSpiti
       });
+
+      // #2: μάθε κανόνα για μελλοντική αυτόματη κατηγοριοποίηση
+      if (type === 'expense' && description) {
+        rulesToLearn.push({ description, categoryId, subcatId, isSpiti });
+      }
     });
 
     if (inserts.length === 0) { aiToast('Δεν βρέθηκαν έγκυρες κινήσεις', 'error'); btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων'; return; }
@@ -5207,6 +5328,9 @@ ${accountHint}
       btn.disabled=false; btn.textContent='✅ Εισαγωγή επιλεγμένων';
       return;
     }
+
+    // #2: αποθήκευσε τους νέους κανόνες (background, δεν μπλοκάρει)
+    Promise.all(rulesToLearn.map(r => learnRule(r.description, r.categoryId, r.subcatId, r.isSpiti)));
 
     aiToast(`✅ ${inserts.length} κινήσεις εισήχθησαν!`, 'success');
     resetPhotoTab();
@@ -5264,6 +5388,9 @@ ${accountHint}
   }
 
   function fillQuickResult(p) {
+    // Σιγουρέψου ότι τα dropdowns είναι γεμάτα (λογαριασμοί + κατηγορίες)
+    populateQuickEntryDropdowns();
+
     document.getElementById('qr-amount').value = p.amount || '';
     document.getElementById('qr-date').value = p.date || today();
     document.getElementById('qr-description').value = p.description || '';
@@ -5279,11 +5406,24 @@ ${accountHint}
         const cat = getCategories().find(c => c.name === p.category && !c.is_archived);
         if (cat) { catSel.value = cat.id; loadQrSubcategories(); }
       }
-      // Set account
+      // Set account — αν ο AI δεν πρότεινε, βάλε προεπιλογή (Eurobank Μισθοδοσίας ή πρώτος)
       const accSel = document.getElementById('qr-account');
-      if (accSel && p.account_name) {
-        const acc = getAccounts().find(a => a.name === p.account_name);
-        if (acc) accSel.value = acc.id;
+      if (accSel) {
+        let accId = null;
+        if (p.account_name) {
+          const acc = getAccounts().find(a => a.name === p.account_name);
+          if (acc) accId = acc.id;
+        }
+        if (!accId) {
+          const def = getAccounts().find(a => a.name === 'Eurobank Μισθοδοσίας') || getAccounts().find(a => a.type === 'bank') || getAccounts()[0];
+          if (def) accId = def.id;
+          // Σημείωσε ότι χρειάζεται έλεγχος από τον χρήστη
+          accSel.style.borderColor = '#ff9500';
+          accSel.title = 'Επιβεβαίωσε τον λογαριασμό';
+        } else {
+          accSel.style.borderColor = '';
+        }
+        if (accId) accSel.value = accId;
       }
       setTimeout(() => {
         const subcatSel = document.getElementById('qr-subcategory');
