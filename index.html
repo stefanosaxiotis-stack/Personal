@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781395000">
+  <meta name="app-version" content="1781403000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1656,6 +1656,9 @@
       return new Intl.NumberFormat('el-GR', { style: 'currency', currency }).format(amount || 0);
     }
     window._formatMoney = formatMoney;
+    window._reportMonthLabel = (key) => reportMonthLabel(key);
+    window._availableReportMonths = () => getAvailableReportMonths();
+    window._currentMonthKey = () => currentMonthKey();
 
     // Δημιουργεί span με data-amount για privacy masking
     // cssClass: π.χ. 'text-green-600 font-bold text-2xl'
@@ -5165,7 +5168,7 @@ ${accountHint}
 Οι διαθέσιμες υποκατηγορίες εξόδων είναι: ${getSubcategories().filter(s=>!s.is_archived).map(s=>s.name).join(', ')}
 
 Εξάγαγε ΟΛΕΣ τις κινήσεις που βλέπεις. Για ΚΑΘΕ κίνηση δώσε:
-- date: ημερομηνία σε μορφή YYYY-MM-DD (χρησιμοποίησε το τρέχον έτος 2025 αν δεν φαίνεται)
+- date: ημερομηνία σε μορφή YYYY-MM-DD (αν δεν φαίνεται το έτος, χρησιμοποίησε το τρέχον έτος ${new Date().getFullYear()})
 - amount: ποσό (θετικό αριθμός)
 - type: "expense" ή "income"  
 - description: η περιγραφή όπως φαίνεται στη φωτογραφία
@@ -5264,6 +5267,15 @@ ${accountHint}
       const subsForCat = matchedCat ? getSubcategories().filter(s => s.category_id === matchedCat.id && !s.is_archived) : getSubcategories().filter(s=>!s.is_archived);
       const subcatOptions = subsForCat.map(s=>`<option value="${s.id}" ${s.name===tx.subcategory?'selected':''}>${s.name}</option>`).join('');
       const accountOptions = getAccounts().map(a=>`<option value="${a.id}" ${a.name===tx.account_name?'selected':''}>${a.name}</option>`).join('');
+      // Reporting μήνας: προτεινόμενος ο μήνας της ημερομηνίας. Λίστα: διαθέσιμοι μήνες + τρέχων + ο μήνας της κίνησης
+      const txMonth = (tx.date || '').slice(0,7);
+      const availMonths = (window._availableReportMonths ? window._availableReportMonths() : []);
+      const monthSet = new Set(availMonths);
+      if (window._currentMonthKey) monthSet.add(window._currentMonthKey());
+      if (txMonth) monthSet.add(txMonth);
+      const sortedMonths = [...monthSet].sort((a,b) => b.localeCompare(a));
+      const lbl = (k) => window._reportMonthLabel ? window._reportMonthLabel(k) : k;
+      const reportMonthOptions = sortedMonths.map(k => `<option value="${k}" ${k===txMonth?'selected':''}>${lbl(k)}</option>`).join('');
 
       const card = document.createElement('div');
       card.className = 'ai-tx-proposal';
@@ -5286,8 +5298,11 @@ ${accountHint}
           ${tx._duplicate?'<span style="font-size:11px;background:rgba(255,59,48,0.12);color:#c0392b;padding:2px 8px;border-radius:6px;">🔁 διπλότυπο;</span>':''}
           ${tx.confidence==='low'&&!tx._fromRule?'<span style="font-size:11px;background:rgba(255,149,0,0.15);color:#b45309;padding:2px 8px;border-radius:6px;">⚠️ χαμηλή</span>':''}
         </div>
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">${tx.description}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;">
+          <div style="grid-column:1 / -1;">
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Περιγραφή</label>
+            <input type="text" class="apple-input photo-tx-desc" data-index="${i}" value="${(tx.description||'').replace(/"/g,'&quot;')}" style="margin-top:2px;font-size:13px;padding:6px 10px;">
+          </div>
           <div>
             <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Λογαριασμός</label>
             <select class="apple-select photo-tx-account" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;">${accountOptions}</select>
@@ -5303,6 +5318,10 @@ ${accountHint}
           <div>
             <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">Ημερομηνία</label>
             <input type="date" class="apple-input photo-tx-date" data-index="${i}" value="${tx.date}" style="margin-top:2px;font-size:13px;padding:6px 10px;">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">📅 Reporting μήνας</label>
+            <select class="apple-select photo-tx-reportmonth" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;">${reportMonthOptions}</select>
           </div>
         </div>`;
       listEl.appendChild(card);
@@ -5340,22 +5359,28 @@ ${accountHint}
       const categoryId = document.querySelector(`.photo-tx-category[data-index="${i}"]`)?.value;
       const subcatId = document.querySelector(`.photo-tx-subcat[data-index="${i}"]`)?.value;
       const date = document.querySelector(`.photo-tx-date[data-index="${i}"]`)?.value;
+      // Reporting μήνας — επιλεγμένος από τον χρήστη (default = μήνας ημερομηνίας)
+      const reportMonth = document.querySelector(`.photo-tx-reportmonth[data-index="${i}"]`)?.value;
+      // report_date = 1η του επιλεγμένου reporting μήνα (ή ίδια με date αν λείπει)
+      const reportDate = reportMonth ? (reportMonth + '-01') : date;
+      // Περιγραφή από το επεξεργάσιμο πεδίο (όχι από dataset)
+      const descInput = document.querySelector(`.photo-tx-desc[data-index="${i}"]`);
+      const description = descInput ? descInput.value.trim() : (card.dataset.description || '');
 
-      // #1: καθαρή ανάγνωση από data attributes (όχι DOM parsing)
       const amount = parseFloat(card.dataset.amount);
       const type = card.dataset.type || 'expense';
-      const description = card.dataset.description || '';
 
       if (!accountId || !categoryId || !subcatId || !date || !amount || amount <= 0) return;
 
       const isSpiti = ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()));
 
       inserts.push({
+        owner_id: '60a8a529-ddfb-4602-a6a8-ebf717b1ac5a',
         account_id: accountId,
         category_id: categoryId,
         subcategory_id: subcatId,
         date,
-        report_date: date,
+        report_date: reportDate,
         amount,
         type,
         description,
@@ -5381,7 +5406,11 @@ ${accountHint}
     // #2: αποθήκευσε τους νέους κανόνες (background, δεν μπλοκάρει)
     Promise.all(rulesToLearn.map(r => learnRule(r.description, r.categoryId, r.subcatId, r.isSpiti)));
 
-    aiToast(`✅ ${inserts.length} κινήσεις εισήχθησαν!`, 'success');
+    // Ποιοι reporting μήνες αφορούν, ώστε ο χρήστης να ξέρει πού να κοιτάξει
+    const months = [...new Set(inserts.map(t => t.report_date.slice(0,7)))].sort();
+    const monthNames = { '01':'Ιαν','02':'Φεβ','03':'Μαρ','04':'Απρ','05':'Μάι','06':'Ιουν','07':'Ιουλ','08':'Αυγ','09':'Σεπ','10':'Οκτ','11':'Νοε','12':'Δεκ' };
+    const monthLabel = months.map(m => { const [y,mo] = m.split('-'); return (monthNames[mo]||mo) + ' ' + y; }).join(', ');
+    aiToast(`✅ ${inserts.length} κινήσεις εισήχθησαν (${monthLabel})`, 'success');
     resetPhotoTab();
     await aiRefresh();
   }
