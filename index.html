@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781392000">
+  <meta name="app-version" content="1781395000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -2069,7 +2069,7 @@
       let html = '';
       Object.entries(grouped).forEach(([date, txs]) => {
         const dayTotal = txs.reduce((s, t) => s + (t.type === 'income' ? +t.amount : -t.amount), 0);
-        html += `<div class="border-b border-gray-200 last:border-0"><div class="px-4 py-2 bg-gray-50 flex items-center justify-between text-sm"><span class="font-medium">${formatDate(date)}</span><span class="${dayTotal < 0 ? 'text-red-600' : 'text-green-600'} font-medium">${formatMoney(dayTotal)}</span></div>`;
+        html += `<div class="border-b border-gray-200 last:border-0"><div class="px-4 py-2 bg-gray-50 flex items-center justify-between text-sm"><span class="font-medium">${formatDate(date)}</span><span class="${dayTotal < 0 ? 'text-red-600' : 'text-green-600'} font-medium">${prvSpan(dayTotal, (dayTotal < 0 ? 'text-red-600' : 'text-green-600') + ' font-medium')}</span></div>`;
         txs.forEach(t => {
           const sign = t.type === 'income' ? '+' : '−';
           const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
@@ -3974,6 +3974,29 @@
         const el = document.getElementById(id);
         if (el) el.classList.toggle('privacy-blur', privacyOn);
       });
+      // Portfolio KPIs (έχουν δικό τους format με currency symbol)
+      ['pf-current-value','pf-cost-basis','pf-pnl'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || !el.dataset.pfValue) return;
+        if (privacyOn) {
+          const full = el.dataset.pfValue;
+          // Εξαγωγή συμβόλου νομίσματος (€ ή $)
+          const cur = full.includes('$') ? '$' : '€';
+          // Εξαγωγή αριθμού για επιλογή πλήθους αστερίσκων
+          const num = Math.abs(parseFloat(full.replace(/[^0-9.]/g,'')) || 0);
+          let stars;
+          if (num >= 10000) stars = '** ***';
+          else if (num >= 1000) stars = '* ***';
+          else if (num >= 100) stars = '***';
+          else if (num >= 10) stars = '**';
+          else stars = '*';
+          const sign = full.trim().startsWith('-') ? '-' : (full.trim().startsWith('+') ? '+' : '');
+          const hasPct = full.includes('%');
+          el.textContent = sign + cur + stars + (hasPct ? ' (***%)' : '');
+        } else {
+          el.textContent = el.dataset.pfValue;
+        }
+      });
     }
 
     function togglePrivacy() {
@@ -4271,13 +4294,39 @@
     function updatePortfolioKpis(totalCurrent, totalCost, totalRealized, currency) {
       const pnl = totalCurrent - totalCost;
       const pct = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
-      document.getElementById('pf-current-value').textContent = totalCurrent > 0 ? currency + totalCurrent.toFixed(2) : '—';
-      document.getElementById('pf-cost-basis').textContent = totalCost > 0 ? currency + totalCost.toFixed(2) : '—';
+
+      // Privacy-aware masking για τα KPI (κρατάει το σωστό σύμβολο νομίσματος)
+      const maskCur = (val) => {
+        const abs = Math.abs(val);
+        let stars;
+        if (abs >= 10000) stars = '** ***';
+        else if (abs >= 1000) stars = '* ***';
+        else if (abs >= 100) stars = '***';
+        else if (abs >= 10) stars = '**';
+        else stars = '*';
+        return currency + stars;
+      };
+
+      const curEl = document.getElementById('pf-current-value');
+      const costEl = document.getElementById('pf-cost-basis');
       const pnlEl = document.getElementById('pf-pnl');
+
       if (totalCurrent > 0) {
-        pnlEl.textContent = (pnl >= 0 ? '+' : '') + currency + pnl.toFixed(2) + ' (' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%)';
+        curEl.dataset.pfValue = currency + totalCurrent.toFixed(2);
+        curEl.textContent = privacyOn ? maskCur(totalCurrent) : curEl.dataset.pfValue;
+      } else { delete curEl.dataset.pfValue; curEl.textContent = '—'; }
+
+      if (totalCost > 0) {
+        costEl.dataset.pfValue = currency + totalCost.toFixed(2);
+        costEl.textContent = privacyOn ? maskCur(totalCost) : costEl.dataset.pfValue;
+      } else { delete costEl.dataset.pfValue; costEl.textContent = '—'; }
+
+      if (totalCurrent > 0) {
+        const pnlFull = (pnl >= 0 ? '+' : '') + currency + pnl.toFixed(2) + ' (' + (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%)';
+        pnlEl.dataset.pfValue = pnlFull;
+        pnlEl.textContent = privacyOn ? ((pnl >= 0 ? '+' : '-') + maskCur(pnl) + ' (***%)') : pnlFull;
         pnlEl.className = 'text-2xl font-bold ' + (pnl >= 0 ? 'text-green-600' : 'text-red-600');
-      } else { pnlEl.textContent = '—'; pnlEl.className = 'text-2xl font-bold'; }
+      } else { delete pnlEl.dataset.pfValue; pnlEl.textContent = '—'; pnlEl.className = 'text-2xl font-bold'; }
     }
 
     // ---- TRADE MODAL ----
