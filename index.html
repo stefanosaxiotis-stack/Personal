@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781409500">
+  <meta name="app-version" content="1781410500">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1993,24 +1993,32 @@
           }
         });
 
-        // Καλύτερος υπολογισμός: χρησιμοποίησε computePositions αν είναι διαθέσιμο
-        // (ίδια λογική με το Χαρτοφυλάκιο — σωστός χειρισμός qty=null, sell trades)
-        try {
-          const assetType = a.name.toLowerCase().includes('etf') || a.asset_type === 'etf' ? 'etf' : 'stock';
-          const positions = computePositions(assetType);
-          let pfCurrent = 0;
-          Object.values(positions).forEach(pos => {
-            if (!isPositionOpen(pos)) return;
-            const livePrice = livePrices[pos.ticker] || (pos.trades.reduce((lp, t) => t.current_price && t.trade_type !== 'sell' ? parseFloat(t.current_price) : lp, null));
-            const hasQty = pos.hasQty;
-            const avgCost = hasQty && pos.totalQty > 0.001 ? pos.totalCost / pos.totalQty : 0;
-            const costBasis = hasQty ? avgCost * Math.max(pos.totalQty, 0) : pos.sumBuy;
-            const curVal = hasQty && livePrice && pos.totalQty > 0.001 ? livePrice * pos.totalQty : null;
-            pfCurrent += curVal !== null ? curVal : costBasis;
-          });
-          balances[a.id] = pfCurrent || currentValue;
-        } catch (_e) {
-          balances[a.id] = currentValue;
+        // Καλύτερος υπολογισμός μέσω computePositions — ΜΟΝΟ αν ο λογαριασμός έχει trades
+        const accTradeCount = allTrades.filter(t => t.account_id === a.id).length;
+        if (accTradeCount === 0) {
+          // Κανένα trade → αξία 0
+          balances[a.id] = 0;
+        } else {
+          try {
+            const assetType = a.name.toLowerCase().includes('etf') || a.provider?.toLowerCase().includes('etf') ? 'etf' : 'stock';
+            // Φιλτράρισμα positions ΜΟΝΟ για αυτόν τον λογαριασμό
+            const positions = computePositions(assetType);
+            let pfCurrent = 0;
+            Object.values(positions).forEach(pos => {
+              // Μόνο θέσεις που ανήκουν σε αυτόν τον λογαριασμό
+              if (pos.account_id !== a.id) return;
+              if (!isPositionOpen(pos)) return;
+              const livePrice = livePrices[pos.ticker] || (pos.trades.reduce((lp, t) => t.current_price && t.trade_type !== 'sell' ? parseFloat(t.current_price) : lp, null));
+              const hasQty = pos.hasQty;
+              const avgCost = hasQty && pos.totalQty > 0.001 ? pos.totalCost / pos.totalQty : 0;
+              const costBasis = hasQty ? avgCost * Math.max(pos.totalQty, 0) : pos.sumBuy;
+              const curVal = hasQty && livePrice && pos.totalQty > 0.001 ? livePrice * pos.totalQty : null;
+              pfCurrent += curVal !== null ? curVal : costBasis;
+            });
+            balances[a.id] = pfCurrent;
+          } catch (_e) {
+            balances[a.id] = currentValue;
+          }
         }
       });
       
