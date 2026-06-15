@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781410500">
+  <meta name="app-version" content="1781420000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1205,6 +1205,47 @@
               </table>
             </div>
           </div>
+
+          <!-- Portfolio AI Agent -->
+          <div style="margin-top:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div>
+                <div style="font-size:17px;font-weight:700;">🤖 AI Αναλυτής</div>
+                <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px);">Ανάλυση θέσεων · Στρατηγική · Προτάσεις</div>
+              </div>
+              <button onclick="clearPfChat()" style="font-size:12px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;">🗑 Καθαρισμός</button>
+            </div>
+
+            <!-- Quick action pills -->
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;" id="pf-quick-pills">
+              <button onclick="sendPfQuick('Ανάλυσε όλο το χαρτοφυλάκιό μου')" class="filter-pill">📊 Ανάλυση</button>
+              <button onclick="sendPfQuick('Ποιες θέσεις πλησιάζουν το target +15-20%;')" class="filter-pill">🎯 Targets</button>
+              <button onclick="sendPfQuick('Ποια θέση έχει το μεγαλύτερο ρίσκο τώρα;')" class="filter-pill">⚠️ Ρίσκο</button>
+              <button onclick="sendPfQuick('Κλαδική κατανομή ETF — είμαι διαφοροποιημένος;')" class="filter-pill">🌍 ETF Ανάλυση</button>
+              <button onclick="sendPfQuick('Προτείνέ μου νέα μετοχή με τιμή κάτω από 80€ με momentum')" class="filter-pill">💡 Νέα ιδέα</button>
+            </div>
+
+            <!-- Chat messages -->
+            <div id="pf-chat-messages" style="background:var(--bg-secondary);border-radius:var(--card-radius);padding:14px;min-height:120px;max-height:400px;overflow-y:auto;margin-bottom:10px;display:flex;flex-direction:column;gap:10px;">
+              <div class="ai-chat-bubble ai" style="font-size:14px;">
+                <strong>Γεια σου Στέφανε! 📈</strong><br><br>
+                Είμαι ο αναλυτής του χαρτοφυλακίου σου. Γνωρίζω τις θέσεις σου, την στρατηγική σου και τους στόχους σου.<br><br>
+                <span style="color:var(--text-tertiary);font-size:12px;">Μπορείς να με ρωτήσεις για οποιαδήποτε θέση ή να ζητήσεις γενική ανάλυση.</span>
+              </div>
+            </div>
+
+            <!-- Input -->
+            <div style="display:flex;gap:8px;align-items:flex-end;">
+              <textarea id="pf-chat-input" placeholder="π.χ. Τι κάνω με την BNAI; / Αξίζει να αυξήσω το VWCE;" rows="1"
+                style="flex:1;resize:none;border:0.5px solid var(--border-color);border-radius:20px;padding:10px 14px;font-size:15px;font-family:inherit;background:var(--bg-primary);color:var(--text-primary);outline:none;max-height:100px;min-height:40px;line-height:1.4;"
+                onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPfChat();}"
+                oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+              <button onclick="sendPfChat()" id="pf-chat-send-btn"
+                style="width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
         </section>
 
         <!-- SETTINGS SECTION -->
@@ -1302,6 +1343,26 @@
           </div>
 
           <!-- Tabs κατηγοριών -->
+          <!-- AI Agent Settings -->
+          <div class="apple-card" style="padding:20px;margin-bottom:16px;max-width:640px;">
+            <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">🤖 AI Agent (Βαγγέλης)</h2>
+            <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">Προσαρμογή χαρακτήρα και στρατηγικής επενδύσεων</p>
+
+            <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Όνομα Agent</label>
+            <input id="agent-name-input" type="text" class="apple-input" style="margin-bottom:14px;" placeholder="π.χ. Βαγγέλης">
+
+            <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Στρατηγική Μετοχών (Trader prompt)</label>
+            <textarea id="agent-stock-prompt" class="apple-input" rows="5" style="resize:vertical;margin-bottom:14px;font-size:13px;line-height:1.5;"></textarea>
+
+            <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Στρατηγική ETF (Investor prompt)</label>
+            <textarea id="agent-etf-prompt" class="apple-input" rows="5" style="resize:vertical;margin-bottom:16px;font-size:13px;line-height:1.5;"></textarea>
+
+            <div style="display:flex;gap:10px;">
+              <button onclick="saveAgentSettings()" class="btn-primary" style="flex:1;">💾 Αποθήκευση</button>
+              <button onclick="resetAgentSettings()" class="btn-secondary" style="flex:1;">↺ Επαναφορά defaults</button>
+            </div>
+          </div>
+
           <div class="segment" style="max-width:200px;margin-bottom:20px;">
             <button onclick="switchSettingsTab('expense')" id="tab-expense" class="segment-btn active">Έξοδα</button>
             <button onclick="switchSettingsTab('income')" id="tab-income" class="segment-btn">Έσοδα</button>
@@ -1334,8 +1395,8 @@
           <div id="ai-tab-chat" style="display:flex;flex-direction:column;height:calc(100vh - 280px);min-height:340px;">
             <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:4px;min-height:0;">
               <div class="ai-chat-bubble ai">
-                <strong>Γεια σου Στέφανε! 👋</strong><br><br>
-                Μπορείς να με ρωτήσεις για τα οικονομικά σου ή να μου πεις τι έξοδα έκανες.<br><br>
+                <strong>Καλημέρα, κύριε Στέφανε. 🎩</strong><br><br>
+                Βαγγέλης στην υπηρεσία σας. Μπορείτε να με ρωτήσετε για τα οικονομικά σας ή να μου αναφέρετε μια συναλλαγή.<br><br>
                 <span style="color:var(--text-tertiary);font-size:13px;">Παραδείγματα:<br>
                 • "Πόσα ξόδεψα για τσιγάρα αυτό το μήνα;"<br>
                 • "Ποια τα 5 μεγαλύτερα έξοδα Ιουνίου;"<br>
@@ -1942,6 +2003,16 @@
       return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>`;
     }
 
+    function goToAccountTransactions(accountId, accountName) {
+      // Πήγαινε στις κινήσεις και φιλτράρισε ανά λογαριασμό
+      showSection('transactions');
+      setTimeout(() => {
+        const sel = document.getElementById('filter-account');
+        if (sel) sel.value = accountId;
+        renderTransactions();
+      }, 150);
+    }
+
     function renderAccounts() {
       const container = document.getElementById('accounts-container');
       const subtitle = document.getElementById('accounts-subtitle');
@@ -2063,7 +2134,7 @@
           const typeLabel = a.type === 'bank' ? 'Τράπεζα' : a.type === 'cash' ? 'Μετρητά' : 'Επένδυση';
           const typeColor = a.type === 'bank' ? 'bg-blue-100 text-blue-700' : a.type === 'cash' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700';
           const svg = getAccountSvg(a.name, 22);
-          html += `<div class="apple-card" style="overflow:hidden;">
+          html += `<div class="apple-card" style="overflow:hidden;cursor:pointer;" onclick="goToAccountTransactions('${a.id}','${a.name.replace(/'/g,"\\'")}')">
             <div class="h-1" style="background:${barColor};"></div>
             <div class="p-4">
               <div class="flex items-start justify-between mb-3">
@@ -2154,8 +2225,16 @@
             <div class="tx-swipe-inner px-4 py-3 flex items-center gap-3" style="background:var(--bg-secondary);">
               <div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
               <div class="flex-1 min-w-0">
-                <div class="font-medium truncate">${t.description || (t.categories?.name || 'Χωρίς περιγραφή')}</div>
-                <div class="text-xs text-gray-500 truncate">${t.categories?.name || ''} ${t.subcategories ? '· ' + t.subcategories.name : ''}</div>
+                <div class="font-medium truncate">${
+                  t.source === 'agent'
+                    ? (t.subcategories?.name || t.categories?.name || t.description || 'Χωρίς περιγραφή')
+                    : (t.description || t.subcategories?.name || t.categories?.name || 'Χωρίς περιγραφή')
+                }</div>
+                <div class="text-xs text-gray-500 truncate">${
+                  t.source === 'agent'
+                    ? ((t.categories?.name || '') + (t.subcategories ? ' · ' + t.subcategories.name : '') + (t.description ? ' · ' + t.description : ''))
+                    : ((t.categories?.name || '') + (t.subcategories ? ' · ' + t.subcategories.name : ''))
+                }</div>
               </div>
               <div class="hidden sm:block text-xs text-gray-500 text-right min-w-0 truncate max-w-[150px]">${t.accounts?.name || ''}</div>
               ${t.is_spiti ? '<span class="text-lg">🏠</span>' : ''}
@@ -2420,6 +2499,7 @@
     function initTxYearFilter() {
       const sel = document.getElementById('tx-year-filter');
       if (!sel) return;
+      const curYear = new Date().getFullYear().toString();
       const years = [...new Set(getAvailableReportMonths().map(k => k.slice(0,4)))].sort((a,b)=>b-a);
       sel.innerHTML = '<option value="">Όλα τα έτη</option>';
       years.forEach(y => {
@@ -2427,6 +2507,8 @@
         opt.value = y; opt.textContent = y;
         sel.appendChild(opt);
       });
+      // Προεπιλογή τρέχον έτος αν υπάρχει
+      if (years.includes(curYear)) sel.value = curYear;
     }
     function clearDashReportFilter() {
       // Επιστροφή στο default (τρέχων μήνας)
@@ -2957,13 +3039,13 @@
       const totExpense = ovExoda.reduce((a,b)=>a+b,0);
       const net = totIncome - totExpense;
 
-      document.getElementById('kpi-income').textContent = formatMoney(totIncome);
-      document.getElementById('kpi-income').className = 'text-2xl font-bold text-green-600';
-      document.getElementById('kpi-expense').textContent = formatMoney(totExpense);
-      document.getElementById('kpi-expense').className = 'text-2xl font-bold text-red-600';
+      document.getElementById('kpi-income').innerHTML = prvSpan(totIncome, 'text-2xl font-bold text-green-600');
+      document.getElementById('kpi-income').className = 'kpi-value';
+      document.getElementById('kpi-expense').innerHTML = prvSpan(totExpense, 'text-2xl font-bold text-red-600');
+      document.getElementById('kpi-expense').className = 'kpi-value';
       const netEl = document.getElementById('kpi-net');
-      netEl.textContent = formatMoney(net);
-      netEl.className = `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`;
+      netEl.innerHTML = prvSpan(net, `text-2xl font-bold ${net >= 0 ? 'text-green-600' : 'text-red-600'}`);
+      netEl.className = 'kpi-value';
       document.getElementById('kpi-spiti').innerHTML = prvSpan(avgSpiti, 'text-2xl font-bold');
       document.getElementById('dashboard-subtitle').textContent = getFilterLabel();
 
@@ -4288,6 +4370,9 @@
 
       let totalCurrent = 0, totalCost = 0, totalRealized = 0;
 
+      // Realized P&L: πάντα από ΟΛΑ τα positions (ανεξάρτητα φίλτρου ανοιχτές/κλειστές)
+      Object.values(positions).forEach(p => { totalRealized += p.realizedPnl || 0; });
+
       const rows = Object.values(positions).filter(p => {
         const isOpen = isPositionOpen(p);
         if (portfolioFilter === 'open') return isOpen;
@@ -4330,7 +4415,6 @@
             totalCost += costBasis;
           }
         }
-        totalRealized += pos.realizedPnl || 0;
 
         const pnlColor = pnlShown === null ? '' : pnlShown >= 0 ? 'color:#34c759' : 'color:#ff3b30';
         const accName = isEtf ? getAccountName(pos.account_id) : '';
@@ -4699,6 +4783,7 @@
       allCategories = catsRes.data || [];
       allSubcategories = subcatsRes.data || [];
       renderSettingsContent();
+      loadAgentSettingsUI();
     }
 
     function renderSettingsContent() {
@@ -4768,6 +4853,59 @@
         </div>`;
 
       container.innerHTML = html;
+    }
+
+    // ============================================================
+    // AI AGENT SETTINGS (αποθήκευση στο localStorage)
+    // ============================================================
+    const AGENT_DEFAULTS = {
+      name: 'Βαγγέλης',
+      stockPrompt: `ΣΤΡΑΤΗΓΙΚΗ ΜΕΤΟΧΩΝ (Trader):
+- Αγορά σε momentum — ψάχνει μετοχές με ανοδική δυναμική
+- Target profit: +15-20% → όταν θέση φτάσει αυτό το range, εξετάζει πώληση
+- Budget ανά θέση: ~70-80€/$ (ή χαμηλότερα για περισσότερα τεμάχια)
+- Ρευστότητα: δυναμική — δεν υπάρχει σταθερό ποσό
+- ΔΕΝ κάνει averaging down αυτόματα — κρίνει κατά περίπτωση
+- Stop loss: όχι σταθερό — κρίνει ανά θέση και market conditions`,
+      etfPrompt: `ΣΤΡΑΤΗΓΙΚΗ ETF (Επενδυτής):
+- Μακροπρόθεσμη προσέγγιση — δεν πουλάει εκτός σοβαρού λόγου
+- Άλλοτε αυξάνει υπάρχουσες θέσεις (DCA), άλλοτε ανοίγει νέες
+- Κοιτάει: διαφοροποίηση κλάδων, geographic exposure, expense ratio
+- Σύγκριση με benchmark (S&P 500, MSCI World)
+- Macro-aware: επιτόκια, πληθωρισμός, κλαδικές τάσεις`
+    };
+
+    function getAgentSettings() {
+      try {
+        const saved = localStorage.getItem('pf_agent_settings');
+        if (saved) return { ...AGENT_DEFAULTS, ...JSON.parse(saved) };
+      } catch (_e) {}
+      return { ...AGENT_DEFAULTS };
+    }
+
+    function saveAgentSettings() {
+      const name = document.getElementById('agent-name-input')?.value?.trim() || AGENT_DEFAULTS.name;
+      const stockPrompt = document.getElementById('agent-stock-prompt')?.value?.trim() || AGENT_DEFAULTS.stockPrompt;
+      const etfPrompt = document.getElementById('agent-etf-prompt')?.value?.trim() || AGENT_DEFAULTS.etfPrompt;
+      localStorage.setItem('pf_agent_settings', JSON.stringify({ name, stockPrompt, etfPrompt }));
+      showToast(`Ρυθμίσεις "${name}" αποθηκεύτηκαν ✓`, 'success');
+    }
+
+    function resetAgentSettings() {
+      if (!confirm('Επαναφορά στις προεπιλεγμένες ρυθμίσεις;')) return;
+      localStorage.removeItem('pf_agent_settings');
+      loadAgentSettingsUI();
+      showToast('Επαναφορά στα defaults ✓', 'success');
+    }
+
+    function loadAgentSettingsUI() {
+      const s = getAgentSettings();
+      const nameEl = document.getElementById('agent-name-input');
+      const stockEl = document.getElementById('agent-stock-prompt');
+      const etfEl = document.getElementById('agent-etf-prompt');
+      if (nameEl) nameEl.value = s.name;
+      if (stockEl) stockEl.value = s.stockPrompt;
+      if (etfEl) etfEl.value = s.etfPrompt;
     }
 
     function startEditCat(id) {
@@ -5065,16 +5203,23 @@
       });
       if (text) userContent.push({ type: 'text', text });
 
-      const systemPrompt = `Είσαι ο οικονομικός βοηθός του Στέφανου Αξιώτη. Απαντάς ΠΑΝΤΑ στα Ελληνικά.
+      const systemPrompt = `Είσαι ο Βαγγέλης, ο προσωπικός οικονομικός butler του κυρίου Στέφανου Αξιώτη.
+
+ΧΑΡΑΚΤΗΡΑΣ:
+- Μιλάς ευγενικά, διακριτικά και επαγγελματικά — σαν έμπειρος butler
+- Αποκαλείς τον χρήστη "κύριε Στέφανε" ή "κύριε" (όχι "Στέφανε" σκέτο)
+- Είσαι συνοπτικός αλλά πλήρης — δεν σπαταλάς λόγια
+- Μικρή δόση χιούμορ επιτρέπεται αλλά πάντα με μέτρο και κομψότητα
+- Αν κάτι δεν ξέρεις, το παραδέχεσαι με αξιοπρέπεια: "Δεν έχω αρκετά στοιχεία, κύριε"
+- Απαντάς ΠΑΝΤΑ στα Ελληνικά
 
 ΟΙΚΟΝΟΜΙΚΑ ΔΕΔΟΜΕΝΑ:
 ${context}
 
 ΟΔΗΓΙΕΣ:
-- Απάντα σε ερωτήσεις για τα οικονομικά του Στέφανου βασισμένος ΜΟΝΟ στα παραπάνω δεδομένα
-- Αν δεν έχεις αρκετά δεδομένα, πες το ξεκάθαρα
+- Απάντα σε ερωτήσεις για τα οικονομικά του κυρίου Στέφανου βασισμένος ΜΟΝΟ στα παραπάνω δεδομένα
 - Χρησιμοποίησε € για ποσά και ελληνικές ημερομηνίες
-- Αν ο χρήστης περιγράφει μια συναλλαγή (π.χ. "πλήρωσα 50€ σούπερμάρκετ"), αναγνώρισέ την και πρότεινε καταχώρηση
+- Αν ο χρήστης περιγράφει μια συναλλαγή, αναγνώρισέ την και πρότεινε καταχώρηση με διακριτικό τρόπο
 - Όταν προτείνεις καταχώρηση, απάντα με JSON εντός <TX_PROPOSAL> tags: <TX_PROPOSAL>{"type":"expense","amount":50,"description":"Σούπερμάρκετ","category":"Σπίτι","subcategory":"Super Market","account":"Eurobank Μισθοδοσίας","date":"${new Date().toISOString().split('T')[0]}"}</TX_PROPOSAL>
 - Για φωτογραφίες τράπεζας: ανάλυσε τις κινήσεις και εξάγαγέ τες ως JSON εντός <PHOTO_TRANSACTIONS> tags`;
 
@@ -5551,13 +5696,14 @@ ${accountHint}
       const subcatList = getSubcategories().filter(s=>!s.is_archived).map(s=>s.name).join(', ');
       const accList = getAccounts().map(a=>a.name).join(', ');
 
-      const prompt = `Ανάλυσε αυτό το κείμενο ως οικονομική συναλλαγή:
+      const prompt = `Είσαι ο Βαγγέλης, ο οικονομικός butler του κυρίου Στέφανου. Ανάλυσε αυτή τη συναλλαγή που σου περιγράφει:
 "${text}"
 
 Διαθέσιμοι λογαριασμοί: ${accList}
-Διαθέσιμες κατηγορίες: ${catList}  
+Διαθέσιμες κατηγορίες: ${catList}
 Διαθέσιμες υποκατηγορίες: ${subcatList}
 Σημερινή ημερομηνία: ${today()}
+Τρέχον έτος: ${new Date().getFullYear()}
 
 Απάντα ΜΟΝΟ με valid JSON (χωρίς άλλο κείμενο):
 {"type":"expense","amount":0,"date":"${today()}","account_name":"Eurobank Μισθοδοσίας","category":"","subcategory":"","description":"","is_spiti":false}`;
@@ -5708,13 +5854,57 @@ ${accountHint}
     btn.textContent = '⏹';
     btn.style.background = 'rgba(255,59,48,0.15)';
     voiceRecognition.onresult = e => {
-      const transcript = e.results[0][0].transcript;
-      const textArea = document.getElementById('quick-entry-text');
-      if (textArea) textArea.value = transcript;
+      const raw = e.results[0][0].transcript;
+      handleVoiceTranscript(raw);
     };
     voiceRecognition.onend = () => { btn.textContent = '🎤'; btn.style.background = ''; voiceRecognition = null; };
     voiceRecognition.onerror = () => { btn.textContent = '🎤'; btn.style.background = ''; voiceRecognition = null; };
     voiceRecognition.start();
+  }
+
+  // Αναγνώριση "Βαγγέλη" και routing
+  function handleVoiceTranscript(raw) {
+    // Αφαίρεση προσφώνησης (Βαγγέλη / Βαγγέλης / Ευάγγελε)
+    const cleaned = raw
+      .replace(/^(βαγγέλη|βαγγέλης|ευάγγελε|βαγγέλη,|βαγγέλης,)[,\s]*/i, '')
+      .trim();
+
+    const hadName = cleaned !== raw.trim();
+
+    if (hadName) {
+      // Έλεγχος αν είναι ερώτηση ή καταχώρηση
+      const isQuestion = isVoiceQuestion(cleaned);
+      if (isQuestion) {
+        // → Στείλε στο Chat tab
+        setAiTab('chat');
+        const chatInput = document.getElementById('ai-chat-input');
+        if (chatInput) {
+          chatInput.value = cleaned;
+          sendAiChat();
+        }
+        return;
+      }
+    }
+
+    // Default: Quick Entry
+    const textArea = document.getElementById('quick-entry-text');
+    if (textArea) textArea.value = cleaned;
+  }
+
+  // Κρίνει αν το φωνητικό κείμενο είναι ερώτηση (και όχι καταχώρηση)
+  function isVoiceQuestion(text) {
+    const t = text.toLowerCase();
+    // Ερωτηματικές λέξεις
+    const questionWords = ['πόσα','πόσο','τι','ποια','ποιο','ποιες','πότε','πού','γιατί','πώς','σύγκρινε','δείξε','ανάλυσε','εξήγησε','βοήθησέ','πες μου','υπάρχει','έχω','μπορείς'];
+    if (questionWords.some(w => t.startsWith(w))) return true;
+    if (t.includes('?') || t.includes(';')) return true;
+    // Καταχώρηση: αρχίζει με "πλήρωσα", "αγόρασα", "έδωσα", ποσό κλπ
+    const entryWords = ['πλήρωσα','αγόρασα','έδωσα','ξόδεψα','κατέβαλα','έβαλα','βάλε','καταχώρησε','πρόσθεσε'];
+    if (entryWords.some(w => t.startsWith(w) || t.includes(w))) return false;
+    // Αν περιέχει ποσό και περιγραφή → καταχώρηση
+    if (/\d+\s*(€|ευρώ|euro)/i.test(t)) return false;
+    // Default: ερώτηση αν έχει ερωτηματικό τέλος
+    return t.endsWith(';') || t.endsWith('?');
   }
 
   // ============================================================
@@ -5844,6 +6034,247 @@ ${monthSummary || '  (δεν υπάρχουν δεδομένα)'}
   }
 
   window.addEventListener('load', registerSW);
+  </script>
+
+  <!-- ============================================================
+       PORTFOLIO AI AGENT SCRIPT
+       Ξεχωριστό block — shared global scope με το main script
+       Χρησιμοποιεί aliases για αποφυγή conflicts
+  ============================================================ -->
+  <script>
+  // Portfolio AI — aliases (αποφυγή conflicts με main + AI agent scripts)
+  const pfSb = () => window._sb;
+  const pfToast = (m, t) => window._showToast && window._showToast(m, t);
+  const pfTrades = () => window._allTrades || [];
+  const pfAccounts = () => window._allAccounts || [];
+
+  let pfChatHistory = [];
+  let pfIsSending = false;
+
+  // Χτίζει context με τις τρέχουσες θέσεις για τον agent
+  function buildPfContext() {
+    const trades = pfTrades();
+    const isEtf = document.getElementById('pf-asset-etf')?.classList.contains('... ') ||
+      document.getElementById('pf-asset-etf')?.className.includes('active');
+    const assetFilter = isEtf ? 'etf' : 'stock';
+
+    // Ανοιχτές θέσεις ανά asset type
+    const open = trades.filter(t =>
+      (t.asset_type || 'stock') === assetFilter &&
+      (t.status === 'open' || t.trade_type === 'buy') &&
+      t.trade_type !== 'sell'
+    );
+
+    // Group ανά ticker
+    const byTicker = {};
+    open.forEach(t => {
+      if (!byTicker[t.ticker]) byTicker[t.ticker] = {
+        ticker: t.ticker, name: t.name || t.ticker,
+        sector: t.sector || 'N/A', entries: [], currentPrice: null
+      };
+      byTicker[t.ticker].entries.push({
+        date: t.buy_date, qty: t.quantity, buyPrice: t.buy_price,
+        cost: t.quantity ? (parseFloat(t.quantity) * parseFloat(t.buy_price)) : parseFloat(t.buy_price)
+      });
+      if (t.current_price) byTicker[t.ticker].currentPrice = parseFloat(t.current_price);
+    });
+
+    // Κλειστές θέσεις (για realized P&L context)
+    const closed = trades.filter(t =>
+      (t.asset_type || 'stock') === assetFilter && t.status === 'closed'
+    );
+    const realizedTotal = closed.reduce((sum, t) => {
+      if (t.trade_type === 'sell') return sum + parseFloat(t.sell_price || 0);
+      return sum - parseFloat(t.buy_price || 0);
+    }, 0);
+
+    // Format για το prompt
+    const posLines = Object.values(byTicker).map(p => {
+      const totalCost = p.entries.reduce((s, e) => s + e.cost, 0);
+      const totalQty = p.entries.reduce((s, e) => s + (parseFloat(e.qty) || 0), 0);
+      const avgBuy = totalQty > 0 ? (totalCost / totalQty).toFixed(2) : 'N/A';
+      const curVal = p.currentPrice && totalQty > 0 ? (p.currentPrice * totalQty).toFixed(2) : 'N/A';
+      const pnlPct = p.currentPrice && parseFloat(avgBuy) > 0
+        ? (((p.currentPrice - parseFloat(avgBuy)) / parseFloat(avgBuy)) * 100).toFixed(1) + '%'
+        : 'N/A';
+      const curPriceStr = p.currentPrice ? '$' + p.currentPrice.toFixed(2) : 'N/A';
+      return `- ${p.ticker} (${p.name}) | Κλάδος: ${p.sector} | Μ.Τιμή Αγοράς: ${assetFilter==='stock'?'$':'€'}${avgBuy} | Τρέχουσα: ${assetFilter==='stock'?curPriceStr:'€'+(p.currentPrice?.toFixed(2)||'N/A')} | Αξία: ${assetFilter==='stock'?'$':'€'}${curVal} | P&L: ${pnlPct}`;
+    }).join('\n');
+
+    const currency = assetFilter === 'stock' ? 'USD ($)' : 'EUR (€)';
+    const type = assetFilter === 'stock' ? 'Μετοχές (AI Trading · Revolut)' : 'ETF (Revolut)';
+
+    return `=== ΧΑΡΤΟΦΥΛΑΚΙΟ ΣΤΕΦΑΝΟΥ — ${type} ===
+Νόμισμα: ${currency}
+Ημερομηνία ανάλυσης: ${new Date().toLocaleDateString('el-GR')}
+
+ΑΝΟΙΧΤΕΣ ΘΕΣΕΙΣ:
+${posLines || 'Δεν υπάρχουν ανοιχτές θέσεις'}
+
+ΣΥΝΟΛΙΚΟ REALIZED P&L (κλειστές θέσεις): ${assetFilter==='stock'?'$':'€'}${realizedTotal.toFixed(2)}
+Αριθμός κλειστών θέσεων: ${closed.filter(t=>t.trade_type==='sell').length}`;
+  }
+
+  // System prompt — ο "ρόλος" και η στρατηγική
+  function buildPfSystemPrompt() {
+    const isEtf = document.getElementById('pf-asset-etf')?.className.includes('active');
+    // Διαβάζει τις αποθηκευμένες ρυθμίσεις (ή defaults αν δεν υπάρχουν)
+    const agentSettings = (function() {
+      try {
+        const s = localStorage.getItem('pf_agent_settings');
+        const defaults = {
+          name: 'Βαγγέλης',
+          stockPrompt: 'ΣΤΡΑΤΗΓΙΚΗ ΜΕΤΟΧΩΝ (Trader):\n- Αγορά σε momentum, target +15-20%\n- Budget ~70-80$/θέση\n- Stop loss ανά θέση, κρίνει κατά περίπτωση',
+          etfPrompt: 'ΣΤΡΑΤΗΓΙΚΗ ETF (Επενδυτής):\n- Μακροπρόθεσμη, DCA\n- Κοιτάει διαφοροποίηση, expense ratio, macro'
+        };
+        return s ? { ...defaults, ...JSON.parse(s) } : defaults;
+      } catch(_e) { return { name:'Βαγγέλης', stockPrompt:'', etfPrompt:'' }; }
+    })();
+
+    const stockStrategy = `ΣΤΡΑΤΗΓΙΚΗ ΜΕΤΟΧΩΝ (Trader):
+- Αγορά σε momentum — ψάχνει μετοχές με ανοδική δυναμική
+- Target profit: +15-20% → όταν θέση φτάσει αυτό το range, εξετάζει πώληση
+- Budget ανά θέση: ~70-80€/$ (ή χαμηλότερα για περισσότερα τεμάχια)
+- Ρευστότητα: δυναμική — δεν υπάρχει σταθερό ποσό
+- ΔΕΝ κάνει averaging down αυτόματα — κρίνει κατά περίπτωση
+- Stop loss: όχι σταθερό — κρίνει ανά θέση και conditions`;
+
+    const etfStrategy = `ΣΤΡΑΤΗΓΙΚΗ ETF (Επενδυτής):
+- Μακροπρόθεσμη προσέγγιση — δεν πουλάει εκτός σοβαρού λόγου
+- Άλλοτε αυξάνει υπάρχουσες θέσεις (DCA), άλλοτε ανοίγει νέες
+- Κοιτάει: διαφοροποίηση κλάδων, geographic exposure, expense ratio
+- Σύγκριση με benchmark (S&P 500, MSCI World)
+- Macro-aware: επιτόκια, πληθωρισμός, κλαδικές τάσεις`;
+
+    return `Είσαι ο ${agentSettings.name}, ο προσωπικός χρηματοοικονομικός butler και αναλυτής του κυρίου Στέφανου Αξιώτη. Μιλάς ευγενικά και επαγγελματικά σαν butler, αποκαλείς τον χρήστη "κύριε Στέφανε". Απαντάς πάντα στα Ελληνικά.
+
+ΡΟΛΟΣ:
+- Αναλύεις το χαρτοφυλάκιό του με βάση τα πραγματικά δεδομένα που σου δίνονται
+- Δίνεις συγκεκριμένες, εξατομικευμένες συμβουλές — ΟΧΙ γενικές
+- Χρησιμοποιείς web search για real-time δεδομένα (analyst targets, ειδήσεις, P/E, RSI)
+- Απαντάς ΠΑΝΤΑ στα Ελληνικά, σύντομα και με σαφείς προτάσεις
+- Αναφέρεις πάντα τα συγκεκριμένα νούμερα από τις θέσεις του
+
+${isEtf ? agentSettings.etfPrompt : agentSettings.stockPrompt}
+
+ΚΑΝΟΝΕΣ ΑΝΑΛΥΣΗΣ:
+- Αν θέση έχει P&L > +15%: επισήμανε ότι πλησιάζει target πώλησης
+- Αν θέση έχει P&L < -20%: ανάλυσε αν αξίζει να κρατηθεί ή να κοπεί
+- Για νέες ιδέες μετοχών: τιμή κάτω από 80$, momentum, volume
+- Για ETF: κοίτα expense ratio, 1-year performance, κλαδική έκθεση
+- Πάντα αναφέρεις: τρέχουσα τιμή, % change, analyst consensus αν υπάρχει
+
+ΣΗΜΑΝΤΙΚΟ: Δεν είσαι financial advisor — οι συμβουλές σου είναι για ενημέρωση, η τελική απόφαση είναι πάντα του Στέφανου.`;
+  }
+
+  async function sendPfChat() {
+    const input = document.getElementById('pf-chat-input');
+    const msg = input?.value.trim();
+    if (!msg || pfIsSending) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    pfIsSending = true;
+
+    // Add user message
+    pfAddMessage(msg, 'user');
+    pfChatHistory.push({ role: 'user', content: msg });
+
+    // Loading indicator
+    const loadId = 'pf-loading-' + Date.now();
+    pfAddRaw(`<div id="${loadId}" class="ai-chat-bubble ai" style="font-size:14px;">
+      <span style="color:var(--text-tertiary);">⏳ Αναλύω...</span>
+    </div>`);
+
+    try {
+      const { data: sessionData } = await pfSb().auth.getSession();
+      const token = sessionData?.session?.access_token;
+
+      // Χτίζουμε το context με τις τρέχουσες θέσεις
+      const pfContext = buildPfContext();
+      const systemPrompt = buildPfSystemPrompt();
+
+      // Πρώτο μήνυμα: ενσωματώνουμε το context
+      const messagesWithContext = pfChatHistory.map((m, i) => {
+        if (i === 0 && m.role === 'user') {
+          return { role: 'user', content: `${pfContext}\n\n---\nΕρώτηση: ${m.content}` };
+        }
+        return m;
+      });
+
+      const res = await fetch(
+        'https://qxgthcxjrlryloyrvknq.supabase.co/functions/v1/claude-proxy',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4Z3RoY3hqcmxyeWxveXJ2a25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTgzNzQsImV4cCI6MjA2MzkzNDM3NH0.iIFRh4PvCZQSJIkOLIaH1dJPBxbhSLJMCiNOQN67khM'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1000,
+            system: systemPrompt,
+            messages: messagesWithContext,
+            tools: [{ type: 'web_search_20250305', name: 'web_search' }]
+          }),
+          signal: AbortSignal.timeout(45000)
+        }
+      );
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      // Εξαγωγή text από response (αγνοεί tool use blocks)
+      const text = (json.content || [])
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('\n') || 'Δεν ήρθε απάντηση.';
+
+      // Remove loading + add response
+      document.getElementById(loadId)?.remove();
+      pfAddMessage(text, 'ai');
+      pfChatHistory.push({ role: 'assistant', content: text });
+
+    } catch (e) {
+      document.getElementById(loadId)?.remove();
+      pfAddMessage('❌ Σφάλμα: ' + e.message, 'ai');
+    } finally {
+      pfIsSending = false;
+    }
+  }
+
+  function sendPfQuick(msg) {
+    const input = document.getElementById('pf-chat-input');
+    if (input) input.value = msg;
+    sendPfChat();
+  }
+
+  function pfAddMessage(text, role) {
+    // Μετατροπή markdown σε HTML (bold, newlines)
+    const html = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+    pfAddRaw(`<div class="ai-chat-bubble ${role}" style="font-size:14px;">${html}</div>`);
+  }
+
+  function pfAddRaw(html) {
+    const container = document.getElementById('pf-chat-messages');
+    if (!container) return;
+    container.insertAdjacentHTML('beforeend', html);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function clearPfChat() {
+    pfChatHistory = [];
+    const container = document.getElementById('pf-chat-messages');
+    if (container) container.innerHTML = `<div class="ai-chat-bubble ai" style="font-size:14px;">
+      <strong>Καλημέρα, κύριε Στέφανε. 📈</strong><br><br>
+      Βαγγέλης στην υπηρεσία σας για το χαρτοφυλάκιο. Γνωρίζω τις θέσεις σας, τη στρατηγική σας και τους στόχους σας.<br><br>
+      <span style="color:var(--text-tertiary);font-size:12px;">Διατάξτε με ελεύθερα.</span>
+    </div>`;
+  }
   </script>
 </body>
 </html>
