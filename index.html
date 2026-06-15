@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781420000">
+  <meta name="app-version" content="1781469500">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1936,6 +1936,7 @@
       // Φόρτωση investment trades για τις κάρτες λογαριασμών
       const tradesRes = await sb.from('investments_trades').select('*').order('buy_date', { ascending: true });
       allTrades = tradesRes.data || [];
+      window._allTrades = allTrades; // expose για Portfolio AI Agent
       // Φόρτωση auto-categorization rules για τον AI Agent
       const rulesRes = await sb.from('rules').select('*').eq('is_active', true).order('priority', { ascending: false });
       window._allRules = rulesRes.data || [];
@@ -4500,15 +4501,18 @@
         pnlEl.style.cssText = color(pnl);
       } else if (pnlEl) { pnlEl.textContent = '—'; pnlEl.style.cssText = ''; }
 
-      // Κάρτα 5: Realized P&L
+      // Κάρτα 5: Realized P&L — δείχνει €0.00 αν δεν υπάρχουν πωλήσεις (όχι —)
       const realEl = document.getElementById('pf-realized');
       if (realEl) {
-        if (totalRealized !== 0) {
-          const realFull = fmt(totalRealized, true);
-          realEl.dataset.pfValue = realFull;
-          realEl.textContent = privacyOn ? ((totalRealized >= 0 ? '+' : '-') + cur + '***') : realFull;
-          realEl.style.cssText = color(totalRealized);
-        } else { realEl.textContent = '—'; realEl.style.cssText = ''; }
+        const realFull = (totalRealized >= 0 ? '+' : '') + fmt(totalRealized, false);
+        realEl.dataset.pfValue = totalRealized === 0 ? fmt(0) : realFull;
+        realEl.textContent = privacyOn
+          ? (cur + '***')
+          : (totalRealized === 0 ? fmt(0) : realFull);
+        realEl.style.cssText = totalRealized === 0 ? '' : color(totalRealized);
+        if (totalRealized === 0) {
+          realEl.style.color = 'var(--text-tertiary)';
+        }
       }
     }
 
@@ -6054,65 +6058,107 @@ ${monthSummary || '  (δεν υπάρχουν δεδομένα)'}
   // Χτίζει context με τις τρέχουσες θέσεις για τον agent
   function buildPfContext() {
     const trades = pfTrades();
-    const isEtf = document.getElementById('pf-asset-etf')?.classList.contains('... ') ||
-      document.getElementById('pf-asset-etf')?.className.includes('active');
+
+    // Σωστό detection του active tab
+    const etfBtn = document.getElementById('pf-asset-etf');
+    const isEtf = etfBtn ? etfBtn.className.includes('active') : false;
     const assetFilter = isEtf ? 'etf' : 'stock';
-
-    // Ανοιχτές θέσεις ανά asset type
-    const open = trades.filter(t =>
-      (t.asset_type || 'stock') === assetFilter &&
-      (t.status === 'open' || t.trade_type === 'buy') &&
-      t.trade_type !== 'sell'
-    );
-
-    // Group ανά ticker
-    const byTicker = {};
-    open.forEach(t => {
-      if (!byTicker[t.ticker]) byTicker[t.ticker] = {
-        ticker: t.ticker, name: t.name || t.ticker,
-        sector: t.sector || 'N/A', entries: [], currentPrice: null
-      };
-      byTicker[t.ticker].entries.push({
-        date: t.buy_date, qty: t.quantity, buyPrice: t.buy_price,
-        cost: t.quantity ? (parseFloat(t.quantity) * parseFloat(t.buy_price)) : parseFloat(t.buy_price)
-      });
-      if (t.current_price) byTicker[t.ticker].currentPrice = parseFloat(t.current_price);
-    });
-
-    // Κλειστές θέσεις (για realized P&L context)
-    const closed = trades.filter(t =>
-      (t.asset_type || 'stock') === assetFilter && t.status === 'closed'
-    );
-    const realizedTotal = closed.reduce((sum, t) => {
-      if (t.trade_type === 'sell') return sum + parseFloat(t.sell_price || 0);
-      return sum - parseFloat(t.buy_price || 0);
-    }, 0);
-
-    // Format για το prompt
-    const posLines = Object.values(byTicker).map(p => {
-      const totalCost = p.entries.reduce((s, e) => s + e.cost, 0);
-      const totalQty = p.entries.reduce((s, e) => s + (parseFloat(e.qty) || 0), 0);
-      const avgBuy = totalQty > 0 ? (totalCost / totalQty).toFixed(2) : 'N/A';
-      const curVal = p.currentPrice && totalQty > 0 ? (p.currentPrice * totalQty).toFixed(2) : 'N/A';
-      const pnlPct = p.currentPrice && parseFloat(avgBuy) > 0
-        ? (((p.currentPrice - parseFloat(avgBuy)) / parseFloat(avgBuy)) * 100).toFixed(1) + '%'
-        : 'N/A';
-      const curPriceStr = p.currentPrice ? '$' + p.currentPrice.toFixed(2) : 'N/A';
-      return `- ${p.ticker} (${p.name}) | Κλάδος: ${p.sector} | Μ.Τιμή Αγοράς: ${assetFilter==='stock'?'$':'€'}${avgBuy} | Τρέχουσα: ${assetFilter==='stock'?curPriceStr:'€'+(p.currentPrice?.toFixed(2)||'N/A')} | Αξία: ${assetFilter==='stock'?'$':'€'}${curVal} | P&L: ${pnlPct}`;
-    }).join('\n');
-
-    const currency = assetFilter === 'stock' ? 'USD ($)' : 'EUR (€)';
+    const currency = assetFilter === 'stock' ? '$' : '€';
     const type = assetFilter === 'stock' ? 'Μετοχές (AI Trading · Revolut)' : 'ETF (Revolut)';
 
-    return `=== ΧΑΡΤΟΦΥΛΑΚΙΟ ΣΤΕΦΑΝΟΥ — ${type} ===
-Νόμισμα: ${currency}
-Ημερομηνία ανάλυσης: ${new Date().toLocaleDateString('el-GR')}
+    // Φιλτράρισμα trades ανά asset_type
+    const filtered = trades.filter(t => (t.asset_type || 'stock') === assetFilter);
 
-ΑΝΟΙΧΤΕΣ ΘΕΣΕΙΣ:
+    // Group ανά ticker — συνδυάζει πολλαπλές αγορές
+    const byTicker = {};
+    filtered.forEach(t => {
+      const tick = t.ticker;
+      if (!byTicker[tick]) byTicker[tick] = {
+        ticker: tick,
+        name: t.name || tick,
+        sector: t.sector || 'N/A',
+        totalQty: 0,
+        totalCost: 0,
+        hasQty: false,
+        sumBuy: 0,   // για trades χωρίς quantity
+        sumSell: 0,
+        currentPrice: null,
+        status: t.status || 'open'
+      };
+      const g = byTicker[tick];
+      if (t.current_price) g.currentPrice = parseFloat(t.current_price);
+
+      const qty = t.quantity !== null && t.quantity !== undefined ? parseFloat(t.quantity) : null;
+      const bp = parseFloat(t.buy_price || 0);
+      const sp = parseFloat(t.sell_price || 0);
+
+      if (qty !== null) {
+        g.hasQty = true;
+        if (t.trade_type === 'buy' || !t.trade_type) {
+          g.totalQty += qty;
+          g.totalCost += qty * bp;
+        } else if (t.trade_type === 'sell') {
+          const avgCost = g.totalQty > 0 ? g.totalCost / g.totalQty : bp;
+          g.totalQty = Math.max(0, g.totalQty - qty);
+          g.totalCost = Math.max(0, g.totalCost - qty * avgCost);
+          g.sumSell += qty * sp;
+        }
+      } else {
+        // Trades χωρίς quantity — buy_price/sell_price = συνολικό ποσό
+        if (t.trade_type === 'buy' || !t.trade_type) g.sumBuy += bp;
+        else if (t.trade_type === 'sell') g.sumSell += sp;
+      }
+      if (t.status === 'closed') g.status = 'closed';
+    });
+
+    // Διαχωρισμός ανοιχτών/κλειστών
+    const openPositions = Object.values(byTicker).filter(g => g.status !== 'closed');
+    const closedPositions = Object.values(byTicker).filter(g => g.status === 'closed');
+
+    // Format ανοιχτών θέσεων
+    const posLines = openPositions.map(g => {
+      const avgBuy = g.hasQty && g.totalQty > 0 ? (g.totalCost / g.totalQty) : 0;
+      const curPrice = g.currentPrice;
+      const curVal = g.hasQty && curPrice && g.totalQty > 0
+        ? (curPrice * g.totalQty).toFixed(2)
+        : (curPrice ? 'live τιμή: ' + currency + curPrice.toFixed(2) : 'N/A');
+      const costStr = g.hasQty ? currency + (avgBuy.toFixed(2)) + ' (μ.ό. ανά τεμάχιο)' : currency + g.sumBuy.toFixed(2) + ' (συνολικό κόστος)';
+      const pnlPct = g.hasQty && curPrice && avgBuy > 0
+        ? (((curPrice - avgBuy) / avgBuy) * 100).toFixed(1) + '%'
+        : curPrice && g.sumBuy > 0
+          ? (((curPrice * (g.sumBuy / (g.currentPrice || curPrice)) - g.sumBuy) / g.sumBuy) * 100).toFixed(1) + '%'
+          : 'N/A';
+      const qty = g.hasQty ? `${g.totalQty.toFixed(4)} τεμ.` : 'N/A τεμ.';
+      return `- **${g.ticker}** (${g.name}) | Κλάδος: ${g.sector} | Ποσότητα: ${qty} | Κόστος: ${costStr} | Τρέχουσα τιμή: ${curPrice ? currency + curPrice.toFixed(2) : 'N/A'} | Τρέχουσα αξία: ${currency}${curVal} | P&L%: ${pnlPct}`;
+    }).join('\n');
+
+    // Realized P&L από κλειστές
+    const realizedTotal = closedPositions.reduce((sum, g) => sum + (g.sumSell - (g.hasQty ? g.totalCost : g.sumBuy)), 0)
+      + filtered.filter(t => t.trade_type === 'sell').reduce((sum, t) => {
+        const sp = parseFloat(t.sell_price || 0);
+        const bp = parseFloat(t.buy_price || 0);
+        return sum + (t.quantity ? 0 : sp - bp);
+      }, 0);
+
+    // Υπολόγισε realized πιο απλά από sell trades
+    const sells = filtered.filter(t => t.trade_type === 'sell');
+    const buysForClosed = filtered.filter(t => (t.trade_type === 'buy' || !t.trade_type) && t.status === 'closed');
+    const totalSellAmount = sells.reduce((s, t) => s + parseFloat(t.sell_price || 0), 0);
+    const totalBuyForClosed = buysForClosed.reduce((s, t) => s + parseFloat(t.buy_price || 0), 0);
+    const realizedPnL = totalSellAmount - totalBuyForClosed;
+
+    return `=== ΧΑΡΤΟΦΥΛΑΚΙΟ ΣΤΕΦΑΝΟΥ — ${type} ===
+Νόμισμα: ${currency} | Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}
+
+ΑΝΟΙΧΤΕΣ ΘΕΣΕΙΣ (${openPositions.length}):
 ${posLines || 'Δεν υπάρχουν ανοιχτές θέσεις'}
 
-ΣΥΝΟΛΙΚΟ REALIZED P&L (κλειστές θέσεις): ${assetFilter==='stock'?'$':'€'}${realizedTotal.toFixed(2)}
-Αριθμός κλειστών θέσεων: ${closed.filter(t=>t.trade_type==='sell').length}`;
+ΚΛΕΙΣΤΕΣ ΘΕΣΕΙΣ: ${closedPositions.length + sells.length} συναλλαγές
+REALIZED P&L (κλειδωμένο κέρδος): ${currency}${realizedPnL.toFixed(2)}
+
+ΣΥΝΟΛΑ:
+- Ανοιχτές θέσεις: ${openPositions.length}
+- Κλειστές/πωλήσεις: ${sells.length}`;
   }
 
   // System prompt — ο "ρόλος" και η στρατηγική
