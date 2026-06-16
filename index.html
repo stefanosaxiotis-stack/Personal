@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781469500">
+  <meta name="app-version" content="1781471500">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1343,6 +1343,45 @@
           </div>
 
           <!-- Tabs κατηγοριών -->
+          <!-- Λογαριασμοί -->
+          <div class="apple-card" style="padding:20px;margin-bottom:16px;max-width:640px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <h2 style="font-size:16px;font-weight:600;">🏦 Λογαριασμοί</h2>
+              <button onclick="openAddAccountModal()" style="font-size:12px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;">+ Νέος</button>
+            </div>
+            <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px;">Επεξεργασία ονομάτων και στοιχείων λογαριασμών</p>
+            <div id="settings-accounts-list" style="display:flex;flex-direction:column;gap:8px;">
+              <div style="text-align:center;color:var(--text-tertiary);font-size:13px;padding:12px;">Φόρτωση...</div>
+            </div>
+          </div>
+
+          <!-- Modal επεξεργασίας λογαριασμού -->
+          <div id="account-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:24px;">
+            <div class="apple-card p-6" style="width:100%;max-width:380px;max-height:90vh;overflow-y:auto;">
+              <div style="font-size:17px;font-weight:700;margin-bottom:16px;" id="account-modal-title">Επεξεργασία Λογαριασμού</div>
+              <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;display:block;margin-bottom:4px;">Όνομα</label>
+              <input id="acc-name" type="text" class="apple-input" style="margin-bottom:12px;" placeholder="π.χ. Eurobank Μισθοδοσίας">
+              <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;display:block;margin-bottom:4px;">Provider / Τράπεζα</label>
+              <input id="acc-provider" type="text" class="apple-input" style="margin-bottom:12px;" placeholder="π.χ. Eurobank, Πειραιώς">
+              <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;display:block;margin-bottom:4px;">Τύπος</label>
+              <select id="acc-type" class="apple-select" style="margin-bottom:12px;">
+                <option value="bank">🏦 Τραπεζικός</option>
+                <option value="cash">💵 Μετρητά</option>
+                <option value="investment">📈 Επένδυση</option>
+              </select>
+              <label style="font-size:11px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;display:block;margin-bottom:4px;">Νόμισμα</label>
+              <select id="acc-currency" class="apple-select" style="margin-bottom:20px;">
+                <option value="EUR">€ EUR</option>
+                <option value="USD">$ USD</option>
+                <option value="GBP">£ GBP</option>
+              </select>
+              <div style="display:flex;gap:10px;">
+                <button onclick="saveAccountModal()" class="btn-primary" style="flex:1;">💾 Αποθήκευση</button>
+                <button onclick="closeAccountModal()" class="btn-secondary" style="flex:1;">Άκυρο</button>
+              </div>
+            </div>
+          </div>
+
           <!-- AI Agent Settings -->
           <div class="apple-card" style="padding:20px;margin-bottom:16px;max-width:640px;">
             <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">🤖 AI Agent (Βαγγέλης)</h2>
@@ -4788,6 +4827,7 @@
       allSubcategories = subcatsRes.data || [];
       renderSettingsContent();
       loadAgentSettingsUI();
+      renderSettingsAccounts();
     }
 
     function renderSettingsContent() {
@@ -4860,8 +4900,85 @@
     }
 
     // ============================================================
-    // AI AGENT SETTINGS (αποθήκευση στο localStorage)
+    // ACCOUNT SETTINGS — render, edit, add
     // ============================================================
+    let editingAccountId = null;
+
+    function renderSettingsAccounts() {
+      const container = document.getElementById('settings-accounts-list');
+      if (!container) return;
+      const typeLabel = { bank: '🏦 Τραπεζικός', cash: '💵 Μετρητά', investment: '📈 Επένδυση' };
+      container.innerHTML = allAccounts.map(a => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg-primary);border-radius:10px;gap:10px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:600;truncate;">${a.name}</div>
+            <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${typeLabel[a.type]||a.type} · ${a.provider||'—'} · ${a.currency}</div>
+          </div>
+          <button onclick="openEditAccountModal('${a.id}')"
+            style="font-size:12px;padding:5px 12px;border-radius:8px;border:0.5px solid var(--border-color);background:var(--bg-secondary);color:var(--text-secondary);cursor:pointer;white-space:nowrap;">
+            ✏️ Επεξεργασία
+          </button>
+        </div>`).join('');
+    }
+
+    function openEditAccountModal(id) {
+      const a = allAccounts.find(x => x.id === id);
+      if (!a) return;
+      editingAccountId = id;
+      document.getElementById('account-modal-title').textContent = 'Επεξεργασία Λογαριασμού';
+      document.getElementById('acc-name').value = a.name || '';
+      document.getElementById('acc-provider').value = a.provider || '';
+      document.getElementById('acc-type').value = a.type || 'bank';
+      document.getElementById('acc-currency').value = a.currency || 'EUR';
+      document.getElementById('account-modal').style.display = 'flex';
+    }
+
+    function openAddAccountModal() {
+      editingAccountId = null;
+      document.getElementById('account-modal-title').textContent = 'Νέος Λογαριασμός';
+      document.getElementById('acc-name').value = '';
+      document.getElementById('acc-provider').value = '';
+      document.getElementById('acc-type').value = 'bank';
+      document.getElementById('acc-currency').value = 'EUR';
+      document.getElementById('account-modal').style.display = 'flex';
+    }
+
+    function closeAccountModal() {
+      document.getElementById('account-modal').style.display = 'none';
+      editingAccountId = null;
+    }
+
+    async function saveAccountModal() {
+      const name = document.getElementById('acc-name').value.trim();
+      const provider = document.getElementById('acc-provider').value.trim();
+      const type = document.getElementById('acc-type').value;
+      const currency = document.getElementById('acc-currency').value;
+      if (!name) { showToast('Το όνομα είναι υποχρεωτικό', 'error'); return; }
+
+      if (editingAccountId) {
+        // Επεξεργασία υπάρχοντος
+        const { error } = await sb.from('accounts')
+          .update({ name, provider, type, currency })
+          .eq('id', editingAccountId);
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+        // Ενημέρωση local state
+        const idx = allAccounts.findIndex(a => a.id === editingAccountId);
+        if (idx !== -1) allAccounts[idx] = { ...allAccounts[idx], name, provider, type, currency };
+        window._allAccounts = allAccounts;
+        showToast('Λογαριασμός ενημερώθηκε ✓', 'success');
+      } else {
+        // Νέος λογαριασμός
+        const { data, error } = await sb.from('accounts')
+          .insert({ name, provider, type, currency, is_active: true, sort_order: allAccounts.length + 1 })
+          .select().single();
+        if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
+        allAccounts.push(data);
+        window._allAccounts = allAccounts;
+        showToast('Λογαριασμός προστέθηκε ✓', 'success');
+      }
+      closeAccountModal();
+      renderSettingsAccounts();
+    }
     const AGENT_DEFAULTS = {
       name: 'Βαγγέλης',
       stockPrompt: `ΣΤΡΑΤΗΓΙΚΗ ΜΕΤΟΧΩΝ (Trader):
@@ -5229,7 +5346,7 @@ ${context}
 
       const response = await callClaudeProxy({
         model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
+        max_tokens: 3000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userContent }]
       });
@@ -5761,7 +5878,11 @@ ${accountHint}
           if (acc) accId = acc.id;
         }
         if (!accId) {
-          const def = getAccounts().find(a => a.name === 'Eurobank Μισθοδοσίας') || getAccounts().find(a => a.type === 'bank') || getAccounts()[0];
+          // Fallback: Eurobank Μισθοδοσίας ή πρώτος bank λογαριασμός
+          const EUROBANK_SALARY_ID = '6bb85432-2c5e-440f-a192-dccef8d2de53';
+          const def = getAccounts().find(a => a.id === EUROBANK_SALARY_ID)
+            || getAccounts().find(a => a.type === 'bank')
+            || getAccounts()[0];
           if (def) accId = def.id;
           // Σημείωσε ότι χρειάζεται έλεγχος από τον χρήστη
           accSel.style.borderColor = '#ff9500';
@@ -6259,12 +6380,12 @@ ${isEtf ? agentSettings.etfPrompt : agentSettings.stockPrompt}
           },
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
-            max_tokens: 1000,
+            max_tokens: 3000,
             system: systemPrompt,
             messages: messagesWithContext,
             tools: [{ type: 'web_search_20250305', name: 'web_search' }]
           }),
-          signal: AbortSignal.timeout(45000)
+          signal: AbortSignal.timeout(60000)
         }
       );
 
@@ -6272,10 +6393,46 @@ ${isEtf ? agentSettings.etfPrompt : agentSettings.stockPrompt}
       const json = await res.json();
 
       // Εξαγωγή text από response (αγνοεί tool use blocks)
-      const text = (json.content || [])
+      let text = (json.content || [])
         .filter(b => b.type === 'text')
         .map(b => b.text)
         .join('\n') || 'Δεν ήρθε απάντηση.';
+
+      // Auto-continue αν κόπηκε (stop_reason = 'max_tokens')
+      if (json.stop_reason === 'max_tokens') {
+        // Πρόσθεσε την partial απάντηση στο history και ζήτα συνέχεια
+        pfChatHistory.push({ role: 'user', content: msg });
+        pfChatHistory.push({ role: 'assistant', content: text });
+        // Κάνε ένα ακόμα request για συνέχεια
+        try {
+          const res2 = await fetch(
+            'https://qxgthcxjrlryloyrvknq.supabase.co/functions/v1/claude-proxy',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4Z3RoY3hqcmxyeWxveXJ2a25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzNTgzNzQsImV4cCI6MjA2MzkzNDM3NH0.iIFRh4PvCZQSJIkOLIaH1dJPBxbhSLJMCiNOQN67khM'
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-6',
+                max_tokens: 3000,
+                system: systemPrompt,
+                messages: [...pfChatHistory, { role: 'user', content: 'Συνέχισε.' }]
+              }),
+              signal: AbortSignal.timeout(45000)
+            }
+          );
+          if (res2.ok) {
+            const json2 = await res2.json();
+            const continuation = (json2.content || [])
+              .filter(b => b.type === 'text')
+              .map(b => b.text)
+              .join('\n');
+            if (continuation) text = text + '\n\n' + continuation;
+          }
+        } catch (_e) { /* αν αποτύχει η συνέχεια, δείξε ό,τι έχουμε */ }
+      }
 
       // Remove loading + add response
       document.getElementById(loadId)?.remove();
