@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781476000">
+  <meta name="app-version" content="1782033000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -3061,7 +3061,7 @@
           if (!ovMonths[key]) ovMonths[key] = { esoda: 0, exoda: 0 };
           t.type === 'income' ? ovMonths[key].esoda += amt : ovMonths[key].exoda += amt;
         }
-        if (t.is_spiti && t.type === 'expense') {
+        if (t.type === 'expense' && t.subcategories?.categories?.name === 'Σπίτι') {
           if (!spitiMonths[key]) spitiMonths[key] = 0;
           spitiMonths[key] += amt;
         }
@@ -3197,11 +3197,11 @@
       const totNet2 = r(totAccInc-totAccExp);
       tb2.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(r(totAccInc))}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(r(totAccExp))}</td><td class="text-right py-2 px-3 ${totNet2>=0?'text-green-600':'text-red-600'}">${totNet2>=0?'+':''}${formatMoney(totNet2)}</td></tr>`;
 
-      // TABLE S3 — ανά υποκατηγορία is_spiti
+      // TABLE S3 — ανά υποκατηγορία κατηγορίας "Σπίτι"
       const tb3 = document.getElementById('s3-tbody');
       const spitiSubs = {};
       txData.forEach(t => {
-        if (!t.is_spiti || t.type !== 'expense') return;
+        if (t.subcategories?.categories?.name !== 'Σπίτι' || t.type !== 'expense') return;
         const sub = t.subcategories?.name || 'Λοιπά';
         if (!spitiSubs[sub]) spitiSubs[sub] = 0;
         spitiSubs[sub] += parseFloat(t.amount);
@@ -5742,6 +5742,10 @@ ${accountHint}
             <label style="font-size:11px;color:var(--text-tertiary);font-weight:600;">📅 Reporting μήνας</label>
             <select class="apple-select photo-tx-reportmonth" data-index="${i}" style="margin-top:2px;font-size:13px;padding:6px 10px;">${reportMonthOptions}</select>
           </div>
+          <div style="grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:8px 0;">
+            <input type="checkbox" class="photo-tx-spiti" data-index="${i}" id="photo-spiti-${i}" ${tx.is_spiti ? 'checked' : ''} style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
+            <label for="photo-spiti-${i}" style="font-size:13px;font-weight:500;cursor:pointer;">🏠 Έξοδο Σπιτιού</label>
+          </div>
         </div>`;
       listEl.appendChild(card);
     });
@@ -5791,7 +5795,8 @@ ${accountHint}
 
       if (!accountId || !categoryId || !subcatId || !date || !amount || amount <= 0) return;
 
-      const isSpiti = ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()));
+      const isSpiti = document.querySelector(`.photo-tx-spiti[data-index="${i}"]`)?.checked
+        || ['Super Market','Φαρμακείο','Σπίτι','Διαφ/Σπίτι','Φαγητό'].some(k => description.toLowerCase().includes(k.toLowerCase()));
 
       inserts.push({
         owner_id: '60a8a529-ddfb-4602-a6a8-ebf717b1ac5a',
