@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1782035000">
+  <meta name="app-version" content="1782037000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -628,10 +628,16 @@
           <div class="apple-card" style="padding:18px;margin-bottom:16px;">
             <div class="flex items-center justify-between mb-3">
               <h2 style="font-size:15px;font-weight:600;letter-spacing:-0.3px;">3 · Έξοδα σπιτιού ανά μήνα</h2>
-              <button onclick="toggleDashboard('s3')" id="s3-btn" class="toggle-btn">
-                <svg id="s3-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-                <span id="s3-lbl">Πίνακας</span>
-              </button>
+              <div style="display:flex;gap:6px;">
+                <button onclick="toggleS3SpitiDrill()" id="s3-drill-btn" class="toggle-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span id="s3-drill-lbl">Ανάλυση</span>
+                </button>
+                <button onclick="toggleDashboard('s3')" id="s3-btn" class="toggle-btn">
+                  <svg id="s3-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                  <span id="s3-lbl">Πίνακας</span>
+                </button>
+              </div>
             </div>
             <div id="s3-legend" class="flex gap-4 mb-3 text-xs text-gray-500">
               <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-blue-500 inline-block"></span>Έξοδα σπιτιού</span>
@@ -648,6 +654,18 @@
                   <th class="text-right py-2 px-3">% επί συνόλου</th>
                 </tr></thead>
                 <tbody id="s3-tbody" class="divide-y divide-gray-100"></tbody>
+              </table>
+            </div>
+            <!-- Spiti Drill-down (3 επίπεδα, όλοι λογαριασμοί) -->
+            <div id="s3-drill-wrap" class="hidden overflow-x-auto">
+              <div id="s3-drill-breadcrumb" style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px;"></div>
+              <table class="apple-table">
+                <thead><tr class="border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wide">
+                  <th class="text-left py-2 px-3" id="s3-drill-col1">Υποκατηγορία</th>
+                  <th class="text-right py-2 px-3">Σύνολο</th>
+                  <th class="text-right py-2 px-3">% επί συνόλου</th>
+                </tr></thead>
+                <tbody id="s3-drill-tbody" class="divide-y divide-gray-100"></tbody>
               </table>
             </div>
           </div>
@@ -3304,15 +3322,13 @@
     function renderS1DrillCategories() {
       s1DrillCatName = null;
       const crumb = document.getElementById('s1-drill-breadcrumb');
-      crumb.innerHTML = 'Κατηγορίες · <span style="color:var(--text-tertiary);font-size:12px;">Όλοι οι λογαριασμοί</span>';
+      crumb.textContent = 'Κατηγορίες Μισθοδοσίας';
       document.getElementById('s1-drill-col1').textContent = 'Κατηγορία';
       const tb = document.getElementById('s1-drill-tbody');
       tb.innerHTML = '';
       const cats = {};
       dashboardLastTxData.forEach(t => {
-        // Όλοι οι λογαριασμοί (όχι μόνο Μισθοδοσίας)
-        const acc = allAccounts.find(a => a.id === t.account_id);
-        if (acc?.type === 'investment') return;
+        if (t.account_id !== dashboardMisId) return; // ΜΟΝΟ Μισθοδοσίας
         const cat = t.subcategories?.categories?.name || 'Λοιπά';
         if (!cats[cat]) cats[cat] = { esoda:0, exoda:0 };
         t.type === 'income' ? cats[cat].esoda += parseFloat(t.amount) : cats[cat].exoda += parseFloat(t.amount);
@@ -3346,8 +3362,7 @@
       tb.innerHTML = '';
       const subs = {};
       dashboardLastTxData.forEach(t => {
-        const acc = allAccounts.find(a => a.id === t.account_id);
-        if (acc?.type === 'investment') return;
+        if (t.account_id !== dashboardMisId) return; // ΜΟΝΟ Μισθοδοσίας
         const cat = t.subcategories?.categories?.name || 'Λοιπά';
         if (cat !== catName) return;
         const sub = t.subcategories?.name || 'Λοιπά';
@@ -3405,6 +3420,97 @@
       const totRow = document.createElement('tr');
       totRow.className = 'font-semibold bg-gray-50 text-sm';
       totRow.innerHTML = `<td class="py-2 px-3">Σύνολο (${txs.length} κινήσεις)</td><td class="text-right py-2 px-3"></td><td class="text-right py-2 px-3"></td><td class="text-right py-2 px-3 ${total>=0?'text-green-600':'text-red-600'}">${total>=0?'+':''}${formatMoney(Math.abs(total))}</td>`;
+      tb.appendChild(totRow);
+    }
+
+    // ============================================
+    // S3 SPITI DRILL-DOWN (3 επίπεδα, όλοι λογαριασμοί)
+    // ============================================
+    let s3DrillState = 'hidden';
+
+    function toggleS3SpitiDrill() {
+      const wrap = document.getElementById('s3-drill-wrap');
+      const chartWrap = document.getElementById('s3-chart-wrap');
+      const tableWrap = document.getElementById('s3-table-wrap');
+      const lbl = document.getElementById('s3-drill-lbl');
+      if (s3DrillState !== 'hidden') {
+        wrap.classList.add('hidden');
+        chartWrap.classList.remove('hidden');
+        tableWrap.classList.add('hidden');
+        s3DrillState = 'hidden';
+        lbl.textContent = 'Ανάλυση';
+      } else {
+        chartWrap.classList.add('hidden');
+        tableWrap.classList.add('hidden');
+        wrap.classList.remove('hidden');
+        s3DrillState = 'subcategories';
+        lbl.textContent = 'Κλείσιμο';
+        renderS3DrillSubcategories();
+      }
+    }
+
+    function renderS3DrillSubcategories() {
+      s3DrillState = 'subcategories';
+      const crumb = document.getElementById('s3-drill-breadcrumb');
+      crumb.innerHTML = 'Σπίτι · <span style="color:var(--text-tertiary);font-size:12px;">Όλοι οι λογαριασμοί</span>';
+      document.getElementById('s3-drill-col1').textContent = 'Υποκατηγορία';
+      const tb = document.getElementById('s3-drill-tbody');
+      tb.innerHTML = '';
+      const subs = {};
+      let grandTotal = 0;
+      dashboardLastTxData.forEach(t => {
+        if (t.subcategories?.categories?.name !== 'Σπίτι' || t.type !== 'expense') return;
+        const sub = t.subcategories?.name || 'Λοιπά';
+        if (!subs[sub]) subs[sub] = { total:0, txs:[] };
+        subs[sub].total += parseFloat(t.amount);
+        subs[sub].txs.push(t);
+        grandTotal += parseFloat(t.amount);
+      });
+      const sorted = Object.entries(subs).sort((a,b)=>b[1].total-a[1].total);
+      sorted.forEach(([sub, v]) => {
+        const pct = grandTotal > 0 ? (v.total/grandTotal*100).toFixed(1) : '0.0';
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 cursor-pointer hover:bg-blue-50';
+        tr.title = 'Κλικ για κινήσεις';
+        tr.innerHTML = `<td class="py-2 px-3 text-sm">🏠 ${sub} <span style="color:var(--accent);font-size:11px;">▶</span></td><td class="text-right py-2 px-3 text-sm">${formatMoney(Math.round(v.total*100)/100)}</td><td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
+        tr.onclick = () => renderS3DrillTransactions(sub, v.txs, grandTotal);
+        tb.appendChild(tr);
+      });
+      const totRow = document.createElement('tr');
+      totRow.className = 'font-semibold bg-gray-50 text-sm';
+      totRow.innerHTML = `<td class="py-2 px-3">Σύνολο</td><td class="text-right py-2 px-3">${formatMoney(Math.round(grandTotal*100)/100)}</td><td class="text-right py-2 px-3">100%</td>`;
+      tb.appendChild(totRow);
+    }
+
+    function renderS3DrillTransactions(subName, txs, grandTotal) {
+      s3DrillState = 'transactions';
+      const crumb = document.getElementById('s3-drill-breadcrumb');
+      crumb.innerHTML = `<button onclick="renderS3DrillSubcategories()" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:13px;">← Σπίτι</button> / ${subName}`;
+      document.getElementById('s3-drill-col1').textContent = 'Περιγραφή';
+      const tb = document.getElementById('s3-drill-tbody');
+      tb.innerHTML = '';
+      const sorted = [...txs].sort((a,b) => (b.report_date||b.date).localeCompare(a.report_date||a.date));
+      let total = 0;
+      sorted.forEach(t => {
+        const amt = parseFloat(t.amount);
+        total += amt;
+        const accName = allAccounts.find(a => a.id === t.account_id)?.name || '—';
+        const dateStr = formatDate(t.report_date || t.date);
+        const pct = grandTotal > 0 ? (amt/grandTotal*100).toFixed(1) : '0.0';
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-sm">
+            <div style="font-weight:500;">${t.description || subName}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:1px;">${accName} · ${dateStr}</div>
+          </td>
+          <td class="text-right py-2 px-3 text-sm">${formatMoney(amt)}</td>
+          <td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
+        tb.appendChild(tr);
+      });
+      const totRow = document.createElement('tr');
+      totRow.className = 'font-semibold bg-gray-50 text-sm';
+      totRow.innerHTML = `<td class="py-2 px-3">Σύνολο (${txs.length} κινήσεις)</td><td class="text-right py-2 px-3">${formatMoney(Math.round(total*100)/100)}</td><td class="text-right py-2 px-3"></td>`;
       tb.appendChild(totRow);
     }
 
