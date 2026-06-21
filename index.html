@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1782033000">
+  <meta name="app-version" content="1782035000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -3304,13 +3304,15 @@
     function renderS1DrillCategories() {
       s1DrillCatName = null;
       const crumb = document.getElementById('s1-drill-breadcrumb');
-      crumb.textContent = 'Κατηγορίες Μισθοδοσίας';
+      crumb.innerHTML = 'Κατηγορίες · <span style="color:var(--text-tertiary);font-size:12px;">Όλοι οι λογαριασμοί</span>';
       document.getElementById('s1-drill-col1').textContent = 'Κατηγορία';
       const tb = document.getElementById('s1-drill-tbody');
       tb.innerHTML = '';
       const cats = {};
       dashboardLastTxData.forEach(t => {
-        if (t.account_id !== dashboardMisId) return;
+        // Όλοι οι λογαριασμοί (όχι μόνο Μισθοδοσίας)
+        const acc = allAccounts.find(a => a.id === t.account_id);
+        if (acc?.type === 'investment') return;
         const cat = t.subcategories?.categories?.name || 'Λοιπά';
         if (!cats[cat]) cats[cat] = { esoda:0, exoda:0 };
         t.type === 'income' ? cats[cat].esoda += parseFloat(t.amount) : cats[cat].exoda += parseFloat(t.amount);
@@ -3344,12 +3346,14 @@
       tb.innerHTML = '';
       const subs = {};
       dashboardLastTxData.forEach(t => {
-        if (t.account_id !== dashboardMisId) return;
+        const acc = allAccounts.find(a => a.id === t.account_id);
+        if (acc?.type === 'investment') return;
         const cat = t.subcategories?.categories?.name || 'Λοιπά';
         if (cat !== catName) return;
         const sub = t.subcategories?.name || 'Λοιπά';
-        if (!subs[sub]) subs[sub] = { esoda:0, exoda:0 };
+        if (!subs[sub]) subs[sub] = { esoda:0, exoda:0, txs:[] };
         t.type === 'income' ? subs[sub].esoda += parseFloat(t.amount) : subs[sub].exoda += parseFloat(t.amount);
+        subs[sub].txs.push(t);
       });
       const sorted = Object.entries(subs).sort((a,b)=>(b[1].esoda+b[1].exoda)-(a[1].esoda+a[1].exoda));
       let totE=0, totX=0;
@@ -3357,8 +3361,10 @@
         totE += v.esoda; totX += v.exoda;
         const net = Math.round((v.esoda-v.exoda)*100)/100;
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3 text-sm">${sub}</td><td class="text-right py-2 px-3 text-sm text-green-600">${formatMoney(Math.round(v.esoda*100)/100)}</td><td class="text-right py-2 px-3 text-sm text-red-600">${formatMoney(Math.round(v.exoda*100)/100)}</td><td class="text-right py-2 px-3 text-sm font-medium ${net>=0?'text-green-600':'text-red-600'}">${net>=0?'+':''}${formatMoney(net)}</td>`;
+        tr.className = 'border-b border-gray-100 cursor-pointer hover:bg-blue-50';
+        tr.title = 'Κλικ για κινήσεις';
+        tr.innerHTML = `<td class="py-2 px-3 text-sm">${sub} <span style="color:var(--accent);font-size:11px;">▶</span></td><td class="text-right py-2 px-3 text-sm text-green-600">${formatMoney(Math.round(v.esoda*100)/100)}</td><td class="text-right py-2 px-3 text-sm text-red-600">${formatMoney(Math.round(v.exoda*100)/100)}</td><td class="text-right py-2 px-3 text-sm font-medium ${net>=0?'text-green-600':'text-red-600'}">${net>=0?'+':''}${formatMoney(net)}</td>`;
+        tr.onclick = () => renderS1DrillTransactions(catName, sub, v.txs);
         tb.appendChild(tr);
       });
       const totNet = Math.round((totE-totX)*100)/100;
@@ -3366,6 +3372,40 @@
       totRowS.className = 'font-semibold bg-gray-50 text-sm';
       totRowS.innerHTML = `<td class="py-2 px-3">Σύνολο ${catName}</td><td class="text-right py-2 px-3 text-green-600">${formatMoney(Math.round(totE*100)/100)}</td><td class="text-right py-2 px-3 text-red-600">${formatMoney(Math.round(totX*100)/100)}</td><td class="text-right py-2 px-3 ${totNet>=0?'text-green-600':'text-red-600'}">${totNet>=0?'+':''}${formatMoney(totNet)}</td>`;
       tb.appendChild(totRowS);
+    }
+
+    function renderS1DrillTransactions(catName, subName, txs) {
+      s1DrillState = 'transactions';
+      const crumb = document.getElementById('s1-drill-breadcrumb');
+      crumb.innerHTML = `<button onclick="renderS1DrillCategories()" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:13px;">← Κατηγορίες</button> / <button onclick="renderS1DrillSubcategories('${catName}')" style="color:var(--accent);background:none;border:none;cursor:pointer;font-size:13px;">${catName}</button> / ${subName}`;
+      document.getElementById('s1-drill-col1').textContent = 'Περιγραφή';
+      const tb = document.getElementById('s1-drill-tbody');
+      tb.innerHTML = '';
+      const sorted = [...txs].sort((a,b) => (b.report_date||b.date).localeCompare(a.report_date||a.date));
+      let total = 0;
+      sorted.forEach(t => {
+        const amt = parseFloat(t.amount);
+        total += t.type === 'income' ? amt : -amt;
+        const accName = allAccounts.find(a => a.id === t.account_id)?.name || '—';
+        const dateStr = formatDate(t.report_date || t.date);
+        const color = t.type === 'income' ? 'text-green-600' : 'text-red-600';
+        const sign = t.type === 'income' ? '+' : '−';
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100 hover:bg-gray-50';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-sm">
+            <div style="font-weight:500;">${t.description || subName}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:1px;">${accName} · ${dateStr}</div>
+          </td>
+          <td class="text-right py-2 px-3 text-sm text-green-600">${t.type==='income'?formatMoney(amt):''}</td>
+          <td class="text-right py-2 px-3 text-sm text-red-600">${t.type==='expense'?formatMoney(amt):''}</td>
+          <td class="text-right py-2 px-3 text-sm font-medium ${color}">${sign}${formatMoney(amt)}</td>`;
+        tb.appendChild(tr);
+      });
+      const totRow = document.createElement('tr');
+      totRow.className = 'font-semibold bg-gray-50 text-sm';
+      totRow.innerHTML = `<td class="py-2 px-3">Σύνολο (${txs.length} κινήσεις)</td><td class="text-right py-2 px-3"></td><td class="text-right py-2 px-3"></td><td class="text-right py-2 px-3 ${total>=0?'text-green-600':'text-red-600'}">${total>=0?'+':''}${formatMoney(Math.abs(total))}</td>`;
+      tb.appendChild(totRow);
     }
 
     // ============================================
