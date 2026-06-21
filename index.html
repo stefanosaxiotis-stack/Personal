@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781471500">
+  <meta name="app-version" content="1781475000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -1937,15 +1937,23 @@
 
       await loadAllData();
 
+      // Πάντα reset το dashboard flag ώστε να ξαναχτίζει τα charts
+      dashboardRendered = false;
+
       // Ανανέωση της τρέχουσας σελίδας
       const activeSection = document.querySelector('main > section:not(.hidden-section)');
       if (activeSection) {
         const name = activeSection.id.replace('-section', '');
         if (name === 'transactions') { renderReportFilterPills('tx-report-filter-pills', txReportMonths, 'renderTransactions'); renderTransactions(); }
         else if (name === 'accounts') renderAccounts();
-        else if (name === 'dashboard') { dashboardRendered = false; renderDashboard(); }
+        else if (name === 'dashboard') renderDashboard();
         else if (name === 'my-report') { reportInitialized = false; initMyReport(); }
         else if (name === 'budgeting') renderBudgeting();
+        // Αν είμαστε σε AI/φόρμα, ανανέωσε κι εκεί που χρειάζεται
+        else if (['new-transaction','new-transfer','ai-agent'].includes(name)) {
+          // Background update για accounts (ενημερώνει υπόλοιπα)
+          renderAccounts();
+        }
       }
 
       if (icon) icon.style.animation = '';
@@ -4750,21 +4758,30 @@
       btn.disabled = true; btn.textContent = 'Αποθήκευση...';
 
       const currentPriceInput = parseFloat(document.getElementById('tm-current-price')?.value) || null;
+
+      // Για sell: buy_price = τιμή αγοράς (δεν αλλάζει), sell_price = τιμή πώλησης
+      const isSell = currentTradeType === 'sell';
       const record = {
         owner_id: currentUser.id,
         account_id: accountId || null,
         ticker, name,
         quantity: qty || null,
-        buy_price: price,
-        buy_date: date,
+        buy_price: isSell ? null : price,    // buy_price μόνο για buy
+        sell_price: isSell ? price : null,    // sell_price μόνο για sell
+        buy_date: isSell ? null : date,
+        sell_date: isSell ? date : null,
         sector: sector || null,
         notes: notes || null,
         trade_type: currentTradeType,
         asset_type: assetType,
         currency: assetType === 'etf' ? 'EUR' : 'USD',
-        status: currentTradeType === 'buy' ? 'open' : 'closed',
+        status: 'closed',  // sell = πάντα closed, buy = open (αλλάζει παρακάτω)
         current_price: currentPriceInput,
       };
+      // Για buy, status = open
+      if (!isSell) record.status = 'open';
+      // buy_price για sell: χρησιμοποίησε το ίδιο πεδίο για backward compat
+      if (isSell) { record.buy_price = price; }
 
       if (editingTradeId) {
         const { data, error } = await sb.from('investments_trades').update(record).eq('id', editingTradeId).select().single();
@@ -4778,7 +4795,22 @@
         btn.disabled = false; btn.textContent = 'Καταχώρηση';
         if (error) { showToast('Σφάλμα: ' + error.message, 'error'); return; }
         allTrades.push(data);
-        showToast(`${currentTradeType === 'buy' ? '▲ Buy' : '▼ Sell'} ${ticker} ✓`, 'success');
+
+        // Αν είναι Sell → κλείσε τις αντίστοιχες buy εγγραφές του ίδιου ticker
+        if (isSell) {
+          const { error: closeErr } = await sb.from('investments_trades')
+            .update({ status: 'closed' })
+            .eq('ticker', ticker)
+            .eq('trade_type', 'buy')
+            .eq('account_id', accountId || '')
+            .eq('status', 'open');
+          if (!closeErr) {
+            allTrades.forEach(t => {
+              if (t.ticker === ticker && t.trade_type === 'buy' && t.status === 'open') t.status = 'closed';
+            });
+          }
+        }
+        showToast(`${isSell ? '▼ Sell' : '▲ Buy'} ${ticker} ✓`, 'success');
       }
 
       closeTradeModal();
