@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1781475000">
+  <meta name="app-version" content="1781476000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -2383,10 +2383,13 @@
     function editTransaction(id) {
       const t = allTransactions.find(tx => tx.id === id);
       if (!t) return;
-      editingTransactionId = id;
 
-      // Πήγαινε στη φόρμα
+      // showSection πρέπει να γίνει ΠΡΙΝ ορίσουμε το editingTransactionId
+      // γιατί το showSection → resetTransactionForm → editingTransactionId = null
       showSection('new-transaction');
+
+      // Ορισμός ΜΕΤΑ το showSection (αλλιώς το reset το σβήνει)
+      editingTransactionId = id;
 
       // Γέμισε τα πεδία
       selectedTxType = t.type;
