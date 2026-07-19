@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1784447500">
+  <meta name="app-version" content="1784448000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -4412,6 +4412,23 @@
         .order('buy_date', { ascending: true });
       if (error) { showToast('Σφάλμα φόρτωσης: ' + error.message, 'error'); return; }
       allTrades = data || [];
+      window._allTrades = allTrades;
+
+      // Ορισμός currentPortfolioAccount αν δεν υπάρχει (π.χ. μετά από refresh)
+      if (!currentPortfolioAccount) {
+        const filter = portfolioAssetFilter || 'stock';
+        currentPortfolioAccount = allAccounts.find(a =>
+          a.type === 'investment' && (filter === 'stock'
+            ? (a.name.toLowerCase().includes('trading'))
+            : (a.name.toLowerCase().includes('etf')))
+        ) || allAccounts.find(a => a.type === 'investment') || null;
+      }
+      // Ανανέωση initial_capital από τη βάση (αντί από cache που χάνεται)
+      if (currentPortfolioAccount) {
+        const { data: accFresh } = await sb.from('accounts')
+          .select('initial_capital').eq('id', currentPortfolioAccount.id).single();
+        if (accFresh) currentPortfolioAccount.initial_capital = accFresh.initial_capital;
+      }
 
       // Πρώτα εμφάνιση χωρίς τιμές
       renderPortfolioTable();
@@ -4492,14 +4509,13 @@
     }
 
     async function fetchLivePrices() {
-      // Μόνο tickers από ανοιχτές θέσεις (status=open ή trade_type=buy χωρίς αντίστοιχο sell)
+      // Μόνο tickers από ανοιχτές θέσεις (status=open)
       const openTickers = [...new Set(
         allTrades
-          .filter(t => t.status === 'open' || (!t.trade_type || t.trade_type === 'buy'))
+          .filter(t => t.status === 'open' && (t.trade_type === 'buy' || !t.trade_type))
           .map(t => t.ticker)
       )].filter(Boolean);
 
-      // Fallback: όλα τα unique tickers αν δεν βρούμε ανοιχτά
       const allTickers = openTickers.length > 0 ? openTickers : [...new Set(allTrades.map(t => t.ticker))];
 
       if (!allTickers.length) return;
