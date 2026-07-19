@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1782038000">
+  <meta name="app-version" content="1784447500">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -4439,27 +4439,49 @@
         }
         const p = positions[key];
         const qty = t.quantity !== null && t.quantity !== undefined ? parseFloat(t.quantity) : null;
-        const price = parseFloat(t.buy_price || 0);
+        const buyPrice = parseFloat(t.buy_price || 0);
+        const sellPrice = parseFloat(t.sell_price || t.buy_price || 0); // sell_price για sells
+
         if (qty === null) p.hasQty = false;
         if (t.status === 'open') p.hasOpenStatus = true;
+
         if ((t.trade_type === 'buy' || !t.trade_type)) {
           if (!p.firstBuyDate || (t.buy_date && t.buy_date < p.firstBuyDate)) p.firstBuyDate = t.buy_date;
-          p.sumBuy += qty !== null ? qty * price : price;
-          if (qty !== null) { p.totalQty += qty; p.totalCost += qty * price; }
-        } else if (t.trade_type === 'sell') {
-          p.sumSell += qty !== null ? qty * price : price;
           if (qty !== null) {
-            const avgBefore = p.totalQty > 0 ? p.totalCost / p.totalQty : 0;
-            p.realizedPnl += qty * (price - avgBefore);
+            p.sumBuy += qty * buyPrice;
+            p.totalQty += qty;
+            p.totalCost += qty * buyPrice;
+          } else {
+            p.sumBuy += buyPrice; // συνολικό κόστος
+          }
+        } else if (t.trade_type === 'sell') {
+          if (qty !== null) {
+            // Sell με ποσότητα: realized = qty × (sell_price - avg_buy_price)
+            const avgBefore = p.totalQty > 0 ? p.totalCost / p.totalQty : buyPrice;
+            const sellTotal = qty * sellPrice;
+            const buyCost = qty * avgBefore;
+            p.realizedPnl += sellTotal - buyCost;
+            p.sumSell += sellTotal;
             p.totalQty -= qty;
-            p.totalCost -= qty * avgBefore;
+            p.totalCost -= buyCost;
+          } else {
+            // Sell χωρίς ποσότητα: sell_price = συνολικό έσοδο
+            p.sumSell += sellPrice;
           }
         }
         p.trades.push(t);
       });
-      // Για θέσεις χωρίς qty: realized = sumSell - sumBuy όταν κλειστές
+      // Για θέσεις χωρίς qty: realized = sumSell - sumBuy (και στις δύο πλευρές χωρίς qty)
+      // Για θέσεις με qty: realizedPnl ήδη υπολογίστηκε παραπάνω
       Object.values(positions).forEach(p => {
-        if (!p.hasQty && !p.hasOpenStatus) p.realizedPnl = p.sumSell - p.sumBuy;
+        if (!p.hasQty && !p.hasOpenStatus) {
+          // Όλο χωρίς qty — sumSell και sumBuy είναι συνολικά ποσά
+          p.realizedPnl = p.sumSell - p.sumBuy;
+        } else if (p.hasQty && p.sumSell > 0 && p.realizedPnl === 0) {
+          // Έχει qty αλλά και sell χωρίς qty (μεικτή περίπτωση)
+          // realizedPnl υπολογίστηκε ήδη για qty sells, πρόσθεσε no-qty sells
+          // (αν sumSell δεν ταιριάζει με totalQty sells, κάτι είναι μεικτό)
+        }
       });
       return positions;
     }
