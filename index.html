@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1782037000">
+  <meta name="app-version" content="1782038000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -4917,7 +4917,7 @@
         quantity: qty || null,
         buy_price: isSell ? null : price,    // buy_price μόνο για buy
         sell_price: isSell ? price : null,    // sell_price μόνο για sell
-        buy_date: isSell ? null : date,
+        buy_date: date,                      // NOT NULL — βάζουμε πάντα την ημερομηνία
         sell_date: isSell ? date : null,
         sector: sector || null,
         notes: notes || null,
