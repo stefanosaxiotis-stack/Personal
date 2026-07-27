@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1785055000">
+  <meta name="app-version" content="1785159000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -211,6 +211,38 @@
     }
     .tx-swipe-btn.edit  { background:rgba(0,122,255,0.15); color:#007aff; }
     .tx-swipe-btn.delete{ background:rgba(255,59,48,0.15); color:#ff3b30; }
+
+    /* Desktop: hover buttons αντί για swipe */
+    .tx-desktop-actions {
+      display:none;
+      position:absolute;
+      right:12px;
+      top:50%;
+      transform:translateY(-50%);
+      gap:6px;
+      z-index:10;
+    }
+    .tx-desktop-btn {
+      padding:5px 10px;
+      border-radius:7px;
+      border:none;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      opacity:0;
+      transition:opacity 0.15s;
+    }
+    .tx-desktop-btn.edit   { background:rgba(0,122,255,0.12); color:#007aff; }
+    .tx-desktop-btn.delete { background:rgba(255,59,48,0.10); color:#ff3b30; }
+    @media (hover:hover) {
+      /* Σε mouse devices: κρύψε το swipe, δείξε hover buttons */
+      .tx-swipe-item { overflow:visible; }
+      .tx-swipe-actions { display:none !important; }
+      .tx-swipe-item:hover .tx-desktop-actions { display:flex; }
+      .tx-swipe-item:hover .tx-desktop-btn { opacity:1; }
+      /* Λίγο padding δεξιά για να χωράνε τα κουμπιά */
+      .tx-swipe-inner { padding-right:120px !important; }
+    }
     .page-subtitle { font-size: 14px; color: var(--text-tertiary); margin-top: 2px; }
 
     /* ---- THEMES ---- */
@@ -2287,6 +2319,10 @@
               <button class="tx-swipe-btn edit" onclick="editTransaction('${t.id}');closeTxSwipe()">✏️ Επεξ.</button>
               <button class="tx-swipe-btn delete" onclick="deleteTransaction('${t.id}');closeTxSwipe()">🗑 Διαγρ.</button>
             </div>
+            <div class="tx-desktop-actions">
+              <button class="tx-desktop-btn edit" onclick="editTransaction('${t.id}')">✏️ Επεξ.</button>
+              <button class="tx-desktop-btn delete" onclick="deleteTransaction('${t.id}')">🗑 Διαγρ.</button>
+            </div>
             <div class="tx-swipe-inner px-4 py-3 flex items-center gap-3" style="background:var(--bg-secondary);">
               <div class="w-2 h-2 rounded-full bg-indigo-500 flex-shrink-0"></div>
               <div class="flex-1 min-w-0">
@@ -3025,7 +3061,7 @@
 
       const { data: txData } = await sb
         .from('transactions')
-        .select('date, report_date, amount, type, is_spiti, account_id, subcategory_id, subcategories(name, category_id, categories(name))')
+        .select('date, report_date, amount, type, is_spiti, account_id, subcategory_id, description, subcategories(name, category_id, categories(name))')
         .order('date', { ascending: true });
 
       const { data: accs } = await sb.from('accounts').select('id, name, type');
@@ -3268,25 +3304,62 @@
         const tCat = t.subcategories?.categories?.name || 'Λοιπά';
         if (tCat !== catName) return;
         const sub = t.subcategories?.name || 'Λοιπά';
-        if (!subTotals[sub]) subTotals[sub] = 0;
-        subTotals[sub] += parseFloat(t.amount);
+        if (!subTotals[sub]) subTotals[sub] = { total: 0, txs: [] };
+        subTotals[sub].total += parseFloat(t.amount);
+        subTotals[sub].txs.push(t);
       });
-      const sorted = Object.entries(subTotals).sort((a,b)=>b[1]-a[1]);
+      const sorted = Object.entries(subTotals).sort((a,b)=>b[1].total-a[1].total);
       const tb4 = document.getElementById('s4-tbody');
       tb4.innerHTML = '';
       // Breadcrumb back button
       const backRow = document.createElement('tr');
-      backRow.innerHTML = `<td colspan="3" class="py-2 px-3"><button onclick="drawDashboard()" style="font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;">← Πίσω στις κατηγορίες</button> <span style="font-size:13px;font-weight:600;color:var(--text-secondary);"> / ${catName}</span></td>`;
+      backRow.innerHTML = `<td colspan="3" class="py-2 px-3"><button onclick="drawDashboard()" style="font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;">← Κατηγορίες</button> <span style="font-size:13px;font-weight:600;color:var(--text-secondary);"> / ${catName}</span></td>`;
       tb4.appendChild(backRow);
-      sorted.forEach(([sub, val]) => {
-        const pct = catTotal2 > 0 ? (val/catTotal2*100).toFixed(1) : '0.0';
+      sorted.forEach(([sub, v]) => {
+        const pct = catTotal2 > 0 ? (v.total/catTotal2*100).toFixed(1) : '0.0';
         const tr = document.createElement('tr');
-        tr.className = 'border-b border-gray-100';
-        tr.innerHTML = `<td class="py-2 px-3 text-sm flex items-center gap-2"><span class="w-3 h-3 rounded-sm inline-block flex-shrink-0" style="background:${color}"></span>${sub}</td><td class="text-right py-2 px-3 text-sm">${formatMoney(Math.round(val*100)/100)}</td><td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
+        tr.className = 'border-b border-gray-100 cursor-pointer hover:bg-blue-50';
+        tr.title = 'Κλικ για κινήσεις';
+        tr.innerHTML = `<td class="py-2 px-3 text-sm flex items-center gap-2"><span class="w-3 h-3 rounded-sm inline-block flex-shrink-0" style="background:${color}"></span>${sub} <span style="color:var(--accent);font-size:11px;">▶</span></td><td class="text-right py-2 px-3 text-sm">${formatMoney(Math.round(v.total*100)/100)}</td><td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
+        tr.onclick = () => showS4Transactions(catName, sub, v.txs, catTotal2, grandTotal, color);
         tb4.appendChild(tr);
       });
-      const tot = sorted.reduce((s,[,v])=>s+v,0);
+      const tot = sorted.reduce((s,[,v])=>s+v.total,0);
       tb4.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο ${catName}</td><td class="text-right py-2 px-3">${formatMoney(Math.round(tot*100)/100)}</td><td class="text-right py-2 px-3 text-gray-500">${grandTotal>0?(tot/grandTotal*100).toFixed(1):0}%</td></tr>`;
+    }
+
+    // S4 Επίπεδο 3: Κινήσεις υποκατηγορίας (περιγραφή ή υποκατηγορία fallback)
+    function showS4Transactions(catName, subName, txs, catTotal2, grandTotal, color) {
+      const tb4 = document.getElementById('s4-tbody');
+      tb4.innerHTML = '';
+      const backRow = document.createElement('tr');
+      backRow.innerHTML = `<td colspan="3" class="py-2 px-3">
+        <button onclick="drawDashboard()" style="font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;">← Κατηγορίες</button>
+        <span style="font-size:13px;color:var(--text-tertiary);">/</span>
+        <button onclick='showS4Subcategories(${JSON.stringify(catName)}, ${catTotal2}, ${grandTotal}, ${JSON.stringify(color)})' style="font-size:13px;color:var(--accent);background:none;border:none;cursor:pointer;">${catName}</button>
+        <span style="font-size:13px;font-weight:600;color:var(--text-secondary);">/ ${subName}</span></td>`;
+      tb4.appendChild(backRow);
+
+      const sorted = [...txs].sort((a,b) => (b.report_date||b.date).localeCompare(a.report_date||a.date));
+      let total = 0;
+      sorted.forEach(t => {
+        const amt = parseFloat(t.amount);
+        total += amt;
+        const accName = allAccounts.find(a => a.id === t.account_id)?.name || '—';
+        const dateStr = formatDate(t.report_date || t.date);
+        const pct = catTotal2 > 0 ? (amt/catTotal2*100).toFixed(1) : '0.0';
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-100';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-sm">
+            <div style="font-weight:500;">${t.description || subName}</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:1px;">${accName} · ${dateStr}</div>
+          </td>
+          <td class="text-right py-2 px-3 text-sm">${formatMoney(amt)}</td>
+          <td class="text-right py-2 px-3 text-sm text-gray-500">${pct}%</td>`;
+        tb4.appendChild(tr);
+      });
+      tb4.innerHTML += `<tr class="font-semibold bg-gray-50 text-sm"><td class="py-2 px-3">Σύνολο (${txs.length} κινήσεις)</td><td class="text-right py-2 px-3">${formatMoney(Math.round(total*100)/100)}</td><td class="text-right py-2 px-3"></td></tr>`;
     }
 
     // S1 Drill-down: κατηγορίες/υποκατηγορίες Μισθοδοσίας
