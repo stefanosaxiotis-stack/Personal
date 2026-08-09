@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1785159000">
+  <meta name="app-version" content="1786264000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -17,6 +17,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
   
   <style>
     /* ============ APPLE DESIGN SYSTEM ============ */
@@ -968,8 +969,8 @@
           </div>
 
           <!-- Επιλογή έτους/τύπου -->
-          <div class="flex flex-wrap items-center gap-3 mb-6">
-            <select id="bg-year" onchange="renderBudgeting()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
+          <div class="flex flex-wrap items-center gap-3 mb-4">
+            <select id="bg-year" onchange="bgReportMonths.clear();renderBudgeting()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm min-h-[40px] focus:outline-none focus:ring-2 focus:ring-black">
             </select>
             <div class="segment" style="min-width:160px;">
               <button onclick="setBudgetTab('expense')" id="bg-tab-expense" class="segment-btn active">Έξοδα</button>
@@ -978,13 +979,19 @@
             <button onclick="saveBudgets()" class="btn-primary" style="margin-left:auto;font-size:14px;padding:9px 20px;">Αποθήκευση</button>
           </div>
 
+          <!-- Reporting μήνας για τη Σύγκριση Budget vs Πραγματικό -->
+          <div class="mb-6">
+            <div style="font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Μήνας σύγκρισης</div>
+            <div id="bg-report-filter-pills" class="flex flex-wrap gap-2"></div>
+          </div>
+
           <!-- Πίνακας budget -->
           <div class="bg-white rounded-xl border border-gray-200 overflow-x-auto mb-8">
-            <table class="w-full text-sm min-w-[700px]">
+            <table class="w-full text-sm min-w-[620px]">
               <thead>
                 <tr class="border-b border-gray-200 bg-gray-50">
-                  <th class="text-left py-3 px-4 font-medium text-gray-600 w-36">Υποκατηγορία</th>
-                  <th class="text-left py-3 px-3 font-medium text-gray-400 w-28 text-xs">Κατηγορία</th>
+                  <th class="text-left py-3 px-2 font-medium text-gray-600 w-20 text-xs">Υποκατ.</th>
+                  <th class="text-left py-3 px-2 font-medium text-gray-400 w-16 text-xs">Κατηγ.</th>
                   <th class="text-center py-3 px-2 text-xs text-gray-500 font-medium" id="bg-th-1">Ιαν</th>
                   <th class="text-center py-3 px-2 text-xs text-gray-500 font-medium" id="bg-th-2">Φεβ</th>
                   <th class="text-center py-3 px-2 text-xs text-gray-500 font-medium" id="bg-th-3">Μαρ</th>
@@ -2579,6 +2586,7 @@
     const txReportMonths = new Set();
     const dashReportMonths = new Set();
     const rpReportMonths = new Set();
+    const bgReportMonths = new Set();
 
     function clearTxReportFilter() {
       txReportMonths.clear();
@@ -2951,6 +2959,8 @@
     // ============================================
     const dashboardState = { s1: false, s2: false, s3: false, s4: false };
     let dashboardCharts = {};
+    // Καταχώρηση chartjs-plugin-datalabels (εμφανίζει τιμές πάνω στις μπάρες)
+    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
     let dashboardRendered = false;
     let dashboardFilter = 'current';
     let dashboardYear = null;
@@ -2964,7 +2974,9 @@
       const allMonths = [...new Set(dashboardTxData.map(t => (t.report_date || t.date).slice(0, 7)))].sort((a,b) => b.localeCompare(a));
       const curKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
       if (dashboardFilter === 'current') {
-        return allMonths.filter(k => k === curKey);
+        // Αν ο τρέχων μήνας έχει δεδομένα, δείξε τον — αλλιώς τον πιο πρόσφατο
+        const hasCurrent = allMonths.includes(curKey);
+        return hasCurrent ? [curKey] : (allMonths.length > 0 ? [allMonths[0]] : []);
       }
       if (dashboardFilter === 'prev') {
         const p = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -3163,7 +3175,24 @@
       const gridColor = 'rgba(0,0,0,0.06)', tickColor = '#9ca3af';
       const baseOpts = {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y) }}},
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + formatMoney(ctx.parsed.y) }},
+          datalabels: {
+            display: (ctx) => ctx.dataset.type !== 'line', // μόνο στις μπάρες, όχι στη γραμμή
+            anchor: 'start',
+            align: 'end',
+            offset: -4,
+            color: '#fff',
+            font: { size: 10, weight: '600' },
+            formatter: (value) => {
+              if (!value) return '';
+              const abs = Math.abs(value);
+              // Συμπαγής μορφή (π.χ. 1.5k) αν το ποσό είναι μεγάλο, αλλιώς πλήρες
+              return abs >= 1000 ? (value/1000).toFixed(1).replace('.0','') + 'k' : Math.round(value).toString();
+            }
+          }
+        },
         scales: {
           x: { ticks: { color: tickColor, font: { size: 11 }, autoSkip: labels.length > 8, maxRotation: 45 }, grid: { color: gridColor }},
           y: { ticks: { color: tickColor, font: { size: 11 }, callback: v => formatMoney(v) }, grid: { color: gridColor }}
@@ -3208,7 +3237,7 @@
         type: 'doughnut',
         data: { labels: catLabels2, datasets: [{ data: catData2, backgroundColor: catColors, borderWidth: 2, borderColor: '#fff', hoverOffset: 8 }] },
         options: { responsive: true, maintainAspectRatio: false, cutout: '58%',
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatMoney(ctx.parsed) + ' (' + (catTotal > 0 ? (ctx.parsed/catTotal*100).toFixed(1) : 0) + '%)' }}}
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + formatMoney(ctx.parsed) + ' (' + (catTotal > 0 ? (ctx.parsed/catTotal*100).toFixed(1) : 0) + '%)' }}, datalabels: { display: false } }
         }
       });
 
@@ -4096,7 +4125,7 @@
           return `<td style="text-align:center;padding:4px 3px;${bgStyle}">
             <input type="number" data-sub="${sub.id}" data-month="${m}" data-year="${year}"
               value="${val || ''}" min="0" step="1" placeholder="—"
-              style="width:60px;text-align:center;font-size:13px;padding:4px;border:0.5px solid rgba(0,0,0,0.12);border-radius:7px;outline:none;font-family:inherit;"
+              style="width:52px;text-align:center;font-size:12px;padding:4px 2px;border:0.5px solid rgba(0,0,0,0.12);border-radius:7px;outline:none;font-family:inherit;"
               onfocus="this.style.borderColor='var(--accent)'"
               onblur="this.style.borderColor='rgba(0,0,0,0.12)'"
               onchange="onBudgetChange(this)">
@@ -4107,10 +4136,10 @@
         prevCatId = cat.id;
         const borderTop = isNewCat ? 'border-top:2px solid rgba(0,0,0,0.08);' : '';
         return `<tr style="${borderTop}" onmouseover="this.style.background='rgba(0,0,0,0.02)'" onmouseout="this.style.background=''">
-          <td style="padding:6px 14px;font-size:14px;font-weight:500;white-space:nowrap;">${sub.name}</td>
-          <td style="padding:6px 10px;font-size:12px;color:var(--text-tertiary);white-space:nowrap;">${isNewCat ? cat.name : ''}</td>
+          <td style="padding:6px 8px;font-size:12px;font-weight:500;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sub.name}">${sub.name}</td>
+          <td style="padding:6px 6px;font-size:11px;color:var(--text-tertiary);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${cat.name}">${isNewCat ? cat.name : ''}</td>
           ${cells}
-          <td style="text-align:right;padding:6px 14px;font-size:13px;font-weight:600;color:${rowTotal>0?'var(--text-primary)':'var(--text-tertiary)'};">${rowTotal>0?formatMoney(rowTotal):'—'}</td>
+          <td style="text-align:right;padding:6px 10px;font-size:12px;font-weight:600;color:${rowTotal>0?'var(--text-primary)':'var(--text-tertiary)'};">${rowTotal>0?formatMoney(rowTotal):'—'}</td>
         </tr>`;
       }).join('');
 
@@ -4120,6 +4149,11 @@
         return `<td style="text-align:center;padding:10px 3px;font-size:12px;${bg}">${v>0?formatMoney(v):'—'}</td>`;
       }).join('');
       tfoot.innerHTML = `<tr style="background:var(--bg-primary);"><td style="padding:10px 14px;" colspan="2">Σύνολο</td>${totalCells}<td style="text-align:right;padding:10px 14px;">${formatMoney(grandTotal)}</td></tr>`;
+      // Reporting month pills — προεπιλογή ο τρέχων μήνας (αν καμία επιλογή)
+      if (bgReportMonths.size === 0 && curM) bgReportMonths.add(`${year}-${String(curM).padStart(2,'0')}`);
+      const allMonthKeys = Array.from({length:12}, (_,i) => `${year}-${String(i+1).padStart(2,'0')}`);
+      renderReportFilterPills('bg-report-filter-pills', bgReportMonths, 'renderBudgetTable', allMonthKeys);
+
       renderBudgetComparison(year, rows, curM);
     }
 
@@ -4157,13 +4191,22 @@
 
     function renderBudgetComparison(year, rows, curM) {
       const container = document.getElementById('bg-comparison');
-      if (!curM) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Επίλεξε τρέχον έτος.</p>'; return; }
-      const items = rows.map(({cat,sub}) => ({
-        cat, sub,
-        budget: budgetData[`${sub.id}_${year}_${curM}`]||0,
-        actual: budgetActual[`${sub.id}_${year}_${curM}`]||0
-      })).filter(x => x.budget>0||x.actual>0);
-      if (!items.length) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Δεν υπάρχουν budget για τον τρέχοντα μήνα.</p>'; return; }
+      // Χρησιμοποίησε τους επιλεγμένους μήνες από τα pills (ή τρέχοντα μήνα ως fallback)
+      const selectedMonths = bgReportMonths.size > 0
+        ? [...bgReportMonths].map(k => parseInt(k.split('-')[1]))
+        : (curM ? [curM] : []);
+      if (!selectedMonths.length) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Επίλεξε μήνα από τα φίλτρα πάνω.</p>'; return; }
+
+      // Άθροισμα budget/actual για όλους τους επιλεγμένους μήνες, ανά υποκατηγορία
+      const items = rows.map(({cat,sub}) => {
+        let budget = 0, actual = 0;
+        selectedMonths.forEach(m => {
+          budget += budgetData[`${sub.id}_${year}_${m}`] || 0;
+          actual += budgetActual[`${sub.id}_${year}_${m}`] || 0;
+        });
+        return { cat, sub, budget, actual };
+      }).filter(x => x.budget>0||x.actual>0);
+      if (!items.length) { container.innerHTML = '<p style="color:var(--text-tertiary);font-size:14px;">Δεν υπάρχουν budget για τον επιλεγμένο μήνα.</p>'; return; }
       container.innerHTML = items.map(({cat,sub,budget,actual}) => {
         const pct = budget>0 ? Math.min(100,Math.round((actual/budget)*100)) : 100;
         const bar = actual>budget&&budget>0 ? 'var(--expense-color)' : pct>80 ? '#f59e0b' : 'var(--income-color)';
