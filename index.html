@@ -2,7 +2,7 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <meta name="app-version" content="1786264000">
+  <meta name="app-version" content="1786620000">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- PWA / Add to Home Screen -->
   <link rel="manifest" href="./manifest.json">
@@ -311,6 +311,63 @@
     }
     [data-theme="warm"] .apple-card { background: var(--bg-secondary); border: 0.5px solid var(--border-color); }
     [data-theme="warm"] .apple-input, [data-theme="warm"] .apple-select { background: #fff; border-color: var(--border-color); }
+
+    /* ---- PREMIUM THEME (Onyx & Χρυσό) — dark header/sidebar, floating pill nav, deep card shadows ---- */
+    [data-theme="premium"] {
+      --bg-primary: #FAF7F2;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #F1EFE8;
+      --sidebar-bg: #1B2523;
+      --sidebar-border: rgba(255,255,255,0.08);
+      --text-primary: #1B2523;
+      --text-secondary: #5F5E5A;
+      --text-tertiary: #8A8378;
+      --border-color: rgba(27,37,35,0.08);
+      --card-shadow: 0 6px 18px rgba(27,37,35,0.12), 0 2px 5px rgba(27,37,35,0.07);
+      --card-radius: 14px;
+      --accent: #D4A574;
+      --accent-hover: #C89361;
+      --income-color: #0F6E56;
+      --expense-color: #993C1D;
+      --nav-active-bg: rgba(212,165,116,0.18);
+    }
+    [data-theme="premium"] body { background: var(--bg-primary); }
+    [data-theme="premium"] .apple-card { border: 0.5px solid var(--border-color); }
+    [data-theme="premium"] .apple-input, [data-theme="premium"] .apple-select { background: #fff; border-color: var(--border-color); }
+    /* Sidebar (desktop) — σκούρο, χρυσό accent */
+    [data-theme="premium"] .apple-nav-link { color: rgba(255,255,255,0.65); }
+    [data-theme="premium"] .apple-nav-link.active { background: rgba(212,165,116,0.18); color: #D4A574; font-weight:600; }
+    [data-theme="premium"] .apple-nav-link.active svg { stroke: #D4A574; }
+    [data-theme="premium"] .apple-nav-link svg { stroke: rgba(255,255,255,0.5); }
+    [data-theme="premium"] .apple-nav-link:hover { background: rgba(255,255,255,0.06); }
+    [data-theme="premium"] .apple-nav-section { color: rgba(255,255,255,0.35); }
+    [data-theme="premium"] .apple-sidebar { border-right-color: rgba(255,255,255,0.08); }
+    [data-theme="premium"] .apple-sidebar span { color: #fff; }
+    [data-theme="premium"] .apple-sidebar #privacy-btn { color: rgba(255,255,255,0.5); }
+    [data-theme="premium"] #user-email { color: rgba(255,255,255,0.4); }
+    /* Mobile header — σκούρο */
+    [data-theme="premium"] .apple-header, [data-theme="premium"] #mobile-header { background: rgba(27,37,35,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+    [data-theme="premium"] #mobile-header #mobile-page-title { color: #fff; }
+    [data-theme="premium"] #mobile-header button { background: rgba(255,255,255,0.1); }
+    [data-theme="premium"] #mobile-header svg { stroke: #D4A574; }
+    /* Floating pill bottom nav με διαφάνεια */
+    [data-theme="premium"] .bottom-nav {
+      left: 12px; right: 12px; bottom: 12px; height: auto;
+      padding: 10px 6px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(27,37,35,0.68);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border-radius: 28px; border-top: none;
+      box-shadow: 0 10px 24px rgba(27,37,35,0.30);
+      align-items: center;
+    }
+    [data-theme="premium"] .bottom-nav-item svg { stroke: rgba(255,255,255,0.55); }
+    [data-theme="premium"] .bottom-nav-item span { color: rgba(255,255,255,0.55); }
+    [data-theme="premium"] .bottom-nav-item.active svg { stroke: #D4A574; }
+    [data-theme="premium"] .bottom-nav-item.active span { color: #D4A574; }
+    [data-theme="premium"] .bottom-nav-add-circle { background: #D4A574; box-shadow: 0 4px 14px rgba(212,165,116,0.5); margin-top: -14px; }
+    [data-theme="premium"] .bottom-nav-add span { color: #D4A574; }
+    /* "Περισσότερα" drawer */
+    [data-theme="premium"] #more-drawer { background: rgba(250,247,242,0.98); }
 
     /* ---- MOBILE DRAWER ---- */
     .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 40; backdrop-filter: blur(2px); }
@@ -1380,6 +1437,22 @@
                   </div>
                 </div>
                 <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#fffaf4;color:#7c2d12;">Warm</div>
+              </button>
+              <!-- Premium -->
+              <button onclick="applyTheme('premium')" id="theme-premium" style="border:2px solid transparent;border-radius:14px;overflow:hidden;cursor:pointer;padding:0;background:none;">
+                <div style="height:70px;display:flex;overflow:hidden;">
+                  <div style="width:35%;background:#1B2523;display:flex;flex-direction:column;padding:6px;gap:3px;">
+                    <div style="width:20px;height:20px;background:#D4A574;border-radius:5px;"></div>
+                    <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;"></div>
+                    <div style="height:5px;background:#D4A574;border-radius:3px;"></div>
+                    <div style="height:5px;background:rgba(255,255,255,0.1);border-radius:3px;"></div>
+                  </div>
+                  <div style="flex:1;background:#FAF7F2;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="height:16px;background:#0F6E56;border-radius:4px;width:70%;"></div>
+                    <div style="height:10px;background:#993C1D;border-radius:4px;width:50%;"></div>
+                  </div>
+                </div>
+                <div style="padding:6px 10px;font-size:12px;font-weight:600;text-align:left;background:#FAF7F2;color:#1B2523;">Onyx & Χρυσό</div>
               </button>
             </div>
           </div>
@@ -3957,18 +4030,18 @@
       document.documentElement.setAttribute('data-theme', theme === 'classic' ? '' : theme);
       localStorage.setItem('pf_theme', theme);
       // Update border on selected
-      ['classic','dark','navy','warm'].forEach(t => {
+      ['classic','dark','navy','warm','premium'].forEach(t => {
         const btn = document.getElementById('theme-' + t);
         if (!btn) return;
         btn.style.border = t === theme ? '2px solid var(--accent)' : '2px solid transparent';
         // Update label suffix
         const label = btn.querySelector('div:last-child');
         if (label) {
-          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[t];
+          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm',premium:'Onyx & Χρυσό'}[t];
           label.textContent = t === theme ? base + ' ✓' : base;
         }
       });
-      showToast('Θέμα αλλάχτηκε σε ' + {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[theme], 'success');
+      showToast('Θέμα αλλάχτηκε σε ' + {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm',premium:'Onyx & Χρυσό'}[theme], 'success');
     }
 
     function loadSavedTheme() {
@@ -5145,13 +5218,13 @@
       await updatePinSettingsUI();
       // Ανανέωση theme UI
       const saved = localStorage.getItem('pf_theme') || 'classic';
-      ['classic','dark','navy','warm'].forEach(t => {
+      ['classic','dark','navy','warm','premium'].forEach(t => {
         const btn = document.getElementById('theme-' + t);
         if (!btn) return;
         btn.style.border = t === saved ? '2px solid var(--accent)' : '2px solid transparent';
         const label = btn.querySelector('div:last-child');
         if (label) {
-          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm'}[t];
+          const base = {classic:'Classic',dark:'Dark',navy:'Navy & Gold',warm:'Warm',premium:'Onyx & Χρυσό'}[t];
           label.textContent = t === saved ? base + ' ✓' : base;
         }
       });
